@@ -54,7 +54,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         slider.setTickInterval(1)
         slider.setSingleStep(1)
         sliderLabel = QtGui.QLabel('Sequence Num.')
-        sliderLCD = QtGui.QLCDNumber()
+        sliderLCD = QtGui.QLCDNumber(np.ceil(np.log10(len(self.AWGWFs)-1)))
         slider.valueChanged.connect(sliderLCD.display)
         slider.valueChanged.connect(self.update_plot)
         self.slider = slider
@@ -74,6 +74,8 @@ class PulseSeqPlotWindow(QtGui.QWidget):
             tmpItem.setExpanded(True)
         self.plotCheckBoxes = plotCheckBoxes
         
+        delayShiftCheckBox = QtGui.QCheckBox('Undo Delays')
+        delayShiftCheckBox.stateChanged.connect(self.update_plot)
         
         #Lay everything out
         hboxSlider = QtGui.QHBoxLayout()
@@ -82,9 +84,14 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         hboxSlider.addWidget(sliderLCD)
         hboxSlider.addWidget(slider)
 
+        vboxOptions = QtGui.QVBoxLayout()
+        vboxOptions.addWidget(plotCheckBoxes)
+        vboxOptions.addWidget(delayShiftCheckBox)
+        vboxOptions.addStretch(1)
+
         hboxTop = QtGui.QHBoxLayout()
         hboxTop.addWidget(self.canvas)
-        hboxTop.addWidget(plotCheckBoxes)
+        hboxTop.addLayout(vboxOptions)
         
         hboxBottom = QtGui.QHBoxLayout()
         hboxBottom.addWidget(self.mpl_toolbar)
