@@ -10,49 +10,16 @@ from copy import deepcopy
 
 import numpy as np
 
+import ChannelInfo
 
 AWGFreq = 1e9
-bufferTime = 2/1.e9
 
-class ChannelTypes(object):
-    '''
-    Enumerate the possible types:
-    direct - goes straight to something i.e. no modulated carrier
-    digital - a logical digital channel usually assigned to a marker channel
-    amplitudeMod - an amplitude modulated carrier
-    quadratureMod - a quadrature modulated carrier
-    '''
-    (direct, digital, amplitudeMod, quadratureMod) = range(4)
-    
 
-class LogicalChannel(object):
-    '''
-    The main class to which we assign points.  At some point it needs to be assigned to a physical channel.
-    '''
-    def __init__(self, name=None, channelType=None, physicalChannel=None, freq=None):
-        self.name = name
-        self.channelType = channelType
-        self.physicalChannel = physicalChannel
-        self.freq = freq
-        
-class PhysicalChannel(object):
-    '''
-    Something closer to the hardware. i.e. it is associated with AWG channnels and generators.
-    '''
-    def __init__(self, name=None, channelType=None, carrierGen=None, IChannel=None, QChannel=None, markerChannel=None, delay=None):
-        self.name = name
-        self.channelType = channelType
-        self.carrierGen = carrierGen
-        self.IChannel = IChannel
-        self.QChannel = QChannel
-        self.markerChannel = markerChannel
-        self.delay = delay
-        
 
 class PulseBlock(object):
     '''
     The basic building block for pulse sequences. This is what we can concatenate together to make sequences.
-    We also overload the + operator so that we can combine pulse block:
+    We also overload the + operator so that we can combine pulse blocks:
      -same channels get concatenated 
      -different channels are added in parallel and then subsequently aligned by the pulse compiler
     '''
@@ -82,6 +49,16 @@ class PulseBlock(object):
             
         return self
             
+    #The maximum number of points needed for any channel on this block
+    @property
+    def maxPts(self):
+        maxPts = 0
+        for tmpPulseList in self.pulses.values():
+            tmpPts = 0
+            for tmpPulse in tmpPulseList:
+                tmpPts += tmpPulse.numPoints(AWGFreq)
+            maxPts = max(maxPts, tmpPts)
+        return maxPts
     
 
 
@@ -91,13 +68,30 @@ class PulseSequence(object):
     '''
     
     
-def CompileSequence(pulseSeq, channelInfo):
+class LLElement(object):
+    def __init__(self):
+        self.key = None
+        self.length = 0
+        self.repeat =0
+        self.isTimeAmplitude = False
+        self.isZero = False
+        self.hasTrigger = False
+        self.linkListRepeat = 0
+
+def create_padding_LL():
+    tmpLL = LLElement()
+    tmpLL.isTimeAmplitude = True
+    tmpLL.isZero = True
+    return tmpLL
+    
+    
+def compile_sequence(pulseSeq, AWGFreq):
     '''
     Main function to compile a pulse sequence.
     This is where all the hard work is.  
     
     This is largely built around the APS model of waveforms and linklist specifying the sequence.
-    However, it translates just fine to Tektronix too but the the waveform resrictions are global. 
+    However, it translates just fine to Tektronix too but the the waveform restrictions are global. 
     
     '''
 
@@ -105,14 +99,136 @@ def CompileSequence(pulseSeq, channelInfo):
     minStepPts = 4
     
     #Create a library of waveforms so that we don't repeat
-    WFLibrary = []
+    WFLibrary = {}
     
-    #Link list for the sequence for each 
-    
-    LLs {} 
-    #Loop over each of the pulse sequence blocks generate the shapes and then parse the paddings as efficiently as possible
+    #Sort out which channels we have to deal with an initialize the waveforms
+    logicalLLs = {}
     for tmpBlock in pulseSeq:
-        #Loop over each channel we need to deal with 
+        for tmpChan in tmpBlock.channels:
+            if tmpChan.name not in logicalLLs:
+                logicalLLs[tmpChan.name] = []
+                    
+    emptyLLs = deepcopy(logicalLLs)
+
+    #Loop over each of the pulse sequence blocks
+    #Generate the shapes and build the waveform library
+    #Then parse the paddings according to the alignment
+    for tmpBlock in pulseSeq:
+        tmpLLs = deepcopy(emptyLLs)
+        
+        #Add the initial paddings
+        for tmpLL in tmpLLs.values():
+            tmpLL.append(create_padding_LL())
+            
+        #Loop over each channel in the block and add LL elements
+        for tmpChanName in tmpBlock.channelNames:
+            for tmpPulse in tmpBlock.pulses[tmpChanName]:
+                if id(tmpPulse) not in WFLibrary:
+                    WFLibrary[id(tmpPulse)] = tmpPulse.generatePattern(AWGFreq)
+                tmpLL = LLElement()
+                tmpLL.key = id(tmpPulse)
+                tmpLL.length = tmpPulse.numPoints(AWGFreq)
+                tmpLLs[tmpChanName].append(tmpLL)
+            
+        #Add the final paddings
+        for tmpLL in tmpLLs.values():
+            tmpLL.append(create_padding_LL())
+        
+
+        #Now adjust the paddings according the pulse block alignment
+        maxPts = tmpBlock.maxPts
+        for tmpLL in tmpLLs.values():
+            numPts = 0
+            for tmpElement in tmpLL:
+                numPts += tmpElement.length
+            padLength = numPts-maxPts
+            if tmpBlock.alignment == 'left':
+                #We pad the final LL element
+                tmpLL[-1].repeat = padLength
+            elif tmpBlock.alignment == 'right':
+                #We pad the first LL element
+                tmpLL[0].repeat = padLength
+            elif tmpBlock.alignment == 'center':
+                #We split the difference
+                tmpLL[0].repeat = padLength//2
+                tmpLL[-1].repeat = padLength//2 + 1 if np.mod(padLength,2) else padLength//2
+        
+        #Trim empty paddings
+        for tmpLL in tmpLLs.values():
+            if tmpLL[0].repeat == 0:
+                del tmpLL[0]
+            if tmpLL[-1].repeat == 0:
+                del tmpLL[-1]
+        
+        #Append this block onto the total pulse sequence
+        for tmpName, tmpLL in logicalLLs.items():
+            tmpLL += tmpLLs[tmpName]
+        
+    
+            
+    return logicalLLs, WFLibrary
+
+
+def TekChannels():
+    '''
+    The set of channels for a Tektronix AWG
+    '''
+    return {'Ch1':None, 'Ch2':None, 'Ch3':None, 'Ch4':None, 'Ch1M1':None, 'Ch1M2':None, 'Ch2M1':None, 'Ch2M2':None , 'Ch3M1':None, 'Ch3M2':None , 'Ch4M1':None, 'Ch4M2':None}
+                    
+def compile_LLs(logicalLLs, WFLibrary, channelInfo):
+    '''
+    Final compiling steps which translates from logical channels to physical channels.
+    '''
+    #TODO: allow multiple logical channels to map onto physical channels for APS
+    AWGTypes = {'TekAWG':'Tektronix', 'BBNAPS':'APS'}
+    
+    WFLibrary = {}
+    
+    #Loop through each of the logical channels
+    for tmpChanName, LLs in logicalLLs.items():
+        #Deal with the different channeltypes
+        tmpChanType = channelInfo[tmpChanName].channelType
+        if tmpChanType == ChannelInfo.ChannelTypes.quadratureMod:
+            #First do the real part of the analog part
+            realChan = channelInfo[channelInfo[tmpChanName].physicalChannel]
+            
+            
+    
+    
+    #For each of the instruments create the zero channels
+    for instrument in channelInfo.instrumentList:
+        
+     
+    
+    
+                        
+                    
+def LLtoSequence(LL, WFLibrary):
+    '''
+    Helper function for converting a LL to a single sequence array for plotting or Tektronix purposes.
+    '''
+    #Count up how much space we need
+    numPts = 0
+    for tmpLLElement in LL:
+        numPts += tmpLLElement.length
+    
+    #Allocate the array
+    outSeq = np.zeros(numPts,dtype=np.complex128)
+    
+    idx = 0
+    for tmpLLElement in LL:
+        outSeq[idx:idx+tmpLLElement.length] = WFLibrary[tmpLLElement.key]
+        idx += tmpLLElement.length
+    
+    return outSeq
+    
+    
+    
+                    
+
+                
+
+                
         
     
 
@@ -124,7 +240,7 @@ def CompileSequence(pulseSeq, channelInfo):
     '''
     
     #Sort out which channels we have to deal with an initialize the waveforms
-    LogicalWFs = {}
+    LogicalLLs = {}
     for tmpBlock in pulseSeq:
         for tmpChan in tmpBlock.channels:
             if tmpChan.name not in LogicalWFs:
@@ -136,8 +252,8 @@ def CompileSequence(pulseSeq, channelInfo):
                     LogicalWFs[tmpChan.name] = np.array([], dtype=np.float64)
                 elif tmpChan.channelType == ChannelTypes.direct:
                     LogicalWFs[tmpChan.name] = np.array([], dtype=np.float64)
-                    
-    EmptyWFs = deepcopy(LogicalWFs)
+
+
                     
     #Loop over each of the pulse sequence blocks and concatenate on the pattern or zero-fill if not defined. 
     for tmpBlock in pulseSeq:
@@ -229,10 +345,10 @@ def CompileSequence(pulseSeq, channelInfo):
 
 """
         
-def CompileMultipleSequences(pulseSeqs, channelInfo):
+def compile_sequences(pulseSeqs, channelInfo):
     AWGWFs = []
     for pulseSeq in pulseSeqs:
-        AWGWFs.append(CompileSequence(pulseSeq, channelInfo))
+        AWGWFs.append(compile_sequence(pulseSeq, channelInfo))
         
 
 def loadChannelInfo(dataFile, channel):
@@ -243,14 +359,19 @@ def loadChannelInfo(dataFile, channel):
     
 if __name__ == '__main__':
     
-    #Load the channel information from file
-    channelInfo = loadChannelInfo('channelInfo.dat', 'q1')
+#    #Load the channel information from file
+#    channelInfo = loadChannelInfo('channelInfo.dat', 'q1')
+#    
+#    q1 = channelInfo.channels['q1']
+#    q2 = channelInfo.channels['q2']
     
-    q1 = channelInfo.channels['q1']
-    q2 = channelInfo.channels['q2']
+
+    #Create a qubit channel
+    q1 = ChannelInfo.QubitChannel(name='q1', physicalChannel=None, freq=None, piAmp=1.0, pi2Amp=0.5, pulseType='gauss', pulseLength=40e-9, bufferTime= 2e-9)
+
     
     #Define a typical sequence
-    pulseSeq = [q1.Xp, q1.Xp + [q2.X90p + q2.Id(100e-9)]]
+    pulseSeq = [q1.X180, q1.X90]
     
-    AWGWFs = CompileSequence(pulseSeq, channelInfo)
+    LLs, WFLibrary = compile_sequence(pulseSeq, AWGFreq)
     

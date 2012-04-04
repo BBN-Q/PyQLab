@@ -11,15 +11,16 @@ AWGFreq = 1e9
 import numpy as np
 
 import sys
+import os
 import matplotlib
 matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4']='PySide'
+#matplotlib.rcParams['backend.qt4']='PySide'
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
 
-from PySide import QtCore, QtGui
+from PyQt4 import QtCore, QtGui
 
 
 class PulseSeqPlotWindow(QtGui.QWidget):
@@ -35,13 +36,13 @@ class PulseSeqPlotWindow(QtGui.QWidget):
             numSeqs += len(tmpAWG)
         
         #Create the GUI
-        self.resize(800,700)
+        self.resize(1000,700)
         self.center()
         self.setWindowTitle('Pulse Sequence Plotter')
         
         
         # generate the plot
-        self.fig = Figure(figsize=(600,600), dpi=72)
+        self.fig = Figure(figsize=(12,6), dpi=72)
         self.ax = self.fig.add_subplot(111)
 
         # generate the canvas to display the plot
@@ -54,7 +55,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         slider.setTickInterval(1)
         slider.setSingleStep(1)
         sliderLabel = QtGui.QLabel('Sequence Num.')
-        sliderLCD = QtGui.QLCDNumber(np.ceil(np.log10(len(self.AWGWFs)-1)))
+        sliderLCD = QtGui.QLCDNumber(int(np.ceil(np.log10(len(self.AWGWFs)-1))))
         slider.valueChanged.connect(sliderLCD.display)
         slider.valueChanged.connect(self.update_plot)
         self.slider = slider
@@ -116,11 +117,11 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         vertShift = 0
         for itemct in range(self.plotCheckBoxes.topLevelItemCount()):
             tmpItem = self.plotCheckBoxes.topLevelItem(itemct)
-            tmpAWGName = tmpItem.text(0)
+            tmpAWGName = str(tmpItem.text(0))
             for childct in range(tmpItem.childCount()):
                 tmpChild = tmpItem.child(childct)
-                if tmpChild.checkState(0) == QtCore.Qt.CheckState.Checked:
-                    self.ax.plot(self.AWGWFs[curSegNum][tmpAWGName][tmpChild.text(0)] + vertShift)
+                if tmpChild.checkState(0) == QtCore.Qt.Checked:
+                    self.ax.plot(self.AWGWFs[curSegNum][tmpAWGName][str(tmpChild.text(0))] + vertShift)
                     vertShift += 2
                     
         self.canvas.draw()
@@ -133,16 +134,8 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         
 
 def plot_pulse_seq(pulseSeq=None):
+    pass
     
-    app = QtGui.QApplication(sys.argv)
-
-    plotterWindow = PulseSeqPlotWindow(pulseSeq)
-    plotterWindow.show()
-
-
-
-    sys.exit(app.exec_())
-
 
 if __name__ == '__main__':
     
@@ -155,5 +148,14 @@ if __name__ == '__main__':
         tmpWFs['Tek1']['ch1m1'] = np.abs(tmpWFs['Tek1']['ch1']) < 0.5
         AWGWFs.append(tmpWFs)
     
+    app = QtGui.QApplication(sys.argv)
+
+    plotterWindow = PulseSeqPlotWindow(AWGWFs)
+    plotterWindow.show()
+
+
+
+    sys.exit(app.exec_())
+
     
-    plot_pulse_seq(AWGWFs)
+#    plot_pulse_seq(AWGWFs)
