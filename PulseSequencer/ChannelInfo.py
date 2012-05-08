@@ -24,13 +24,14 @@ class ChannelTypes(object):
     amplitudeMod - an amplitude modulated carrier
     quadratureMod - a quadrature modulated carrier
     '''
-    (direct, digital, amplitudeMod, quadratureMod) = range(4)
+    (direct, marker, amplitudeMod, quadratureMod) = range(4)
     
 class AnalogChannel(object):
     '''
     An analog output channel.
     '''
     def __init__(self, name=None, scale=0.0, offset=0.0, delay=0.0):
+        self.channelType = ChannelTypes.amplitudeMod        
         self.name = name
         self.scale = scale
         self.offset = offset
@@ -41,23 +42,27 @@ class MarkerChannel(object):
     An digital output channel.
     '''
     def __init__(self, scale=0.0, name=None, delay=0.0):
+        self.channelType = ChannelTypes.marker
         self.name = name
         self.scale = scale
         self.delay = delay
         
-class PhysicalChannel(object):
+class QuadratureChannel(object):
     '''
     Something closer to the hardware. i.e. it is associated with AWG channels and generators.
     '''
-    def __init__(self, name=None, channelType=None, carrierGen=None, IChannel=None, QChannel=None, markerChannel=None, gateBuffer=0.0, gateMinWidth=0.0):
+    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, channelShift=0.0, gateChannelShift=0.0):
         self.name = name
-        self.channelType = channelType
+        self.channelType = ChannelTypes.quadratureMod
+        self.AWGName = AWGName
         self.carrierGen = carrierGen
         self.IChannel = IChannel
         self.QChannel = QChannel
-        self.markerChannel = markerChannel
+        self.gateChannel = gateChannel
         self.gateBuffer = gateBuffer
         self.gateMinWidth = gateMinWidth
+        self.channelShift = channelShift
+        self.gateChannelShift = gateChannelShift
         
 class PhysicalChannelView(QtGui.QWidget):
     def __init__(self, channel):

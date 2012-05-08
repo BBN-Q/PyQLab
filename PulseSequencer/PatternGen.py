@@ -28,7 +28,7 @@ class Pulse(object):
         return np.hstack((np.zeros(bufferPts), np.exp(-1j*2*np.pi*self.phase)*self.amp*self.generateShape(AWGFreq), np.zeros(bufferPts)))
 
     def numPoints(self, AWGFreq):
-        return 2*round(self.bufferTime*AWGFreq) + round(self.time*AWGFreq)
+        return int(2*round(self.bufferTime*AWGFreq) + round(self.time*AWGFreq))
     
     
 '''
