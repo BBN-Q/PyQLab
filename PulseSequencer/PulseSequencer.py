@@ -443,8 +443,9 @@ if __name__ == '__main__':
     channelInfo['AWGList'] = ['TekAWG1']
     
     #Define a typical sequence: say Pi Ramsey
+    readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)
     def single_ramsey_sequence(pulseSpacing):
-        tmpSeq = [q1.X90, q1.QId(pulseSpacing)+q2.X180, q1.X90, digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)]
+        tmpSeq = [q1.X90(), q1.QId(pulseSpacing)+q2.X180(), q1.X90(), readoutBlock]
         tmpSeq[1].alignment = 'centre'
         return tmpSeq
         

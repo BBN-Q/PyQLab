@@ -132,7 +132,8 @@ class LogicalChannel(object):
         self.channelType = channelType
         self.physicalChannel = physicalChannel
         self.freq = freq
-        
+
+
 class QubitChannel(LogicalChannel):
     '''
     An extension of a logical channel with some calibrations and default pulses
@@ -145,7 +146,15 @@ class QubitChannel(LogicalChannel):
         self.piAmp = piAmp
         self.pi2Amp = pi2Amp
         self.dragScaling = dragScaling
-
+        self.pulseCache = {}
+        
+    def cachedPulse(pulseFunc):
+        def cacheWrap(self):
+            if pulseFunc.__name__ not in self.pulseCache:
+                self.pulseCache[pulseFunc.__name__] = pulseFunc(self)
+            return self.pulseCache[pulseFunc.__name__]
+        
+        return cacheWrap
 
     '''
     Setup some common pulses.
@@ -176,56 +185,60 @@ class QubitChannel(LogicalChannel):
     '''
     Setup the default 90/180 rotations
     '''
-    @property
+    @cachedPulse
     def X180(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    @property
+    @cachedPulse
     def X90(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
+        if 'X90' in self.pulseCache:
+            return self.pulseCache['X90']
+        else:
+            tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
+            tmpBlock = PulseSequencer.PulseBlock()
+            tmpBlock.add_pulse(tmpPulse, self)
+            self.pulseCache['X90'] = tmpBlock
+            return tmpBlock
     
-    @property
+    @cachedPulse
     def Xm180(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    @property
+    @cachedPulse
     def Xm90(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    @property
+    @cachedPulse
     def Y180(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    @property
+    @cachedPulse
     def Y90(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
        
-    @property
+    @cachedPulse
     def Ym180(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    @property
+    @cachedPulse
     def Ym90(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
