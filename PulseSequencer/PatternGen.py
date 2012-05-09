@@ -12,11 +12,12 @@ class Pulse(object):
     '''
     The basic pulse shape which will be inherited.
     '''
-    def __init__(self, time=None, bufferTime=None, amp=None, phase=None):
+    def __init__(self, time=None, bufferTime=None, amp=None, phase=None, isZero=None):
         self.time = time
         self.bufferTime = 0 if bufferTime is None else bufferTime
         self.amp = 0 if amp is None else amp
         self.phase = 0 if phase is None else phase
+        self.isZero = False if isZero is None else isZero
         
     #Generate the bare shape: should be overwritten in subclasses
     def generateShape(self):
@@ -62,6 +63,17 @@ class Square(Pulse):
         numPts = round(self.time*AWGFreq)
         return np.ones(numPts)
 
+class QId(Pulse):
+    '''
+    A delay between pulses.
+    '''
+    def __init__(self, time=None):
+        super(QId, self).__init__(time)
+        self.isZero = True
+        
+    def numPoints(self, AWGFreq):
+        return round(self.time*AWGFreq)
+    
 '''
 Dictionary linking pulse names to functions.
 '''

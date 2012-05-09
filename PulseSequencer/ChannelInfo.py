@@ -132,6 +132,10 @@ class QubitChannel(LogicalChannel):
     '''
     Setup the default pulse types
     '''
+    def QId(self, delay=0):
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(PatternGen.QId(delay), self)    
+        return tmpBlock
     @property
     def X180(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, phase=0)
