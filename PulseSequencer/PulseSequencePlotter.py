@@ -68,7 +68,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         plotCheckBoxes.itemClicked.connect(self.update_plot)
         for tmpAWGName, tmpAWG in AWGWFs.iteritems():
             tmpItem = QtGui.QTreeWidgetItem([tmpAWGName])
-            for tmpChannelName in tmpAWG.keys():
+            for tmpChannelName in sorted(tmpAWG.keys()):
                 tmpChildItem = QtGui.QTreeWidgetItem([tmpChannelName])
                 tmpChildItem.setCheckState(0,QtCore.Qt.Checked)
                 tmpItem.addChild(tmpChildItem)
@@ -76,8 +76,10 @@ class PulseSeqPlotWindow(QtGui.QWidget):
             tmpItem.setExpanded(True)
         self.plotCheckBoxes = plotCheckBoxes
         
+        
         delayShiftCheckBox = QtGui.QCheckBox('Undo Delays')
         delayShiftCheckBox.stateChanged.connect(self.update_plot)
+        delayShiftCheckBox.setEnabled(False)
         
         #Lay everything out
         hboxSlider = QtGui.QHBoxLayout()
@@ -123,6 +125,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
                 tmpChild = tmpItem.child(childct)
                 if tmpChild.checkState(0) == QtCore.Qt.Checked:
                     self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
+                    self.ax.text(0, vertShift,tmpAWGName+'-'+str(tmpChild.text(0)), fontsize=8)
                     vertShift += 2
                     
         self.canvas.draw()
