@@ -14,6 +14,8 @@ import ChannelInfo
 
 AWGFreq = 1e9
 
+from TekPattern import write_Tek_file
+
 from PulseSequencePlotter import plot_pulse_seqs
 
 
@@ -224,7 +226,6 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
         QWFLibrary[tmpKey] = tmpWF.imag
         AWFLibrary[tmpKey] = np.abs(tmpWF)
 
-
     #Loop through each pulse sequence
     for logicalLLs in pulseSeqs:
         
@@ -325,8 +326,12 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             #Marker channel require only a single channel
             #TODO: Deal with APS marker channels            
             elif tmpChanType == ChannelInfo.ChannelTypes.marker:
-                hardwareLLs[tmpName][channelInfo[tmpChanName].name].append(LL2sequence(tmpLLSeq, AWFLibrary) > 0)
-                needZeroWF[tmpName][channelInfo[tmpChanName].name] = False
+                tmpInitPad = create_padding_LL()
+                tmpFinalPad = create_padding_LL()
+                tmpInitPad.length = round(AWGFreq*(maxBackwardShift + channelInfo[tmpChanName].channelShift))                    
+                tmpFinalPad.length = round(AWGFreq*(maxForwardShift - channelInfo[tmpChanName].channelShift))                     
+                hardwareLLs[tmpName][channelInfo[tmpChanName].channel].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary) > 0)
+                needZeroWF[tmpName][channelInfo[tmpChanName].channel] = False
                    
         #Fill out unused channels with zero WFs
         for instrument in channelInfo['AWGList']:
@@ -422,22 +427,24 @@ if __name__ == '__main__':
 #    q1 = channelInfo.channels['q1']
 #    q2 = channelInfo.channels['q2']
     
-
     #Create a qubit channel
-    q1 = ChannelInfo.QubitChannel(name='q1', physicalChannel=None, freq=None, piAmp=1.0, pi2Amp=0.5, pulseType='gauss', pulseLength=40e-9, bufferTime= 2e-9)
-    q2 = ChannelInfo.QubitChannel(name='q2', physicalChannel=None, freq=None, piAmp=1.0, pi2Amp=0.5, pulseType='gauss', pulseLength=80e-9, bufferTime= 2e-9)
+    q1 = ChannelInfo.QubitChannel(name='q1', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=40e-9, bufferTime= 2e-9, dragScaling=1)
+    q2 = ChannelInfo.QubitChannel(name='q2', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=80e-9, bufferTime= 2e-9, dragScaling=1)
+
+    measChannel = ChannelInfo.LogicalMarkerChannel(name='measChannel')
+    digitizerTrig = ChannelInfo.LogicalMarkerChannel(name='digitizerTrig')
 
     channelInfo = {}
     channelInfo['q1'] = ChannelInfo.QuadratureChannel(AWGName='TekAWG1', IChannel='ch1', QChannel='ch2', gateChannel='ch1m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
     channelInfo['q2'] = ChannelInfo.QuadratureChannel(AWGName='TekAWG1', IChannel='ch3', QChannel='ch4', gateChannel='ch2m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
+    channelInfo['measChannel'] = ChannelInfo.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch3m1' )
+    channelInfo['digitizerTrig'] = ChannelInfo.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch4m1', channelShift=-100e-9 )
 
     channelInfo['AWGList'] = ['TekAWG1']
     
-    
-
     #Define a typical sequence: say Pi Ramsey
     def single_ramsey_sequence(pulseSpacing):
-        tmpSeq = [q1.X90, q1.QId(pulseSpacing)+q2.X180, q1.X90]
+        tmpSeq = [q1.X90, q1.QId(pulseSpacing)+q2.X180, q1.X90, digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)]
         tmpSeq[1].alignment = 'centre'
         return tmpSeq
         
@@ -445,10 +452,15 @@ if __name__ == '__main__':
 #    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
 #    AWGWFs = logical2hardware([LLs], WFLibrary, channelInfo)
 
-    pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(0,2e-6,100)]
+    pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
     
     LLs, WFLibrary = compile_sequences(pulseSeqs)  
     
     AWGWFs = logical2hardware(LLs, WFLibrary, channelInfo)
     
+    
+    print('Writing Tek File...')
+    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
+    print('Done writing Tek File.')
+
     plot_pulse_seqs(AWGWFs)

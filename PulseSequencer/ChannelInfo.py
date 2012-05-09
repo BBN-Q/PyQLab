@@ -30,22 +30,23 @@ class AnalogChannel(object):
     '''
     An analog output channel.
     '''
-    def __init__(self, name=None, scale=0.0, offset=0.0, delay=0.0):
+    def __init__(self, name=None, offset=0.0, delay=0.0):
         self.channelType = ChannelTypes.amplitudeMod        
         self.name = name
-        self.scale = scale
         self.offset = offset
         self.delay = delay
         
-class MarkerChannel(object):
+class PhysicalMarkerChannel(object):
     '''
     An digital output channel.
     '''
-    def __init__(self, scale=0.0, name=None, delay=0.0):
+    def __init__(self, name=None, channelShift=0.0, AWGName=None, channel=None):
         self.channelType = ChannelTypes.marker
         self.name = name
-        self.scale = scale
-        self.delay = delay
+        self.channelShift = channelShift
+        self.AWGName = AWGName
+        self.channel = channel
+    
         
 class QuadratureChannel(object):
     '''
@@ -107,6 +108,20 @@ class PhysicalChannelView(QtGui.QWidget):
                 setattr(self.channel, key, float(tmpWidget.text()))
                 
                 
+class LogicalMarkerChannel(object):
+    '''
+    A class for digital channels for gating sources or triggering other things.
+    '''
+    def __init__(self,name=None):
+        self.name = name
+    
+    def gatePulse(self, length, delay=0):
+        tmpBlock = PulseSequencer.PulseBlock()
+        if delay>0:
+            tmpBlock.add_pulse(PatternGen.QId(delay), self)
+        tmpBlock.add_pulse(PatternGen.Square(length, amp=1), self)
+        return tmpBlock
+        
         
 class LogicalChannel(object):
     '''
@@ -120,74 +135,99 @@ class LogicalChannel(object):
         
 class QubitChannel(LogicalChannel):
     '''
-    An extension of a logical channel with some calibrations a default pulses
+    An extension of a logical channel with some calibrations and default pulses
     '''
-    def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0):
+    def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0, dragScaling=0):
         super(QubitChannel, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel, freq=freq)
         self.pulseType = pulseType
         self.pulseLength = pulseLength
         self.bufferTime = bufferTime
         self.piAmp = piAmp
         self.pi2Amp = pi2Amp
+        self.dragScaling = dragScaling
+
+
     '''
-    Setup the default pulse types
-    '''
+    Setup some common pulses.
+    '''    
+    
+    #A delay or do-nothing
     def QId(self, delay=0):
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(PatternGen.QId(delay), self)    
         return tmpBlock
+        
+    #A generic X rotation with a variable amplitude
+    def Xtheta(self, amp=0):
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
+
+    #A generic X rotation with a variable amplitude
+    def Ytheta(self, amp=0):
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0.25)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
+        
+
+    
+    '''
+    Setup the default 90/180 rotations
+    '''
     @property
     def X180(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, phase=0)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @property
     def X90(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, phase=0)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
     
     @property
     def Xm180(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, phase=0.5)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @property
     def Xm90(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, phase=0.5)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @property
     def Y180(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, phase=0.25)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @property
     def Y90(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, phase=0.25)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
        
     @property
     def Ym180(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, phase=0.75)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @property
     def Ym90(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, phase=0.75)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock

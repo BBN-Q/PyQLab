@@ -12,7 +12,7 @@ class Pulse(object):
     '''
     The basic pulse shape which will be inherited.
     '''
-    def __init__(self, time=None, bufferTime=None, amp=None, phase=None, isZero=None):
+    def __init__(self, time=None, bufferTime=None, amp=None, phase=None, isZero=None, **kwargs):
         self.time = time
         self.bufferTime = 0 if bufferTime is None else bufferTime
         self.amp = 0 if amp is None else amp
@@ -40,23 +40,23 @@ class Gaussian(Pulse):
     A simple gaussian shaped pulse. 
     cutoff is how many sigma the pulse goes out
     '''
-    def __init__(self, time=None, cutoff=2, bufferTime=None, amp=None, phase=None):
-        super(Gaussian, self).__init__(time, bufferTime, amp, phase)
+    def __init__(self, time=None, cutoff=2, **kwargs):
+        super(Gaussian, self).__init__(time, **kwargs)
         self.cutoff = cutoff
         
     def generateShape(self, AWGFreq):
         #Round to how many points we need
         numPts = np.round(self.time*AWGFreq)
         xPts = np.linspace(-self.cutoff, self.cutoff, numPts)
-        return np.exp(-0.5*xPts**2)
+        return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*(xPts[1]**2))
         
 class Square(Pulse):
     '''
     A simple rectangular shaped pulse. 
     cutoff is how many sigma the pulse goes out
     '''
-    def __init__(self, time=None):
-        super(Square, self).__init__(time)
+    def __init__(self, time=None, **kwargs):
+        super(Square, self).__init__(time, **kwargs)
                 
     def generateShape(self, AWGFreq):
         #Round to how many points we need
@@ -74,10 +74,29 @@ class QId(Pulse):
     def numPoints(self, AWGFreq):
         return round(self.time*AWGFreq)
     
+class DRAG(Pulse):
+    '''
+    A gaussian pulse with a drag correction on the quadrature channel.
+    '''
+    def __init__(self, time=None, dragScaling=0, cutoff=2, **kwargs):
+        super(DRAG, self).__init__(time, **kwargs)
+        self.cutoff=2
+        self.dragScaling = dragScaling
+        
+    def generateShape(self, AWGFreq):
+        #Create the gaussian along x and
+        numPts = np.round(self.time*AWGFreq)
+        xPts = np.linspace(-self.cutoff, self.cutoff, numPts)
+        IQuad = np.exp(-0.5*(xPts**2)) - np.exp(-0.5*(xPts[1]**2))
+        QQuad = self.dragScaling*xPts*IQuad
+        return IQuad+1j*QQuad
+        
+
+        
 '''
 Dictionary linking pulse names to functions.
 '''
-pulseDict = {'square':Square,'gauss':Gaussian}
+pulseDict = {'square':Square,'gauss':Gaussian,'drag':DRAG}
 
 
 
