@@ -417,8 +417,6 @@ def loadChannelInfo(dataFile, channel):
     pass
         
 
-    
-    
 if __name__ == '__main__':
     
 #    #Load the channel information from file
@@ -449,12 +447,12 @@ if __name__ == '__main__':
         tmpSeq[1].alignment = 'centre'
         return tmpSeq
         
+    pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
+
 #    pulseSeq = single_ramsey_sequence(100e-9)
 #    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
 #    AWGWFs = logical2hardware([LLs], WFLibrary, channelInfo)
 
-    pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
-    
     LLs, WFLibrary = compile_sequences(pulseSeqs)  
     
     AWGWFs = logical2hardware(LLs, WFLibrary, channelInfo)
