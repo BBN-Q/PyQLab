@@ -1,5 +1,5 @@
 '''
-ChannelInfo is where we store information for mapping virtual (qubit) channel to real channels.
+Channels is where we store information for mapping virtual (qubit) channel to real channels.
 
 Created on Jan 19, 2012
 
@@ -326,7 +326,7 @@ class ChannelInfoView(QtGui.QMainWindow):
 if __name__ == '__main__':
     channelInfo = {}
     channelInfo['Q1Chan'] = LogicalChannel(name='q1',channelType='quadratureMod', freq=4.258e9, physicalChannel='APS1-12')
-    channelInfo['APS1-12'] = PhysicalChannel(name='APS12', channelType='quadratureMod', carrierGen='labBrick1',IChannel='BBNAPS1',QChannel='BBNAPS2',markerChannel='TekAWGCh3M1')
+#    channelInfo['APS1-12'] = PhysicalChannel(name='APS12', channelType='quadratureMod', carrierGen='labBrick1',IChannel='BBNAPS1',QChannel='BBNAPS2',markerChannel='TekAWGCh3M1')
     
     saveChannelInfo(channelInfo, 'tmpFile.cfg')
     

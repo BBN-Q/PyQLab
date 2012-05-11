@@ -10,7 +10,7 @@ from copy import deepcopy
 
 import numpy as np
 
-import ChannelInfo
+import Channels
 
 AWGFreq = 1e9
 
@@ -248,7 +248,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             #Deal with the different channeltypes
             tmpChanType = channelInfo[tmpChanName].channelType
     
-            if tmpChanType == ChannelInfo.ChannelTypes.quadratureMod:
+            if tmpChanType == Channels.ChannelTypes.quadratureMod:
                 if channelInfo[tmpChanName].channelShift > 0:
                     maxForwardShift = max(maxForwardShift, channelInfo[tmpChanName].channelShift)
                 else:
@@ -258,7 +258,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 else:
                     maxBackwardShift = max(maxBackwardShift, -channelInfo[tmpChanName].gateChannelShift)
                 
-            elif tmpChanType == ChannelInfo.ChannelTypes.marker:
+            elif tmpChanType == Channels.ChannelTypes.marker:
                 if channelInfo[tmpChanName].channelShift > 0:
                     maxForwardShift = max(maxForwardShift, channelInfo[tmpChanName].channelShift)
                 else:
@@ -276,7 +276,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
     
             
             #Quadrature channels require two analog channels        
-            if tmpChanType == ChannelInfo.ChannelTypes.quadratureMod:
+            if tmpChanType == Channels.ChannelTypes.quadratureMod:
                 #Switch on the type of AWG
                 #TODO: deal with channel delays by inserting an additional zero element
                 if tmpName[:6] == 'TekAWG':
@@ -325,7 +325,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             
             #Marker channel require only a single channel
             #TODO: Deal with APS marker channels            
-            elif tmpChanType == ChannelInfo.ChannelTypes.marker:
+            elif tmpChanType == Channels.ChannelTypes.marker:
                 tmpInitPad = create_padding_LL()
                 tmpFinalPad = create_padding_LL()
                 tmpInitPad.length = round(AWGFreq*(maxBackwardShift + channelInfo[tmpChanName].channelShift))                    
@@ -413,10 +413,6 @@ def compile_sequences(pulseSeqs):
 
     return pulseSeqLLs, WFLibrary        
 
-def loadChannelInfo(dataFile, channel):
-    pass
-        
-
 if __name__ == '__main__':
     
 #    #Load the channel information from file
@@ -426,22 +422,22 @@ if __name__ == '__main__':
 #    q2 = channelInfo.channels['q2']
     
     #Create a qubit channel
-    q1 = ChannelInfo.QubitChannel(name='q1', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=40e-9, bufferTime= 2e-9, dragScaling=1)
-    q2 = ChannelInfo.QubitChannel(name='q2', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=80e-9, bufferTime= 2e-9, dragScaling=1)
+    q1 = Channels.QubitChannel(name='q1', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=40e-9, bufferTime= 2e-9, dragScaling=1)
+    q2 = Channels.QubitChannel(name='q2', piAmp=1.0, pi2Amp=0.5, pulseType='drag', pulseLength=80e-9, bufferTime= 2e-9, dragScaling=1)
 
-    measChannel = ChannelInfo.LogicalMarkerChannel(name='measChannel')
-    digitizerTrig = ChannelInfo.LogicalMarkerChannel(name='digitizerTrig')
+    measChannel = Channels.LogicalMarkerChannel(name='measChannel')
+    digitizerTrig = Channels.LogicalMarkerChannel(name='digitizerTrig')
 
     channelInfo = {}
-    channelInfo['q1'] = ChannelInfo.QuadratureChannel(AWGName='TekAWG1', IChannel='ch1', QChannel='ch2', gateChannel='ch1m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
-    channelInfo['q2'] = ChannelInfo.QuadratureChannel(AWGName='TekAWG1', IChannel='ch3', QChannel='ch4', gateChannel='ch2m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
-    channelInfo['measChannel'] = ChannelInfo.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch3m1' )
-    channelInfo['digitizerTrig'] = ChannelInfo.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch4m1', channelShift=-100e-9 )
+    channelInfo['q1'] = Channels.QuadratureChannel(AWGName='TekAWG1', IChannel='ch1', QChannel='ch2', gateChannel='ch1m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
+    channelInfo['q2'] = Channels.QuadratureChannel(AWGName='TekAWG1', IChannel='ch3', QChannel='ch4', gateChannel='ch2m1', channelShift=0e-9, gateBuffer=20e-9, gateMinWidth=100e-9)
+    channelInfo['measChannel'] = Channels.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch3m1' )
+    channelInfo['digitizerTrig'] = Channels.PhysicalMarkerChannel(AWGName='TekAWG1', channel='ch4m1', channelShift=-100e-9 )
 
     channelInfo['AWGList'] = ['TekAWG1']
     
     #Define a typical sequence: say Pi Ramsey
-    readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)
+    readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(13e-6)
     def single_ramsey_sequence(pulseSpacing):
         tmpSeq = [q1.X90(), q1.QId(pulseSpacing)+q2.X180(), q1.X90(), readoutBlock]
         tmpSeq[1].alignment = 'centre'
