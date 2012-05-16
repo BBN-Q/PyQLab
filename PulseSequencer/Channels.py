@@ -13,6 +13,8 @@ import json
 
 from PySide import QtGui
 
+from operator import itemgetter
+
 import PatternGen
 import PulseSequencer
 
@@ -46,13 +48,14 @@ class PhysicalMarkerChannel(object):
         self.channelShift = channelShift
         self.AWGName = AWGName
         self.channel = channel
+        self.correctionT = [[1,0],[0,1]]
     
         
 class QuadratureChannel(object):
     '''
     Something closer to the hardware. i.e. it is associated with AWG channels and generators.
     '''
-    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, channelShift=0.0, gateChannelShift=0.0):
+    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, channelShift=0.0, gateChannelShift=0.0, correctionT = None):
         self.name = name
         self.channelType = ChannelTypes.quadratureMod
         self.AWGName = AWGName
@@ -64,50 +67,8 @@ class QuadratureChannel(object):
         self.gateMinWidth = gateMinWidth
         self.channelShift = channelShift
         self.gateChannelShift = gateChannelShift
+        self.correctionT = [[1,0],[0,1]] if correctionT is None else correctionT
         
-class PhysicalChannelView(QtGui.QWidget):
-    def __init__(self, channel):
-        super(PhysicalChannelView, self).__init__()
-        self.channel = channel
-        
-        skipFields = ['__class__']
-        #Create the layout as a vbox of hboxes
-        vbox = QtGui.QVBoxLayout()
-        self.GUIhandles = {}
-        for key,value in self.channel.__dict__.items():
-            if key not in skipFields:
-                tmpHBox = QtGui.QHBoxLayout()
-                tmpHBox.addStretch(1)
-                tmpHBox.addWidget(QtGui.QLabel(key))
-                if key == 'channelType':
-                    tmpWidget = QtGui.QComboBox()
-                    tmpWidget.addItems(['direct', 'digital', 'amplitudeMod', 'quadratureMod'])
-                    tmpWidget.setCurrentIndex(getattr(ChannelTypes, value))
-                    tmpHBox.addWidget(tmpWidget)
-                elif isinstance(value, basestring):
-                    tmpWidget = QtGui.QLineEdit(value)
-                    tmpHBox.addWidget(tmpWidget)
-                else:
-                    tmpWidget = QtGui.QLineEdit(str(value))
-                    tmpWidget.setValidator(QtGui.QDoubleValidator())
-                    tmpHBox.addWidget(tmpWidget)
-                vbox.addLayout(tmpHBox)
-                self.GUIhandles[key] = tmpWidget
-        self.setLayout(vbox)
-            
-    def updateFromGUI(self):
-        '''
-        Update the channel object with the current values
-        '''
-        for key,tmpWidget in self.GUIhandles.items():
-            if key == 'channelType':
-                setattr(self.channel, key, tmpWidget.currentText())
-            elif isinstance(getattr(self.channel, key), basestring):
-                setattr(self.channel, key, tmpWidget.text())
-            else:
-                setattr(self.channel, key, float(tmpWidget.text()))
-                
-                
 class LogicalMarkerChannel(object):
     '''
     A class for digital channels for gating sources or triggering other things.
@@ -194,14 +155,10 @@ class QubitChannel(LogicalChannel):
         
     @cachedPulse
     def X90(self):
-        if 'X90' in self.pulseCache:
-            return self.pulseCache['X90']
-        else:
-            tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
-            tmpBlock = PulseSequencer.PulseBlock()
-            tmpBlock.add_pulse(tmpPulse, self)
-            self.pulseCache['X90'] = tmpBlock
-            return tmpBlock
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
     
     @cachedPulse
     def Xm180(self):
@@ -246,69 +203,61 @@ class QubitChannel(LogicalChannel):
         return tmpBlock
         
         
-def saveChannelInfo(channelInfo, fileName=None):
+def save_channel_info(channelDict, fileName=None):
     '''
     Helper function to save a channelInfo dictionary to a JSON file or string.
     '''
     #Convert the channel into a dictionary
-    tmpDict = {}
-    for tmpChanName, tmpChan in channelInfo.items():
-        tmpDict[tmpChanName] =  tmpChan.__dict__
-        tmpDict[tmpChanName]['__class__'] = tmpChan.__class__.__name__
-        
     if fileName is None:
-        return json.dumps(tmpDict, sort_keys=True, indent=2)
+        return json.dumps(channelDict, sort_keys=True, indent=2)
     else:
         with open(fileName,'w') as FID:
-            json.dump(tmpDict, FID, sort_keys=True, indent=2)
+            json.dump(channelDict, FID, sort_keys=True, indent=2)
     
-def loadChannelInfo(fileName=None):
+def load_channel_info(fileName=None):
     '''
     Helper function to convert back from a JSON file to a channel object
     
     '''
-    import sys
-    curModule = sys.modules[__name__]
     with open(fileName,'r') as FID:
-        tmpDict = json.load(FID)
-        channelDict = {}
-     
-        for tmpChan in tmpDict.keys():
-            channelClass = tmpDict[tmpChan].pop('__class__')
-            tmpClass = getattr(curModule, channelClass)
-            #Have to convert from unicode json returns
-            args = dict( (key.encode('ascii'), value) for key, value in tmpDict[tmpChan].items())
-            channelDict[tmpChan.encode('ascii')] = tmpClass(**args)
-        
-        return channelDict
-        
+        return json.load(FID)
 
 class ChannelInfoView(QtGui.QMainWindow):
     def __init__(self, fileName):
         super(ChannelInfoView, self).__init__()
         
         #Load the channel information from the file
-        self.channelDict = loadChannelInfo(fileName)
+        self.channelDict = load_channel_info(fileName)
         
         #Create an item view for the channels
-        self.channelListModel = QtGui.QStringListModel(self.channelDict.keys())
+        self.channelListModel = QtGui.QStringListModel(sorted(self.channelDict.keys()))
         self.channelListView = QtGui.QListView()
         self.channelListView.setModel(self.channelListModel)
         
         #Connect 
         self.channelListView.clicked.connect(self.updateChannelView)
         
+        tmpWidget = QtGui.QWidget()
+        vBox = QtGui.QVBoxLayout(tmpWidget)
+        vBox.addWidget(self.channelListView)
+        hBox = QtGui.QHBoxLayout()
+        hBox.addWidget(QtGui.QPushButton('Add'))
+        hBox.addWidget(QtGui.QPushButton('Delete'))
+        hBox.addStretch(1)
+        vBox.addLayout(hBox)                
         self.hsplitter = QtGui.QSplitter()
-        self.hsplitter.addWidget(self.channelListView)
-#        self.hsplitter.addWidget(QtGui.QPushButton('Hello'))
+        self.hsplitter.addWidget(tmpWidget)
         self.channelWidgets = {}
         for tmpChanName, tmpChan in self.channelDict.items():
-            self.channelWidgets[tmpChanName] = PhysicalChannelView(tmpChan)
+            self.channelWidgets[tmpChanName] = ChannelView(tmpChan)
             self.hsplitter.addWidget(self.channelWidgets[tmpChanName])
             self.channelWidgets[tmpChanName].hide()
         
         self.setCentralWidget(self.hsplitter)
         self.updateChannelView()
+        
+        self.setGeometry(300,300,600,300)
+        self.show()
         
         
     def updateChannelView(self):
@@ -319,26 +268,72 @@ class ChannelInfoView(QtGui.QMainWindow):
         self.channelWidgets[tmpChan].show()
         
         
+class ChannelView(QtGui.QWidget):
+    def __init__(self, channel):
+        super(ChannelView, self).__init__()
+        self.channel = channel
         
+        #Setup a dictionary showing which fields to show and which to hide
+#        self.showFields = {}
+#        self.showFields['direct'] =         
+        
+        skipFields = ['channelType', 'name']
+        #Create the layout as a vbox of hboxes
+        form = QtGui.QFormLayout()
+        self.GUIhandles = {}
+        #Do the channelType on top
+        self.GUIhandles['channelType'] = QtGui.QComboBox()
+        self.GUIhandles['channelType'].addItems(['direct', 'marker', 'amplitudeMod', 'quadratureMod'])
+        self.GUIhandles['channelType'].setCurrentIndex(getattr(ChannelTypes, channel['channelType']))
+        form.addRow('channelType', self.GUIhandles['channelType'])
+        
+        for key,value in sorted(channel.items(), key=itemgetter(0)):
+            if key not in skipFields:
+                if isinstance(value, basestring):
+                    tmpWidget = QtGui.QLineEdit(value)
+                else:
+                    tmpWidget = QtGui.QLineEdit(str(value))
+                    tmpWidget.setValidator(QtGui.QDoubleValidator())
+                form.addRow(key, tmpWidget)
+                self.GUIhandles[key] = tmpWidget
+        self.setLayout(form)
+            
+    def updateFromGUI(self):
+        '''
+        Update the channel object with the current values
+        '''
+        for key,tmpWidget in self.GUIhandles.items():
+            if key == 'channelType':
+                setattr(self.channel, key, tmpWidget.currentText())
+            elif isinstance(getattr(self.channel, key), basestring):
+                setattr(self.channel, key, tmpWidget.text())
+            else:
+                setattr(self.channel, key, float(tmpWidget.text()))
+
     
     
 
 if __name__ == '__main__':
-    channelInfo = {}
-    channelInfo['Q1Chan'] = LogicalChannel(name='q1',channelType='quadratureMod', freq=4.258e9, physicalChannel='APS1-12')
-#    channelInfo['APS1-12'] = PhysicalChannel(name='APS12', channelType='quadratureMod', carrierGen='labBrick1',IChannel='BBNAPS1',QChannel='BBNAPS2',markerChannel='TekAWGCh3M1')
+    channelDict = {}
+    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'gateChannel':'ch1m1', 'channelShift':0e-9, 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9}
+    channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'gateChannel':'ch1m1', 'channelShift':0e-9, 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9}
+
+    channelDict['measChannel'] = {'name':'measChannel', 'channelType':'marker', 'AWGName':'TekAWG1', 'channel':'ch3m1' }
+    channelDict['digitizerTrig'] = {'name':'digitizerTrig','channelType':'marker', 'AWGName':'TekAWG1', 'channel':'ch3m1', 'channelShift':-100e-9 }
+
     
-    saveChannelInfo(channelInfo, 'tmpFile.cfg')
+    save_channel_info(channelDict, 'ChannelParams.json')
     
-    channelInfoBack = loadChannelInfo('tmpFile.cfg')
+    
+        
+    channelInfoBack = load_channel_info('ChannelParams.json')
     
     app = QtGui.QApplication(sys.argv)
 
 #    silly = PhysicalChannelView(channelInfo['APS1-12'])
 #    silly.show()
 
-    silly = ChannelInfoView('tmpFile.cfg')
-    silly.show()
+    silly = ChannelInfoView('ChannelParams.json')
     
     sys.exit(app.exec_())
 

@@ -48,7 +48,8 @@ class Gaussian(Pulse):
         #Round to how many points we need
         numPts = np.round(self.time*AWGFreq)
         xPts = np.linspace(-self.cutoff, self.cutoff, numPts)
-        return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*(xPts[1]**2))
+        xStep = xPts[1] - xPts[0]
+        return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[-1]+xStep)**2))
         
 class Square(Pulse):
     '''
@@ -87,7 +88,8 @@ class DRAG(Pulse):
         #Create the gaussian along x and
         numPts = np.round(self.time*AWGFreq)
         xPts = np.linspace(-self.cutoff, self.cutoff, numPts)
-        IQuad = np.exp(-0.5*(xPts**2)) - np.exp(-0.5*(xPts[1]**2))
+        xStep = xPts[1] - xPts[0]
+        IQuad = np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[0]-xStep)**2))
         QQuad = self.dragScaling*xPts*IQuad
         return IQuad+1j*QQuad
         
