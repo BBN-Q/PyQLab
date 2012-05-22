@@ -18,6 +18,8 @@ from operator import itemgetter
 import PatternGen
 import PulseSequencer
 
+from math import tan,cos,pi
+
 class ChannelTypes(object):
     '''
     Enumerate the possible types:
@@ -78,18 +80,19 @@ class QuadratureChannel(PhysicalChannel):
     '''
     Something used to implement a standard qubit channel with two analog channels and a microwave gating channel.
     '''
-    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, channelShift=0.0, gateChannelShift=0.0, correctionT = None, **kwargs):
+    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, channelShift=0.0, ampFactor=1.0, phaseSkew=0.0, **kwargs):
         super(QuadratureChannel, self).__init__(name=name, AWGName=AWGName, channelType=ChannelTypes.quadratureMod)
         self.carrierGen = carrierGen
         self.IChannel = IChannel
         self.QChannel = QChannel
-        self.gateChannel = gateChannel
-        self.gateBuffer = gateBuffer
-        self.gateMinWidth = gateMinWidth
         self.channelShift = channelShift
-        self.gateChannelShift = gateChannelShift
-        self.correctionT = [[1,0],[0,1]] if correctionT is None else correctionT
-        
+        self.ampFactor = ampFactor
+        self.phaseSkew = phaseSkew
+
+    @property
+    def correctionT(self):
+        return [[self.ampFactor, self.ampFactor*tan(self.phaseSkew*pi/180)], [0, 1/cos(self.phaseSkew*pi/180)]]
+                
 class LogicalMarkerChannel(LogicalChannel):
     '''
     A class for digital channels for gating sources or triggering other things.
@@ -212,6 +215,18 @@ class QubitChannel(LogicalChannel):
         return tmpBlock
         
         
+class Generator(object):
+    '''
+    Although not quite a channel, it is tightly linked to channels.
+    '''
+    def __init__(self, name=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, gateChannelShift=0.0):
+        self.name = name
+        self.gateChannel = gateChannel
+        self.gateBuffer = gateBuffer
+        self.gateMinWidth = gateMinWidth
+        self.gateChannelShift = gateChannelShift
+        
+        
 def save_channel_info(channelDict, fileName=None):
     '''
     Helper function to save a channelInfo dictionary to a JSON file or string.
@@ -267,6 +282,7 @@ class ChannelInfoView(QtGui.QMainWindow):
         super(ChannelInfoView, self).__init__()
         
         #Load the channel information from the file
+        self.fileName = fileName
         self.channelDict = load_channel_dict(fileName)
         
         #Create an item view for the logical channels
@@ -274,34 +290,30 @@ class ChannelInfoView(QtGui.QMainWindow):
         self.logicalChannelListModel.sort(0)
         self.logicalChannelListView = QtGui.QListView()
         self.logicalChannelListView.setModel(self.logicalChannelListModel)
-        self.logicalChannelListView.clicked.connect(self.update_channelView_logical)
+        self.logicalChannelListView.clicked.connect(lambda(idx): self.update_channelView(idx, self.logicalChannelListModel))
         
         #Create an item view for the physical channels
         self.physicalChannelListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if channelDict[tmpKey]['isPhysical']])
         self.physicalChannelListModel.sort(0)
         self.physicalChannelListView = QtGui.QListView()
         self.physicalChannelListView.setModel(self.physicalChannelListModel)
-        self.physicalChannelListView.clicked.connect(self.update_channelView_physical)
+        self.physicalChannelListView.clicked.connect(lambda(idx): self.update_channelView(idx, self.physicalChannelListModel))
+
+        #Create an item view for the physical channels
+        self.generatorListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if channelDict[tmpKey]['isGenerator']])
+        self.generatorListModel.sort(0)
+        self.generatorListView = QtGui.QListView()
+        self.generatorListView.setModel(self.generatorListModel)
+        self.generatorListView.clicked.connect(lambda(idx): self.update_channelView(idx, self.generatorListModel))
 
         tmpWidget = QtGui.QWidget()
         vBox = QtGui.QVBoxLayout(tmpWidget)
         
-        tmpWidget2 = QtGui.QWidget()
-        vBox2 = QtGui.QVBoxLayout(tmpWidget2)
-        vBox2.addWidget(QtGui.QLabel('Logical Channels:'))
-        vBox2.addWidget(self.logicalChannelListView)     
-
-        tmpWidget3 = QtGui.QWidget()
-        vBox3 = QtGui.QVBoxLayout(tmpWidget3)
-        vBox3.addWidget(QtGui.QLabel('Physical Channels:'))
-        vBox3.addWidget(self.physicalChannelListView)     
-
-
-        vSplitter = QtGui.QSplitter()
-        vSplitter.setOrientation(QtCore.Qt.Vertical)
-        vSplitter.addWidget(tmpWidget2)        
-        vSplitter.addWidget(tmpWidget3)        
-        vBox.addWidget(vSplitter)
+        self.tabWidget = QtGui.QTabWidget()
+        self.tabWidget.addTab(self.logicalChannelListView, 'Logical')        
+        self.tabWidget.addTab(self.physicalChannelListView, 'Physical')        
+        self.tabWidget.addTab(self.generatorListView, 'Generators')        
+        vBox.addWidget(self.tabWidget)
 
         #Add the buttons for adding/deleting channels
         hBox = QtGui.QHBoxLayout()
@@ -320,39 +332,70 @@ class ChannelInfoView(QtGui.QMainWindow):
             self.channelWidgets[tmpChanName].hide()
         
         self.setCentralWidget(hSplitter)
+
+        #Setup the toolbar buttons for loading and saving files
+        loadAction = QtGui.QAction('Load', self)
+        loadAction.setShortcut('Ctrl+L')
+        loadAction.setStatusTip('Load parameter file')
+#        loadAction.triggered.connect(self.close)
+        
+        saveAction = QtGui.QAction('Save',self)
+        saveAction.setShortcut('Ctrl+S')
+        saveAction.setStatusTip('Save parameter file')
+        saveAction.triggered.connect(self.save_to_file)
+        
+        saveAsAction = QtGui.QAction('Save As',self)
+        saveAsAction.setStatusTip('Save parameter file to new file')
+#        saveAction.triggered.connect(self.compile_sequence)
+
+
+        exitAction = QtGui.QAction('Exit', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application')
+        exitAction.triggered.connect(self.close)
+        
+        #Setup the menus
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(exitAction)
+        
+        #Setup the toolbar
+        self.toolbar = self.addToolBar('Exit')
+        self.toolbar.addAction(saveAction)
+        self.toolbar.addAction(saveAsAction)
+        self.toolbar.addAction(loadAction)
+        self.toolbar.addAction(exitAction)
+
+        self.statusBar()
         
         self.setGeometry(300,300,550,300)
         self.setWindowTitle('Channel Info.')
         self.show()
         
-        
-    def update_channelView_logical(self, index):
+
+    def update_channelView(self, index, model):
         for tmpWidget in self.channelWidgets.values():
             tmpWidget.hide()
         
-        tmpChan = self.logicalChannelListModel.data(index, QtCore.Qt.DisplayRole)
+        tmpChan = model.data(index, QtCore.Qt.DisplayRole)
         self.channelWidgets[tmpChan].show()
-        self.physicalChannelListView.clearSelection()
+        for tabct in range(3):
+            if tabct != self.tabWidget.currentIndex():
+                self.tabWidget.widget(tabct).clearSelection()
         
-    def update_channelView_physical(self, index):
-        for tmpWidget in self.channelWidgets.values():
-            tmpWidget.hide()
-        
-        tmpChan = self.physicalChannelListModel.data(index, QtCore.Qt.DisplayRole)
-        self.channelWidgets[tmpChan].show()
-        self.logicalChannelListView.clearSelection()
-        
-        
+    def save_to_file(self):
+        #Update the dictionary from the GUI fields
+        for tmpChanName, tmpChan in self.channelDict.items():
+            self.channelWidgets[tmpChanName].update_from_view()
+        save_channel_info(self.channelDict, self.fileName)       
+
 class ChannelView(QtGui.QWidget):
     def __init__(self, channel):
         super(ChannelView, self).__init__()
         self.channel = channel
         
-        #Setup a dictionary showing which fields to show and which to hide
-#        self.showFields = {}
-#        self.showFields['direct'] =         
-        
-        skipFields = ['channelType', 'name', 'isLogical', 'isPhysical']
+        skipFields = ['channelType', 'name', 'isLogical', 'isPhysical', 'isGenerator', 'correctionT']
+
         #Create the layout as a vbox of hboxes
         form = QtGui.QFormLayout()
         self.GUIhandles = {}
@@ -370,33 +413,42 @@ class ChannelView(QtGui.QWidget):
                 self.GUIhandles[key] = tmpWidget
         self.setLayout(form)
             
-    def updateFromGUI(self):
+    def update_from_view(self):
         '''
-        Update the channel object with the current values
+        Update the channel dictionary with the current values entered
         '''
         for key,tmpWidget in self.GUIhandles.items():
-            if key == 'channelType':
-                setattr(self.channel, key, tmpWidget.currentText())
-            elif isinstance(getattr(self.channel, key), basestring):
-                setattr(self.channel, key, tmpWidget.text())
+            if isinstance(self.channel[key], basestring):
+                self.channel[key] = tmpWidget.text()
             else:
-                setattr(self.channel, key, float(tmpWidget.text()))
+                self.channel[key] = float(tmpWidget.text())
 
+        #Calculate the correction T if necessary
+        if self.channel['channelType'] == 'quadratureMod' and self.channel['isPhysical']:
+            self.channel['correctionT'] = [[self.channel['ampFactor'], self.channel['ampFactor']*tan(self.channel['phaseSkew']*pi/180)], [0, 1/cos(self.channel['phaseSkew']*pi/180)]]
     
     
 
 if __name__ == '__main__':
     channelDict = {}
-    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG1-12'}
-    channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG1-34'}
+    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG1-12'}
+    channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG1-34'}
 
-    channelDict['measChannel'] = {'name':'measChannel', 'channelType':'marker', 'isLogical':True, 'isPhysical':False, 'physicalChannel':'TekAWG1-ch3m1' }
-    channelDict['digitizerTrig'] = {'name':'digitizerTrig','channelType':'marker', 'isLogical':True, 'isPhysical':False, 'physicalChannel':'TekAWG1-ch3m2'}
+    channelDict['measChannel'] = {'name':'measChannel', 'channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m1' }
+    channelDict['digitizerTrig'] = {'name':'digitizerTrig','channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m2'}
 
-    channelDict['TekAWG1-12'] = {'name':'TekAWG1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'gateChannel':'ch1m1', 'channelShift':0e-9, 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'correctionT':[[1,0],[0,1]]}
-    channelDict['TekAWG1-34'] = {'name':'TekAWG1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'AWGName':'TekAWG1', 'IChannel':'ch3', 'QChannel':'ch4', 'gateChannel':'ch4m1', 'channelShift':0e-9, 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'correctionT':[[1,0],[0,1]]}
-    channelDict['TekAWG1-ch3m1'] = {'name':'TekAWG1-ch3m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'AWGName':'TekAWG1', 'channel':'ch3m1', 'channelShift':0e-9 }    
-    channelDict['TekAWG1-ch3m2'] = {'name':'TekAWG1-ch3m2', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'AWGName':'TekAWG1', 'channel':'ch3m2', 'channelShift':0e-9 }
+    channelDict['TekAWG1-12'] = {'name':'TekAWG1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
+    channelDict['TekAWG1-34'] = {'name':'TekAWG1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
+    channelDict['TekAWG1-ch1m1'] = {'name':'TekAWG1-ch1m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch1m1', 'channelShift':0e-9 }    
+    channelDict['TekAWG1-ch2m1'] = {'name':'TekAWG1-ch2m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch2m1', 'channelShift':0e-9 }
+    channelDict['TekAWG1-ch3m1'] = {'name':'TekAWG1-ch3m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch3m1', 'channelShift':0e-9 }    
+    channelDict['TekAWG1-ch3m2'] = {'name':'TekAWG1-ch3m2', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch3m2', 'channelShift':0e-9 }
+    channelDict['BBNAPS1-12'] = {'name':'BBNAPS1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
+    channelDict['BBNAPS1-34'] = {'name':'BBNAPS1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
+
+    channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateChannelShift':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
+    channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
+  
     
     save_channel_info(channelDict, 'ChannelParams.json')
     

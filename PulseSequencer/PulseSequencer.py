@@ -16,7 +16,7 @@ AWGFreq = 1e9
 
 from TekPattern import write_Tek_file
 
-from PulseSequencePlotter import plot_pulse_seqs
+import PulseSequencePlotter
 
 
 
@@ -194,12 +194,16 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             hardwareLLs[instrument] = {}
             hardwareLLs[instrument]['ch1'] = {}
             hardwareLLs[instrument]['ch1']['LLs'] = []
+            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
             hardwareLLs[instrument]['ch2'] = {}
             hardwareLLs[instrument]['ch2']['LLs'] = []
+            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
             hardwareLLs[instrument]['ch3'] = {}
             hardwareLLs[instrument]['ch3']['LLs'] = []
+            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
             hardwareLLs[instrument]['ch4'] = {}
             hardwareLLs[instrument]['ch4']['LLs'] = []
+            hardwareLLs[instrument]['ch4']['WFLibrary'] = None
             
         else:
             raise NameError('Unknown instrument type.')
@@ -240,23 +244,26 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
         maxForwardShift = 0
         maxBackwardShift = 0
         
-        #Sort out the delay buffering
         for tmpChanName in logicalLLs.keys():
             #Deal with the different channeltypes
             tmpChanType = channelInfo[tmpChanName]['channelType']
             tmpPhysChan = channelInfo[channelInfo[tmpChanName]['physicalChannel']]
     
-            if tmpChanType == Channels.ChannelTypes.quadratureMod:
+            if tmpChanType == 'quadratureMod':
+                tmpCarrier = channelInfo[tmpPhysChan['carrierGen']]
+                tmpGateChannel = channelInfo[tmpCarrier['gateChannel']]
+                
                 if tmpPhysChan['channelShift'] > 0:
                     maxForwardShift = max(maxForwardShift, tmpPhysChan['channelShift'])
                 else:
                     maxBackwardShift = max(maxBackwardShift, -tmpPhysChan['channelShift'])
-                if tmpPhysChan['gateChannelShift'] > 0:
-                    maxForwardShift = max(maxForwardShift, tmpPhysChan['gateChannelShift'])
+                tmpShift = tmpCarrier['gateChannelShift'] + tmpGateChannel['channelShift']
+                if tmpShift > 0:
+                    maxForwardShift = max(maxForwardShift, tmpShift)
                 else:
-                    maxBackwardShift = max(maxBackwardShift, -tmpPhysChan['gateChannelShift'])
+                    maxBackwardShift = max(maxBackwardShift, -tmpShift)
                 
-            elif tmpChanType == Channels.ChannelTypes.marker:
+            elif tmpChanType == 'marker':
                 if tmpPhysChan['channelShift'] > 0:
                     maxForwardShift = max(maxForwardShift, tmpPhysChan['channelShift'])
                 else:
@@ -273,11 +280,11 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             tmpPhysChan = channelInfo[channelInfo[tmpChanName]['physicalChannel']]
             tmpAWGName = tmpPhysChan['AWGName']
 
-            
             #Quadrature channels require two analog channels        
             if tmpChanType == 'quadratureMod':
                 #Switch on the type of AWG
-                #TODO: deal with channel delays by inserting an additional zero element
+                tmpCarrier = channelInfo[tmpPhysChan['carrierGen']]
+                tmpGateChannel = channelInfo[tmpCarrier['gateChannel']]
                 if tmpAWGName[:6] == 'TekAWG':
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
@@ -291,28 +298,14 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], QWFLibrary[tmpChanName]))
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
 
-                    #Gate channel
-                    tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['gateChannelShift']))                    
-                    tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpPhysChan['gateChannelShift']))                     
-                    hardwareLLs[tmpAWGName][tmpPhysChan['gateChannel']].append(create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpPhysChan['gateBuffer'], tmpPhysChan['gateMinWidth']))                                            
-                    needZeroWF[tmpAWGName][tmpPhysChan['gateChannel']] = False
-                    
-                    seqLength[tmpAWGName] = hardwareLLs[tmpAWGName][tmpPhysChan['gateChannel']][-1].size
-                        
                 elif tmpAWGName[:6] == 'BBNAPS':
-                    paddedLLs = []
+                    print('Got here')
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
                     tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
                     tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
-                    paddedLLs.append(tmpInitPad+tmpLLSeq+tmpFinalPad)
+                    paddedLLs = [tmpInitPad]+tmpLLSeq+[tmpFinalPad] 
 
-                    #TODO: Deal with APS marker channels
-                    tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['gateChannelShift']))                    
-                    tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpPhysChan['gateChannelShift']))                     
-                    hardwareLLs[tmpAWGName][tmpPhysChan['gateChannel']].append(create_Tek_gate_seq(tmpInitPad + tmpLLSeq + tmpFinalPad, AWFLibrary[tmpChanName], tmpPhysChan['gateBuffer'], tmpPhysChan['gateMinWidth']))                                            
-                    needZeroWF[tmpAWGName][tmpPhysChan['gateChannel']] = False
-                       
                     hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']]['LLs'].append(paddedLLs)
                     hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']]['WFLibrary'] = IWFLibrary[tmpChanName]
                     needZeroWF[tmpAWGName][tmpPhysChan['IChannel']] = False
@@ -320,6 +313,19 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']]['LLs'].append(paddedLLs)
                     hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']]['WFLibrary'] = QWFLibrary[tmpChanName]
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
+                    
+                else:
+                    raise NameError('Unknown AWG Type: we currently only handle TekAWG and BBNAPS.')
+
+                #Gate channel
+                #TODO: Deal with APS marker channels
+                tmpShift = tmpCarrier['gateChannelShift'] + tmpGateChannel['channelShift']
+                tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpShift))                    
+                tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpShift))                     
+                hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']].append(create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))                                            
+                needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
+                seqLength[tmpGateChannel['AWGName']] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
+
                     
             
             #Marker channel require only a single channel
@@ -333,6 +339,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 needZeroWF[tmpAWGName][tmpPhysChan['channel']] = False
                    
         #Fill out unused channels with zero WFs
+
         for instrument in channelInfo['AWGList']:
             if instrument[:6] == 'TekAWG':
                 for tmpChanName in hardwareLLs[instrument].keys():
@@ -382,20 +389,21 @@ def create_Tek_gate_seq(LL, WFLibrary, gateBuffer, gateMinWidth):
     return gateSeq            
                 
                     
-def LL2sequence(LL, WFLibrary):
+def LL2sequence(miniLL, WFLibrary):
     '''
     Helper function for converting a LL to a single sequence array for plotting or Tektronix purposes.
     '''
     #Count up how much space we need
     numPts = 0
-    for tmpLLElement in LL:
+    for tmpLLElement in miniLL:
         numPts += tmpLLElement.length*tmpLLElement.repeat
     
     #Allocate the array
-    outSeq = np.zeros(numPts,dtype=WFLibrary.values()[0].dtype)
+    tmpDtype = np.double if WFLibrary is None else WFLibrary.values()[0].dtype    
+    outSeq = np.zeros(numPts,dtype=tmpDtype)
     
     idx = 0
-    for tmpLLElement in LL:
+    for tmpLLElement in miniLL:
         if tmpLLElement.isZero:
             pass
         elif tmpLLElement.isTimeAmplitude:
@@ -423,7 +431,7 @@ if __name__ == '__main__':
     digitizerTrig = channelObjs['digitizerTrig']
     measChannel = channelObjs['measChannel']
     
-    channelDicts['AWGList'] = ['TekAWG1']
+    channelDicts['AWGList'] = ['TekAWG1', 'BBNAPS1']
     
     #Define a typical sequence: say Pi Ramsey
     readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)
@@ -443,8 +451,8 @@ if __name__ == '__main__':
     AWGWFs = logical2hardware(LLs, WFLibrary, channelDicts)
     
     
-    print('Writing Tek File...')
-    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
-    print('Done writing Tek File.')
-
-    plot_pulse_seqs(AWGWFs)
+#    print('Writing Tek File...')
+#    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
+#    print('Done writing Tek File.')
+#
+    PulseSequencePlotter.plot_pulse_seqs(AWGWFs)

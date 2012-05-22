@@ -22,6 +22,7 @@ from matplotlib.figure import Figure
 
 from PyQt4 import QtCore, QtGui
 
+import PulseSequencer
 
 class PulseSeqPlotWindow(QtGui.QWidget):
     
@@ -30,13 +31,27 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         
         self.AWGWFs = AWGWFs
         
-        numSeqs = len(self.AWGWFs.values()[0].values()[0])
- 
+        if AWGWFs.keys()[0][:6] == 'TekAWG':
+            numSeqs = len(AWGWFs.values()[0].values()[0])
+        elif AWGWFs.keys()[0][:6] == 'BBNAPS':
+            numSeqs = len(AWGWFs[AWGWFs.keys()[0]]['ch1']['LLs'])
+        else:
+            raise NameError('Unknown AWG Type: we currently only handle TekAWG and BBNAPS.')
+            
+        #Convert the BBNAPS LLs into pulse sequence waveforms
+        for tmpAWGName, tmpAWG in AWGWFs.items():
+            if tmpAWGName[:6] == 'BBNAPS':
+                tmpWFs = {}
+                for chanStr in tmpAWG.keys():
+                    tmpWFs[chanStr] = []
+                    for miniLL in tmpAWG[chanStr]['LLs']:
+                        tmpWFs[chanStr].append(PulseSequencer.LL2sequence(miniLL, tmpAWG[chanStr]['WFLibrary']))
+                AWGWFs[tmpAWGName] = tmpWFs
+                        
         #Create the GUI
         self.resize(1000,700)
         self.center()
         self.setWindowTitle('Pulse Sequence Plotter')
-        
         
         # generate the plot
         self.fig = Figure(figsize=(12,6), dpi=72)
@@ -66,7 +81,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         plotCheckBoxes.setMinimumWidth(150)
         plotCheckBoxes.setHeaderLabel('Channel Plot')
         plotCheckBoxes.itemClicked.connect(self.update_plot)
-        for tmpAWGName, tmpAWG in AWGWFs.iteritems():
+        for tmpAWGName, tmpAWG in AWGWFs.items():
             tmpItem = QtGui.QTreeWidgetItem([tmpAWGName])
             for tmpChannelName in sorted(tmpAWG.keys()):
                 tmpChildItem = QtGui.QTreeWidgetItem([tmpChannelName])
