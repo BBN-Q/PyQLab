@@ -175,10 +175,16 @@ def compile_sequence(pulseSeq, WFLibrary = {}, AWGFreq = 1.2e9):
 
 def TekChannels():
     '''
-    The set of channels for a Tektronix AWG
+    The set of empty channels for a Tektronix AWG
     '''
     return {'ch1':[], 'ch2':[], 'ch3':[], 'ch4':[], 'ch1m1':[], 'ch1m2':[], 'ch2m1':[], 'ch2m2':[], 'ch3m1':[], 'ch3m2':[] , 'ch4m1':[], 'ch4m2':[]}
 
+def APSChannels():
+    '''
+    The set of empty channels for a BBN APS.
+    '''
+    return {chanStr:{'LLs':[], 'WFLibrary':None} for chanStr in  ['ch1','ch2','ch3','ch4']}
+        
 def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
 
     '''
@@ -191,19 +197,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
             hardwareLLs[instrument] = TekChannels()
             
         elif instrument[:6] == 'BBNAPS':
-            hardwareLLs[instrument] = {}
-            hardwareLLs[instrument]['ch1'] = {}
-            hardwareLLs[instrument]['ch1']['LLs'] = []
-            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
-            hardwareLLs[instrument]['ch2'] = {}
-            hardwareLLs[instrument]['ch2']['LLs'] = []
-            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
-            hardwareLLs[instrument]['ch3'] = {}
-            hardwareLLs[instrument]['ch3']['LLs'] = []
-            hardwareLLs[instrument]['ch1']['WFLibrary'] = None
-            hardwareLLs[instrument]['ch4'] = {}
-            hardwareLLs[instrument]['ch4']['LLs'] = []
-            hardwareLLs[instrument]['ch4']['WFLibrary'] = None
+            hardwareLLs[instrument] = APSChannels()
             
         else:
             raise NameError('Unknown instrument type.')
@@ -350,7 +344,9 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 #Create a minimial mini LL
                 zeroLL = create_padding_LL()
                 zeroLL.length = 16
-                hardwareLLs[instrument][tmpChanName]['LLs'].append([zeroLL, zeroLL, zeroLL])
+                for tmpChanName in hardwareLLs[instrument].keys():
+                    if needZeroWF[instrument][tmpChanName]:
+                        hardwareLLs[instrument][tmpChanName]['LLs'].append([zeroLL, zeroLL, zeroLL])
                 
     return hardwareLLs
 

@@ -11,7 +11,6 @@ AWGFreq = 1e9
 import numpy as np
 
 import sys
-import os
 import matplotlib
 matplotlib.use('Qt4Agg')
 #matplotlib.rcParams['backend.qt4']='PySide'
@@ -21,6 +20,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 from matplotlib.figure import Figure
 
 from PyQt4 import QtCore, QtGui
+#from PySide import QtCore, QtGui
 
 import PulseSequencer
 
