@@ -111,7 +111,7 @@ def write_bank_to_file(FID, bank, bankGroupStr, trimct=MAX_BANK_SIZE):
     bankGroup = FID.create_group(bankGroupStr)
     
     #Write the length attribute
-    bankGroup.attrs['length'] = trimct
+    bankGroup.attrs['length'] = np.int16(trimct)
 
     #Trim the bank if necessary and write to file
     for key in bank.keys():
@@ -125,7 +125,7 @@ def write_APS_file(AWGData, fileName):
 
     #Open the HDF5 file
     FID = h5py.File(fileName, 'w')  
-
+    
     #List of which channels we have data for
     channelDataFor = []
     
@@ -135,8 +135,8 @@ def write_APS_file(AWGData, fileName):
             channelDataFor.append(chanct+1)
 
             #Create the group
-            FID.create_group('/'+chanStrs2[chanct])
-            
+            chanGroup = FID.create_group('/'+chanStrs2[chanct])
+            chanGroup.attrs['isLinkListData'] = np.int16(1)
             #Create the waveform data
             idx = 0
             offsets = {}
@@ -156,7 +156,7 @@ def write_APS_file(AWGData, fileName):
             FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
             
             #Create the LL data group
-            FID.create_group('/'+chanStrs2[chanct] + '/linkListData')
+            LLGroup = FID.create_group('/'+chanStrs2[chanct] + '/linkListData')
             
             #Create the necessary number of banks as we step through the mini LL
             entryct = 0
@@ -188,10 +188,15 @@ def write_APS_file(AWGData, fileName):
             #Write the final bank
             write_bank_to_file(FID, tmpBank, '/{0}/linkListData/bank{1}'.format(chanStrs2[chanct], bankct), entryct)
             
+            LLGroup.attrs['numBanks'] = np.int16(bankct)
+            LLGroup.attrs['repeatCount'] = np.int16(0)
                 
                     
-            
-            
+        
+    FID['/'].attrs['Version'] = 1.6
+    FID['/'].attrs['channelDataFor'] = np.int16(channelDataFor)
+    
+        
     FID.close()
             
             
