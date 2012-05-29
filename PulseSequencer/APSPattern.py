@@ -141,19 +141,20 @@ def write_APS_file(AWGData, fileName):
             idx = 0
             offsets = {}
             waveformLib = np.zeros(MAX_WAVEFORM_PTS, dtype=np.int16)
-            for key, WF in AWGData[chanStr]['WFLibrary'].items():
-                #Scale the WF
-                WF[WF>1] = 1.0
-                WF[WF<-1] = -1.0
-                waveformLib[idx:idx+WF.size] = np.uint16(MAX_WAVEFORM_VALUE*WF)
-                offsets[key] = idx
-                idx += WF.size
+            if AWGData[chanStr]['WFLibrary']:
+                for key, WF in AWGData[chanStr]['WFLibrary'].items():
+                    #Scale the WF
+                    WF[WF>1] = 1.0
+                    WF[WF<-1] = -1.0
+                    waveformLib[idx:idx+WF.size] = np.uint16(MAX_WAVEFORM_VALUE*WF)
+                    offsets[key] = idx
+                    idx += WF.size
                 
-            #Trim the waveform 
-            waveformLib = waveformLib[0:idx] 
-            
-            #Write the waveformLib to file
-            FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
+                #Trim the waveform 
+                waveformLib = waveformLib[0:idx] 
+                
+                #Write the waveformLib to file
+                FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
             
             #Create the LL data group
             LLGroup = FID.create_group('/'+chanStrs2[chanct] + '/linkListData')

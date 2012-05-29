@@ -435,17 +435,15 @@ if __name__ == '__main__':
         
     pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
 
-#    pulseSeq = single_ramsey_sequence(100e-9)
-#    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
-#    AWGWFs = logical2hardware([LLs], WFLibrary, channelDicts)
+    pulseSeq = single_ramsey_sequence(100e-9)
+    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
+    AWGWFs = logical2hardware([LLs], WFLibrary, channelDicts)
 
     LLs, WFLibrary = compile_sequences(pulseSeqs)  
     
     AWGWFs = logical2hardware(LLs, WFLibrary, channelDicts)
-    
+
     write_APS_file(AWGWFs['BBNAPS1'], 'silly.h5')   
-#    print('Writing Tek File...')
-#    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
-#    print('Done writing Tek File.')
+    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
 #
 #    PulseSequencePlotter.plot_pulse_seqs(AWGWFs)
