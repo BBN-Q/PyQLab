@@ -370,7 +370,6 @@ class ChannelInfoView(QtGui.QMainWindow):
         
         self.setGeometry(300,300,550,300)
         self.setWindowTitle('Channel Info.')
-        self.show()
         
 
     def update_channelView(self, index, model):
@@ -449,19 +448,20 @@ if __name__ == '__main__':
     channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateChannelShift':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
     channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
   
-    
-    save_channel_info(channelDict, 'ChannelParams.json')
-    
-    channelInfoBack = load_channel_dict('ChannelParams.json')
-    
-    app = QtGui.QApplication(sys.argv)
+    #Look to see if iPython's event loop is running
+    app = QtCore.QCoreApplication.instance()
+    if app is None:
+        app = QtGui.QApplication(sys.argv)
 
-#    silly = PhysicalChannelView(channelInfo['APS1-12'])
-#    silly.show()
+    channelWindow = ChannelInfoView('ChannelParams.json')
+    channelWindow.show()
 
-    silly = ChannelInfoView('ChannelParams.json')
-    
-    sys.exit(app.exec_())
+    try: 
+        from IPython.lib.guisupport import start_event_loop_qt4
+        start_event_loop_qt4(app)
+    except ImportError:
+        sys.exit(app.exec_())
+
 
     
     

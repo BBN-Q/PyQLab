@@ -8,19 +8,22 @@ A simple GUI for plotting pulse sequences for visual inspection
 
 AWGFreq = 1e9
 
-import numpy as np
 
 import sys
-import matplotlib
-matplotlib.use('Qt4Agg')
+
+#from matplotlib import use
+#use('qtAgg')
+#import matplotlib
 #matplotlib.rcParams['backend.qt4']='PySide'
+#from PyQt4 import QtCore, QtGui
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
 
-from PyQt4 import QtCore, QtGui
-#from PySide import QtCore, QtGui
+from PySide import QtCore, QtGui
+
+import numpy as np
 
 import PulseSequencer
 
@@ -124,7 +127,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         self.setLayout(vboxTot) 
         
         self.update_plot()
-        
+
     def update_plot(self):
         
         self.ax.clear()
@@ -154,13 +157,23 @@ class PulseSeqPlotWindow(QtGui.QWidget):
 
 def plot_pulse_seqs(AWGWFs):
     
-    app = QtGui.QApplication(sys.argv)
+    #Look to see if iPython's event loop is running
+    app = QtCore.QCoreApplication.instance()
+    if app is None:
+        app = QtGui.QApplication(sys.argv)
 
     plotterWindow = PulseSeqPlotWindow(AWGWFs)
     plotterWindow.show()
 
-    sys.exit(app.exec_())
-    
+    try: 
+        from IPython.lib.guisupport import start_event_loop_qt4
+        start_event_loop_qt4(app)
+    except ImportError:
+        sys.exit(app.exec_())
+       
+    #Need to a keep a reference to the window alive.
+    return plotterWindow
+
 
 if __name__ == '__main__':
     
@@ -175,12 +188,5 @@ if __name__ == '__main__':
         AWGWFs['TekAWG1']['ch2'].append(np.cos(np.linspace(0,ct*np.pi,10000)))
         AWGWFs['TekAWG1']['ch1m1'].append(np.abs(AWGWFs['TekAWG1']['ch1'][-1]) < 0.5)
     
-    app = QtGui.QApplication(sys.argv)
-
-    plotterWindow = PulseSeqPlotWindow(AWGWFs)
-    plotterWindow.show()
-
-    sys.exit(app.exec_())
-
     
-#    plot_pulse_seq(AWGWFs)
+    plot_pulse_seqs(AWGWFs)
