@@ -85,12 +85,15 @@ class DRAG(Pulse):
         self.dragScaling = dragScaling
         
     def generateShape(self, AWGFreq):
-        #Create the gaussian along x and
+        #Create the gaussian along x and the derivative along y
         numPts = np.round(self.time*AWGFreq)
         xPts = np.linspace(-self.cutoff, self.cutoff, numPts)
         xStep = xPts[1] - xPts[0]
         IQuad = np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[0]-xStep)**2))
-        QQuad = self.dragScaling*xPts*IQuad
+        #The derivative needs to be scaled in terms of AWG points from the normalized xPts units.
+        #The pulse length is 2*cutoff xPts
+        derivScale = 1/(self.time/2/self.cutoff*AWGFreq)
+        QQuad = self.dragScaling*derivScale*xPts*IQuad
         return IQuad+1j*QQuad
         
 
