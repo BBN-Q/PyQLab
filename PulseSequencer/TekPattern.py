@@ -80,6 +80,18 @@ def write_Tek_file(WFs, fileName, seqName, options=None):
     Main function for writing a AWG format file.
     '''     
 
+    #Set the default options
+    #Marker levels default to 1V. 
+    if options is None:
+        options['markerLevels'] = {}
+    for chanct in range(1,5):
+        for markerct in range(1,3):
+            tmpStr = 'ch{0}m{1}'.format(chanct,markerct)
+            if tmpStr not in options['markerLevels']:
+                options['markerLevels'][tmpStr] = {}
+                options['markerLevels'][tmpStr]['low'] = 0.0
+                options['markerLevels'][tmpStr]['high'] = 1.0
+
     numSeqs = len(WFs['ch1'])
     
     #Open the file
@@ -107,35 +119,28 @@ def write_Tek_file(WFs, fileName, seqName, options=None):
     #Trigger threshold
     write_field(FID, 'TRIGGER_INPUT_THRESHOLD', 1.0, 'double')    
     
-    
-    #Channel outputs default off ( 1 = on, 0 = off)
     #Marker's to high/low (1 = amp/offset, 2 = high/low)
     for chanct in range(1,5):
         chanStr = str(chanct)
         write_field(FID, 'CHANNEL_STATE_'+chanStr, 1, 'int16')
         write_field(FID, 'MARKER1_METHOD_'+chanStr, 2, 'int16')
-        write_field(FID, 'MARKER1_LOW_'+chanStr, 0.0, 'double')
-        write_field(FID, 'MARKER1_HIGH_'+chanStr, 1.0, 'double')
+        write_field(FID, 'MARKER1_LOW_'+chanStr, options['markerLevels']['ch'+chanStr+'m1']['low'], 'double')
+        write_field(FID, 'MARKER1_HIGH_'+chanStr, options['markerLevels']['ch'+chanStr+'m1']['high'], 'double')
         write_field(FID, 'MARKER2_METHOD_'+chanStr, 2, 'int16')
-        write_field(FID, 'MARKER2_LOW_'+chanStr, 0.0, 'double')
-        write_field(FID, 'MARKER2_HIGH_'+chanStr, 1.0, 'double')
+        write_field(FID, 'MARKER2_LOW_'+chanStr, options['markerLevels']['ch'+chanStr+'m2']['low'], 'double')
+        write_field(FID, 'MARKER2_HIGH_'+chanStr, options['markerLevels']['ch'+chanStr+'m2']['high'], 'double')
         
-        
-    
     #If we have only one step then we specify the waveform names
     if numSeqs == 1:
         for chanct in range(1,5):
             write_field(FID, 'OUTPUT_WAVEFORM_NAME_'+str(chanct), seqName+'Ch'+str(chanct)+'001', 'char')
     
-        
     #Now write the waveforms
     for ct in range(numSeqs):
         for chanct in range(1,5):
             chanStr = str(chanct)
             write_waveform(FID, '{0}Ch{1}{2:03d}'.format(seqName, chanct, ct+1), 20+4*ct+chanct, pack_waveform(WFs['ch'+chanStr][ct], WFs['ch'+chanStr+'m1'][ct], WFs['ch'+chanStr+'m2'][ct]))
     
-    
-        
     #Write the sequence table
     for seqct in range(1,numSeqs+1):
         ctStr = str(seqct)

@@ -421,7 +421,9 @@ def compile_sequences(pulseSeqs, channelDicts, fileName=None, seqName='NoName'):
         for tmpAWG in channelDicts['AWGList']:
             if tmpAWG[0:6] == 'TekAWG':
                 print('Writing Tek File for {0}...'.format(tmpAWG))
-                write_Tek_file(AWGWFs[tmpAWG], '{0}-{1}.awg'.format(fileName, tmpAWG) , seqName)
+                #Ugly hardcoded hack, set ch4m1 for Labricks to 2V
+                options = {'markerLevels': {'ch4m1': {'low':0.0, 'high':2.0}}}
+                write_Tek_file(AWGWFs[tmpAWG], '{0}-{1}.awg'.format(fileName, tmpAWG) , seqName, options)
                 print('Finished writing Tek file.')
             elif tmpAWG[0:6] == 'BBNAPS':
                 print('Writing APS File for {0}...'.format(tmpAWG))
