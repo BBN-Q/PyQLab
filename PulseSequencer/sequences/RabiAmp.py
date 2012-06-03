@@ -1,5 +1,5 @@
 '''
-Simple Ramsey experiment X90-delay-U90
+Simple variable amplitude Rabi experiment 
 '''
 
 #Imports necessary for compiling sequences
@@ -9,7 +9,7 @@ from PulseSequencePlotter import plot_pulse_seqs
 
 import numpy as np
 
-def Ramsey(targetQubit = 'q1', fileName='Ramsey', pulseSpacings=np.linspace(0,10e-6,100), plotSeqs=True, readoutPulseLength=6e-6, AWGList=['TekAWG1','BBNAPS1']):
+def RabiAmp(targetQubit = 'q1', fileName='Rabi', pulseAmps=np.linspace(-1,1,81), plotSeqs=True, readoutPulseLength=6.66e-6, AWGList=['TekAWG1','BBNAPS1']):
 
     #Load the channel information
     channelObjs, channelDicts = load_channel_info('ChannelParams.json') 
@@ -22,15 +22,15 @@ def Ramsey(targetQubit = 'q1', fileName='Ramsey', pulseSpacings=np.linspace(0,10
     
     #Define a single sequence
     readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(readoutPulseLength)
-    def single_ramsey_sequence(pulseSpacing):
-        tmpSeq = [targetQ.X90(), targetQ.QId(pulseSpacing), targetQ.X90(), readoutBlock]
+    def single_rabi_sequence(pulseAmp):
+        tmpSeq = [targetQ.Xtheta(amp=pulseAmp), readoutBlock]
         return tmpSeq
     
     #Create the list of pulse sequences
-    pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in pulseSpacings]
+    pulseSeqs = [single_rabi_sequence(pulseAmp) for pulseAmp in pulseAmps]
     
     #Complile and write to file
-    AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, fileName, 'Ramsey')
+    AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, fileName, 'Rabi')  
     
     #If asked then call the plot GUI
     if plotSeqs:
@@ -38,4 +38,4 @@ def Ramsey(targetQubit = 'q1', fileName='Ramsey', pulseSpacings=np.linspace(0,10
         return plotterWin
 
 if __name__ == '__main__':
-    plotWin = Ramsey()
+    plotWin = RabiAmp()

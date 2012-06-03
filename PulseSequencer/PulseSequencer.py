@@ -12,13 +12,11 @@ import numpy as np
 
 import Channels
 
-AWGFreq = 1e9
+AWGFreq = 1.2e9
 
 from TekPattern import write_Tek_file
 from APSPattern import write_APS_file
 import PulseSequencePlotter
-
-
 
 class PulseBlock(object):
     '''
@@ -407,11 +405,30 @@ def LL2sequence(miniLL, WFLibrary):
     
     return outSeq    
     
-def compile_sequences(pulseSeqs):
+def compile_sequences(pulseSeqs, channelDicts, fileName=None, seqName='NoName'):
+    '''
+    Helper function that combines several functions to completely compile and write to file a list of pulse sequences.
+    '''
+    #First compile the sequences to LLs and WF libraries
     WFLibrary = {}
-    pulseSeqLLs = [compile_sequence(pulseSeq, WFLibrary, AWGFreq)[0] for pulseSeq in pulseSeqs]
+    LLs = [compile_sequence(pulseSeq, WFLibrary, AWGFreq)[0] for pulseSeq in pulseSeqs]
 
-    return pulseSeqLLs, WFLibrary        
+    #Compile LLs down to the hardware    
+    AWGWFs = logical2hardware(LLs, WFLibrary, channelDicts)
+
+    #If we have a filename then output the AWG files
+    if fileName:
+        for tmpAWG in channelDicts['AWGList']:
+            if tmpAWG[0:6] == 'TekAWG':
+                print('Writing Tek File for {0}...'.format(tmpAWG))
+                write_Tek_file(AWGWFs[tmpAWG], '{0}-{1}.awg'.format(fileName, tmpAWG) , seqName)
+                print('Finished writing Tek file.')
+            elif tmpAWG[0:6] == 'BBNAPS':
+                print('Writing APS File for {0}...'.format(tmpAWG))
+                write_APS_file(AWGWFs[tmpAWG], '{0}-{1}.h5'.format(fileName, tmpAWG))
+                print('Finished writing APS file.')
+
+    return AWGWFs, LLs, WFLibrary        
 
 if __name__ == '__main__':
     
@@ -445,5 +462,5 @@ if __name__ == '__main__':
 
     write_APS_file(AWGWFs['BBNAPS1'], 'silly.h5')   
     write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
-#
-#    PulseSequencePlotter.plot_pulse_seqs(AWGWFs)
+
+    PulseSequencePlotter.plot_pulse_seqs(AWGWFs)

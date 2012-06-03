@@ -286,21 +286,21 @@ class ChannelInfoView(QtGui.QMainWindow):
         self.channelDict = load_channel_dict(fileName)
         
         #Create an item view for the logical channels
-        self.logicalChannelListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if channelDict[tmpKey]['isLogical']])
+        self.logicalChannelListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if self.channelDict[tmpKey]['isLogical']])
         self.logicalChannelListModel.sort(0)
         self.logicalChannelListView = QtGui.QListView()
         self.logicalChannelListView.setModel(self.logicalChannelListModel)
         self.logicalChannelListView.clicked.connect(lambda(idx): self.update_channelView(idx, self.logicalChannelListModel))
         
         #Create an item view for the physical channels
-        self.physicalChannelListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if channelDict[tmpKey]['isPhysical']])
+        self.physicalChannelListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if self.channelDict[tmpKey]['isPhysical']])
         self.physicalChannelListModel.sort(0)
         self.physicalChannelListView = QtGui.QListView()
         self.physicalChannelListView.setModel(self.physicalChannelListModel)
         self.physicalChannelListView.clicked.connect(lambda(idx): self.update_channelView(idx, self.physicalChannelListModel))
 
         #Create an item view for the physical channels
-        self.generatorListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if channelDict[tmpKey]['isGenerator']])
+        self.generatorListModel = QtGui.QStringListModel([tmpKey for tmpKey in self.channelDict.keys() if self.channelDict[tmpKey]['isGenerator']])
         self.generatorListModel.sort(0)
         self.generatorListView = QtGui.QListView()
         self.generatorListView.setModel(self.generatorListModel)
