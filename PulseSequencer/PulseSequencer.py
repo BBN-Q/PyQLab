@@ -39,7 +39,7 @@ class PulseBlock(object):
     
     def add_pulse(self, pulse, channel):
         if channel in self.channels:
-            self.pulses[channel.name] += pulse
+            self.pulses[channel.name].append(pulse)
         else:
             self.channels.append(channel)
             self.pulses[channel.name] = [pulse]
@@ -409,6 +409,7 @@ def compile_sequences(pulseSeqs, channelDicts, fileName=None, seqName='NoName'):
     '''
     Helper function that combines several functions to completely compile and write to file a list of pulse sequences.
     '''
+    print('Number of sequences: {0}'.format(len(pulseSeqs)))
     #First compile the sequences to LLs and WF libraries
     WFLibrary = {}
     LLs = [compile_sequence(pulseSeq, WFLibrary, AWGFreq)[0] for pulseSeq in pulseSeqs]

@@ -4,3 +4,4 @@
 *.os
 *.so
 *.dll
+PulseSequencer/ChannelParams.json

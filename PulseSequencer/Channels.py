@@ -159,56 +159,56 @@ class QubitChannel(LogicalChannel):
     Setup the default 90/180 rotations
     '''
     @cachedPulse
-    def X180(self):
+    def X180p(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
-    def X90(self):
+    def X90p(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
     
     @cachedPulse
-    def Xm180(self):
+    def X180m(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
-    def Xm90(self):
+    def X90m(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
-    def Y180(self):
+    def Y180p(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
-    def Y90(self):
+    def Y90p(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
        
     @cachedPulse
-    def Ym180(self):
+    def Y180m(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
-    def Ym90(self):
+    def Y90m(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
