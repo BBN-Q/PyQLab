@@ -38,6 +38,9 @@ def FlipFlop(targetQubit = 'q1', fileName='FlipFlop', dragScalings=np.linspace(-
     pulseSeqs = [[[targetQ.QId(), readoutBlock]] + [single_flipflop_sequence(dragScaling, numFFs) for numFFs in range(maxFFs)] for dragScaling in dragScalings]
     #Flatten the list
     pulseSeqs = list(chain.from_iterable(pulseSeqs))
+
+    #Add a final pi for reference
+    pulseSeqs.append([targetQ.X180p(), readoutBlock])
     
     #Complile and write to file
     AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, fileName, 'FlipFlop')  

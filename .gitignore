@@ -5,3 +5,4 @@
 *.so
 *.dll
 PulseSequencer/ChannelParams.json
+PulseSequencer/sequences/*.txt

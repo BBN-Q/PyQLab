@@ -159,7 +159,7 @@ class QubitChannel(LogicalChannel):
     Setup the default 90/180 rotations
     '''
     @cachedPulse
-    def X180p(self):
+    def Xp(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
@@ -173,7 +173,7 @@ class QubitChannel(LogicalChannel):
         return tmpBlock
     
     @cachedPulse
-    def X180m(self):
+    def Xm(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.5)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
@@ -187,7 +187,7 @@ class QubitChannel(LogicalChannel):
         return tmpBlock
         
     @cachedPulse
-    def Y180p(self):
+    def Yp(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
@@ -201,7 +201,7 @@ class QubitChannel(LogicalChannel):
         return tmpBlock
        
     @cachedPulse
-    def Y180m(self):
+    def Ym(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.75)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
