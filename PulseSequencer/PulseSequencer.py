@@ -78,14 +78,14 @@ class LLElement(object):
         self.key = None
         self.length = 0
         self.repeat = 1
-        self.isTimeAmplitude = False
+        self.isTimeAmp = False
         self.hasTrigger = False
         self.triggerDelay = 0
         self.linkListRepeat = 0
 
 def create_padding_LL():
     tmpLL = LLElement()
-    tmpLL.isTimeAmplitude = True
+    tmpLL.isTimeAmp = True
     tmpLL.key = TAZKey
     return tmpLL
     
@@ -128,6 +128,7 @@ def compile_sequence(pulseSeq, WFLibrary = {}, AWGFreq = 1.2e9):
                 if id(tmpPulse) not in WFLibrary[tmpChanName]:
                     WFLibrary[tmpChanName][id(tmpPulse)] = tmpPulse.generatePattern(AWGFreq)
                 tmpLL.key = id(tmpPulse)
+                tmpLL.isTimeAmp = tmpPulse.isTimeAmp
                 tmpLL.length = tmpPulse.numPoints(AWGFreq)
                 tmpLLs[tmpChanName].append(tmpLL)
             
@@ -392,7 +393,7 @@ def LL2sequence(miniLL, WFLibrary):
     
     idx = 0
     for tmpLLElement in miniLL:
-        if tmpLLElement.isTimeAmplitude:
+        if tmpLLElement.isTimeAmp:
             outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         else:
             outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)

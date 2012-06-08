@@ -133,7 +133,7 @@ class QubitChannel(LogicalChannel):
     Setup some common pulses.
     '''    
     
-    #A delay or do-nothing
+    #A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime
     def QId(self, delay=0):
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(PatternGen.QId(delay), self)    

@@ -55,7 +55,7 @@ def calc_offset(entry, offsets, isFirst=False, isLast=False):
     offset = offsets[entry.key]//ADDRESS_UNIT
     
     #Now add in each of the bitflags in turn
-    if entry.isTimeAmplitude:
+    if entry.isTimeAmp:
         offset += ELL_TIME_AMPLITUDE
 #    if entry.isZero:
 #        offset += ELL_ZERO
@@ -65,7 +65,6 @@ def calc_offset(entry, offsets, isFirst=False, isLast=False):
         offset += ELL_FIRST_ENTRY
     if isLast:
         offset += ELL_LAST_ENTRY
-    
     return offset
     
 def calc_trigger(entry):
@@ -119,100 +118,88 @@ def write_APS_file(AWGData, fileName):
     '''
 
     #Open the HDF5 file
-    FID = h5py.File(fileName, 'w')  
+    with h5py.File(fileName, 'w') as FID:  
     
-    #List of which channels we have data for
-    channelDataFor = []
-    
-    #Loop over the channels
-    for chanct, chanStr in enumerate(chanStrs):
-        if chanStr in AWGData:
-            channelDataFor.append(chanct+1)
-
-            #Create the group
-            chanGroup = FID.create_group('/'+chanStrs2[chanct])
-            chanGroup.attrs['isLinkListData'] = np.int16(1)
-            #Create the waveform data
-            idx = 0
-            offsets = {}
-            waveformLib = np.zeros(MAX_WAVEFORM_PTS, dtype=np.int16)
-            if AWGData[chanStr]['WFLibrary']:
-                for key, WF in AWGData[chanStr]['WFLibrary'].items():
-                    #Scale the WF
-                    WF[WF>1] = 1.0
-                    WF[WF<-1] = -1.0
-                    #TA pairs need to be repeated ADDRESS_UNIT times
-                    if WF.size == 1:
-                        WF = WF.repeat(ADDRESS_UNIT)
-                    #Ensure the WF is an integer number of ADDRESS_UNIT's 
-                    trim = WF.size%ADDRESS_UNIT
-                    if trim:
-                        WF = WF[:-trim]
-                    waveformLib[idx:idx+WF.size] = np.uint16(MAX_WAVEFORM_VALUE*WF)
-                    offsets[key] = idx
-                    idx += WF.size
-                
-            #Trim the waveform 
-            waveformLib = waveformLib[0:idx] 
-                
-            #Write the waveformLib to file
-            FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
-            
-            #Create the LL data group
-            LLGroup = FID.create_group('/'+chanStrs2[chanct] + '/linkListData')
-            
-            #Create the necessary number of banks as we step through the mini LL
-            entryct = 0
-            tmpBank = create_empty_bank()
-            bankct = 1
-            numMiniLLs = len(AWGData[chanStr]['LLs'])
-            for miniLLct, miniLL in enumerate(AWGData[chanStr]['LLs']):
-                LLlength = len(miniLL)
-                #The minimum miniLL length is two 
-                assert LLlength >= 3, 'Oops! mini LL''s needs to have at least three elements.'
-                assert LLlength < MAX_BANK_SIZE, 'Oops! mini LL''s cannot have length greater than {0}, you have {1} entries'.format(MAX_BANK_SIZE, len(miniLL))
-                #If we need to allocate a new bank
-                if entryct + len(miniLL) > MAX_BANK_SIZE:
-                    #Write the current bank to file                    
-                    write_bank_to_file(FID, tmpBank, '/{0}/linkListData/bank{1}'.format(chanStrs2[chanct], bankct), entryct)
-                    #Allocate a new bank
-                    tmpBank = create_empty_bank()
-                    bankct += 1
-                    #Reset the entry count
-                    entryct = 0
-                
-                #Otherwise enter each LL entry into the bank arrays
-                for ct, LLentry in enumerate(miniLL):
-                    tmpBank['offset'][entryct] = calc_offset(LLentry, offsets, entryct==0 or (ct==LLlength-1 and miniLLct<numMiniLLs-1) , ct==LLlength-2)
-                    tmpBank['count'][entryct] = LLentry.length//ADDRESS_UNIT-1
-                    tmpBank['trigger'][entryct] = calc_trigger(LLentry)
-                    tmpBank['repeat'][entryct] = LLentry.repeat-1
-                    entryct += 1
-                    
-            #Write the final bank
-            write_bank_to_file(FID, tmpBank, '/{0}/linkListData/bank{1}'.format(chanStrs2[chanct], bankct), entryct)
-            
-            LLGroup.attrs['numBanks'] = np.int16(bankct)
-            LLGroup.attrs['repeatCount'] = np.int16(0)
-                
-                    
+        #List of which channels we have data for
+        channelDataFor = []
         
-    FID['/'].attrs['Version'] = 1.6
-    FID['/'].attrs['channelDataFor'] = np.int16(channelDataFor)
+        #Loop over the channels
+        for chanct, chanStr in enumerate(chanStrs):
+            if chanStr in AWGData:
+                channelDataFor.append(chanct+1)
     
-        
-    FID.close()
-            
-            
+                #Create the group
+                chanGroup = FID.create_group('/'+chanStrs2[chanct])
+                chanGroup.attrs['isLinkListData'] = np.int16(1)
+                #Create the waveform data
+                idx = 0
+                offsets = {}
+                waveformLib = np.zeros(MAX_WAVEFORM_PTS, dtype=np.int16)
+                if AWGData[chanStr]['WFLibrary']:
+                    for key, WF in AWGData[chanStr]['WFLibrary'].items():
+                        #Scale the WF
+                        WF[WF>1] = 1.0
+                        WF[WF<-1] = -1.0
+                        #TA pairs need to be repeated ADDRESS_UNIT times
+                        if WF.size == 1:
+                            WF = WF.repeat(ADDRESS_UNIT)
+                        #Ensure the WF is an integer number of ADDRESS_UNIT's 
+                        trim = WF.size%ADDRESS_UNIT
+                        if trim:
+                            WF = WF[:-trim]
+                        waveformLib[idx:idx+WF.size] = np.uint16(MAX_WAVEFORM_VALUE*WF)
+                        offsets[key] = idx
+                        idx += WF.size
+                    
+                #Trim the waveform 
+                waveformLib = waveformLib[0:idx] 
+                    
+                #Write the waveformLib to file
+                FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
                 
+                #Create the LL data group
+                LLGroup = FID.create_group('/'+chanStrs2[chanct] + '/linkListData')
+                
+                #Create the necessary number of banks as we step through the mini LL
+                entryct = 0
+                tmpBank = create_empty_bank()
+                bankct = 1
+                numMiniLLs = len(AWGData[chanStr]['LLs'])
+                for miniLLct, miniLL in enumerate(AWGData[chanStr]['LLs']):
+                    LLlength = len(miniLL)
+                    #The minimum miniLL length is two 
+                    assert LLlength >= 3, 'Oops! mini LL''s needs to have at least three elements.'
+                    assert LLlength < MAX_BANK_SIZE, 'Oops! mini LL''s cannot have length greater than {0}, you have {1} entries'.format(MAX_BANK_SIZE, len(miniLL))
+                    #If we need to allocate a new bank
+                    if entryct + len(miniLL) > MAX_BANK_SIZE:
+                        #Fix the final entry as we no longer have to indicate the next enty is the start of a miniLL
+                        tmpBank['offset'][entryct-1] -= ELL_FIRST_ENTRY
+                        #Write the current bank to file
+                        write_bank_to_file(FID, tmpBank, '/{0}/linkListData/bank{1}'.format(chanStrs2[chanct], bankct), entryct)
+                        #Allocate a new bank
+                        tmpBank = create_empty_bank()
+                        bankct += 1
+                        #Reset the entry count
+                        entryct = 0
+                    
+                    #Otherwise enter each LL entry into the bank arrays
+                    for ct, LLentry in enumerate(miniLL):
+                        tmpBank['offset'][entryct] = calc_offset(LLentry, offsets, entryct==0 or (ct==LLlength-1 and miniLLct<numMiniLLs-1) , ct==LLlength-2)
+                        tmpBank['count'][entryct] = LLentry.length//ADDRESS_UNIT-1
+                        tmpBank['trigger'][entryct] = calc_trigger(LLentry)
+                        tmpBank['repeat'][entryct] = LLentry.repeat-1
+                        entryct += 1
+                        
+                #Write the final bank
+                write_bank_to_file(FID, tmpBank, '/{0}/linkListData/bank{1}'.format(chanStrs2[chanct], bankct), entryct)
+                
+                LLGroup.attrs['numBanks'] = np.uint16(bankct)
+                LLGroup.attrs['repeatCount'] = np.uint16(0)
+                    
+                        
             
-            
-            
-            
-            
-            
-    
-          
+        FID['/'].attrs['Version'] = 1.6
+        FID['/'].attrs['channelDataFor'] = np.int16(channelDataFor)
     
     
 

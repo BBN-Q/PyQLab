@@ -23,7 +23,7 @@ def Ramsey(targetQubit = 'q1', fileName='Ramsey', pulseSpacings=np.linspace(0,10
     #Define a single sequence
     readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(readoutPulseLength)
     def single_ramsey_sequence(pulseSpacing):
-        tmpSeq = [targetQ.X90(), targetQ.QId(pulseSpacing), targetQ.X90(), readoutBlock]
+        tmpSeq = [targetQ.X90p(), targetQ.QId(pulseSpacing), targetQ.X90p(), readoutBlock]
         return tmpSeq
     
     #Create the list of pulse sequences

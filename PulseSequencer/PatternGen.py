@@ -12,11 +12,12 @@ class Pulse(object):
     '''
     The basic pulse shape which will be inherited.
     '''
-    def __init__(self, time=None, bufferTime=None, amp=None, phase=None, **kwargs):
+    def __init__(self, time=None, bufferTime=None, amp=None, phase=None, isTimeAmp=None, **kwargs):
         self.time = time
         self.bufferTime = 0 if bufferTime is None else bufferTime
         self.amp = 0 if amp is None else amp
         self.phase = 0 if phase is None else phase
+        self.isTimeAmp = False if isTimeAmp is None else isTimeAmp
         
     #Generate the bare shape: should be overwritten in subclasses
     def generateShape(self):
@@ -61,21 +62,21 @@ class Square(Pulse):
         #Round to how many points we need
         numPts = round(self.time*AWGFreq)
         return np.ones(numPts)
-
+        
 class QId(Pulse):
     '''
     A delay between pulses.
     '''
     def __init__(self, time=None):
-        super(QId, self).__init__(time)
-        
-    def numPoints(self, AWGFreq):
-        return round(self.time*AWGFreq)
+        super(QId, self).__init__(time=time, isTimeAmp=True)
         
     def generateShape(self, AWGFreq):
-        #Round to how many points we need
-        numPts = round(self.time*AWGFreq)
-        return np.zeros(numPts)
+        #Return a single point at 0
+        return np.zeros(1, dtype=np.complex)
+
+    def generatePattern(self, AWGFreq):
+        #Overload to also return only a single point
+        return np.zeros(1, dtype=np.complex)
 
 class DRAG(Pulse):
     '''
