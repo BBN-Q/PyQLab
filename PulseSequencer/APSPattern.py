@@ -47,23 +47,18 @@ def calc_offset(entry, offsets, isFirst=False, isLast=False):
     %  A       - Time Amplitude Pair
     %  Z       - Output is Zero
     %  T       - Entry has valid output trigger delay
-    %  LS      - Start of Mini Link List
-    %  LE      - End of Mini Link List
+    %  LS      - Start of Mini Link List (actually flags last entry of mini LL)
+    %  LE      - End of Mini Link List (actually flags penultimate entry of mini LL)
     '''
     
-    
-    
     #First divide by the APS units
-    if entry.isZero:
-        offset = 0
-    else:
-        offset = offsets[entry.key]/4
+    offset = offsets[entry.key]//ADDRESS_UNIT
     
     #Now add in each of the bitflags in turn
     if entry.isTimeAmplitude:
         offset += ELL_TIME_AMPLITUDE
-    if entry.isZero:
-        offset += ELL_ZERO
+#    if entry.isZero:
+#        offset += ELL_ZERO
     if entry.hasTrigger:
         offset += ELL_LL_TRIGGER
     if isFirst:
@@ -92,7 +87,7 @@ def calc_trigger(entry):
         assert entry.triggerDelay < 65536, 'Oops, maximum trigger delayis 65536 timesteps and you have asked for {0}'.format(entry.triggerDelay)
         triggerVal = 49152 + entry.triggerDelay//ADDRESS_UNIT
     else:
-        triggerVal = 0
+        triggerVal = 49152
 
     return triggerVal
     
@@ -146,15 +141,22 @@ def write_APS_file(AWGData, fileName):
                     #Scale the WF
                     WF[WF>1] = 1.0
                     WF[WF<-1] = -1.0
+                    #TA pairs need to be repeated ADDRESS_UNIT times
+                    if WF.size == 1:
+                        WF = WF.repeat(ADDRESS_UNIT)
+                    #Ensure the WF is an integer number of ADDRESS_UNIT's 
+                    trim = WF.size%ADDRESS_UNIT
+                    if trim:
+                        WF = WF[:-trim]
                     waveformLib[idx:idx+WF.size] = np.uint16(MAX_WAVEFORM_VALUE*WF)
                     offsets[key] = idx
                     idx += WF.size
                 
-                #Trim the waveform 
-                waveformLib = waveformLib[0:idx] 
+            #Trim the waveform 
+            waveformLib = waveformLib[0:idx] 
                 
-                #Write the waveformLib to file
-                FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
+            #Write the waveformLib to file
+            FID.create_dataset('/'+chanStrs2[chanct]+'/waveformLib', data=waveformLib)
             
             #Create the LL data group
             LLGroup = FID.create_group('/'+chanStrs2[chanct] + '/linkListData')
@@ -163,10 +165,11 @@ def write_APS_file(AWGData, fileName):
             entryct = 0
             tmpBank = create_empty_bank()
             bankct = 1
-            for miniLL in AWGData[chanStr]['LLs']:
+            numMiniLLs = len(AWGData[chanStr]['LLs'])
+            for miniLLct, miniLL in enumerate(AWGData[chanStr]['LLs']):
                 LLlength = len(miniLL)
                 #The minimum miniLL length is two 
-                assert LLlength > 1, 'Oops! mini LL''s needs to have more than 1 element'
+                assert LLlength >= 3, 'Oops! mini LL''s needs to have at least three elements.'
                 assert LLlength < MAX_BANK_SIZE, 'Oops! mini LL''s cannot have length greater than {0}, you have {1} entries'.format(MAX_BANK_SIZE, len(miniLL))
                 #If we need to allocate a new bank
                 if entryct + len(miniLL) > MAX_BANK_SIZE:
@@ -180,10 +183,10 @@ def write_APS_file(AWGData, fileName):
                 
                 #Otherwise enter each LL entry into the bank arrays
                 for ct, LLentry in enumerate(miniLL):
-                    tmpBank['offset'][entryct] = calc_offset(LLentry, offsets, ct==0, ct==LLlength)
-                    tmpBank['count'][entryct] = LLentry.length//ADDRESS_UNIT
+                    tmpBank['offset'][entryct] = calc_offset(LLentry, offsets, entryct==0 or (ct==LLlength-1 and miniLLct<numMiniLLs-1) , ct==LLlength-2)
+                    tmpBank['count'][entryct] = LLentry.length//ADDRESS_UNIT-1
                     tmpBank['trigger'][entryct] = calc_trigger(LLentry)
-                    tmpBank['repeat'][entryct] = LLentry.repeat
+                    tmpBank['repeat'][entryct] = LLentry.repeat-1
                     entryct += 1
                     
             #Write the final bank

@@ -18,6 +18,8 @@ from TekPattern import write_Tek_file
 from APSPattern import write_APS_file
 import PulseSequencePlotter
 
+TAZKey = 0
+
 class PulseBlock(object):
     '''
     The basic building block for pulse sequences. This is what we can concatenate together to make sequences.
@@ -77,7 +79,6 @@ class LLElement(object):
         self.length = 0
         self.repeat = 1
         self.isTimeAmplitude = False
-        self.isZero = False
         self.hasTrigger = False
         self.triggerDelay = 0
         self.linkListRepeat = 0
@@ -85,7 +86,7 @@ class LLElement(object):
 def create_padding_LL():
     tmpLL = LLElement()
     tmpLL.isTimeAmplitude = True
-    tmpLL.isZero = True
+    tmpLL.key = TAZKey
     return tmpLL
     
     
@@ -106,6 +107,8 @@ def compile_sequence(pulseSeq, WFLibrary = {}, AWGFreq = 1.2e9):
                 logicalLLs[tmpChan.name] = []
             if tmpChan.name not in WFLibrary:
                 WFLibrary[tmpChan.name] = {}
+                #Add the TAZ key to the WFLibrary by default
+                WFLibrary[tmpChan.name][TAZKey] = np.zeros(1, dtype=np.complex)
     emptyLLs = deepcopy(logicalLLs)
 
     #Loop over each of the pulse sequence blocks
@@ -122,14 +125,10 @@ def compile_sequence(pulseSeq, WFLibrary = {}, AWGFreq = 1.2e9):
         for tmpChanName in tmpBlock.channelNames:
             for tmpPulse in tmpBlock.pulses[tmpChanName]:
                 tmpLL = LLElement()
-                if tmpPulse.isZero:
-                    tmpLL.isZero = True
-                    tmpLL.length = tmpPulse.numPoints(AWGFreq)
-                else:
-                    if id(tmpPulse) not in WFLibrary[tmpChanName]:
-                        WFLibrary[tmpChanName][id(tmpPulse)] = tmpPulse.generatePattern(AWGFreq)
-                    tmpLL.key = id(tmpPulse)
-                    tmpLL.length = tmpPulse.numPoints(AWGFreq)
+                if id(tmpPulse) not in WFLibrary[tmpChanName]:
+                    WFLibrary[tmpChanName][id(tmpPulse)] = tmpPulse.generatePattern(AWGFreq)
+                tmpLL.key = id(tmpPulse)
+                tmpLL.length = tmpPulse.numPoints(AWGFreq)
                 tmpLLs[tmpChanName].append(tmpLL)
             
         #Add the final paddings
@@ -179,7 +178,7 @@ def APSChannels():
     '''
     The set of empty channels for a BBN APS.
     '''
-    return {chanStr:{'LLs':[], 'WFLibrary':None} for chanStr in  ['ch1','ch2','ch3','ch4']}
+    return {chanStr:{'LLs':[], 'WFLibrary':{0:np.zeros(1)}} for chanStr in  ['ch1','ch2','ch3','ch4']}
         
 def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
 
@@ -280,8 +279,8 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     tmpFinalPad = create_padding_LL()
 
                     #I Channel
-                    tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
-                    tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
+                    tmpInitPad.length = int(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
+                    tmpFinalPad.length = int(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
                     hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], IWFLibrary[tmpChanName]))
                     needZeroWF[tmpAWGName][tmpPhysChan['IChannel']] = False
                     #Q Channel
@@ -315,8 +314,6 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
                 seqLength[tmpGateChannel['AWGName']] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
 
-                    
-            
             #Marker channel require only a single channel
             #TODO: Deal with APS marker channels            
             elif tmpChanType == 'marker':
@@ -395,12 +392,10 @@ def LL2sequence(miniLL, WFLibrary):
     
     idx = 0
     for tmpLLElement in miniLL:
-        if tmpLLElement.isZero:
-            pass
-        elif tmpLLElement.isTimeAmplitude:
-            outSeq[idx:idx+tmpLLElement.length] = np.repeat(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
+        if tmpLLElement.isTimeAmplitude:
+            outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         else:
-            outSeq[idx:idx+tmpLLElement.length] = np.repeat(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
+            outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         idx += tmpLLElement.length*tmpLLElement.repeat
     
     return outSeq    
@@ -449,21 +444,17 @@ if __name__ == '__main__':
     #Define a typical sequence: say Pi Ramsey
     readoutBlock = digitizerTrig.gatePulse(100e-9)+measChannel.gatePulse(2e-6)
     def single_ramsey_sequence(pulseSpacing):
-        tmpSeq = [q1.X90(), q1.QId(pulseSpacing)+q2.X180(), q1.X90(), readoutBlock]
+        tmpSeq = [q1.X90p(), q2.Xp(), q1.X90p(), readoutBlock]
         tmpSeq[1].alignment = 'centre'
         return tmpSeq
         
     pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
 
-    pulseSeq = single_ramsey_sequence(100e-9)
-    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
-    AWGWFs = logical2hardware([LLs], WFLibrary, channelDicts)
+#    pulseSeq = single_ramsey_sequence(100e-9)
+#    LLs, WFLibrary = compile_sequence(pulseSeq, {}, AWGFreq)
+#    AWGWFs = logical2hardware([LLs], WFLibrary, channelDicts)
 
-    LLs, WFLibrary = compile_sequences(pulseSeqs)  
-    
-    AWGWFs = logical2hardware(LLs, WFLibrary, channelDicts)
-
-    write_APS_file(AWGWFs['BBNAPS1'], 'silly.h5')   
-    write_Tek_file(AWGWFs['TekAWG1'], 'silly.awg', 'silly')
+    #Complile and write to file
+    AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, 'silly', 'silly') 
 
     PulseSequencePlotter.plot_pulse_seqs(AWGWFs)
