@@ -67,8 +67,8 @@ class QId(Pulse):
     '''
     A delay between pulses.
     '''
-    def __init__(self, time=None):
-        super(QId, self).__init__(time=time, isTimeAmp=True)
+    def __init__(self, time=None, **kwargs):
+        super(QId, self).__init__(time=time, isTimeAmp=True, **kwargs)
         
     def generateShape(self, AWGFreq):
         #Return a single point at 0

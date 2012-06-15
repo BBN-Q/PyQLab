@@ -122,6 +122,7 @@ class QubitChannel(LogicalChannel):
         self.pulseCache = {}
         
     def cachedPulse(pulseFunc):
+        ''' Decorator for caching pulses to keep waveform memory usage down. '''
         def cacheWrap(self):
             if pulseFunc.__name__ not in self.pulseCache:
                 self.pulseCache[pulseFunc.__name__] = pulseFunc(self)
@@ -129,35 +130,49 @@ class QubitChannel(LogicalChannel):
         
         return cacheWrap
 
-    '''
-    Setup some common pulses.
-    '''    
-    
-    #A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime
+    #Setup some common pulses.
     def QId(self, delay=0):
+        ''' A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime. '''
         tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(PatternGen.QId(delay), self)    
+        tmpBlock.add_pulse(PatternGen.QId(delay, bufferTime=self.bufferTime), self)    
         return tmpBlock
         
-    #A generic X rotation with a variable amplitude
     def Xtheta(self, amp=0):
+        '''  A generic X rotation with a variable amplitude  '''
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
 
-    #A generic X rotation with a variable amplitude
     def Ytheta(self, amp=0):
+        ''' A generic Y rotation with a variable amplitude '''
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0.25)
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
+    def U90(self, phase=0):
+        ''' A generic 90 degree rotation with variable phase. Phase is defined in portions of a circle. '''
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=phase)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
 
-    
-    '''
-    Setup the default 90/180 rotations
-    '''
+    def U180(self, phase=0):
+        ''' A generic 180 degree rotation with variable phase.  '''
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=phase)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
+        
+    def Utheta(self, amp=0, phase=0):
+        '''  A generic rotation with variable amplitude and phase. '''
+        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=phase)
+        tmpBlock = PulseSequencer.PulseBlock()
+        tmpBlock.add_pulse(tmpPulse, self)
+        return tmpBlock
+
+    #Setup the default 90/180 rotations
     @cachedPulse
     def Xp(self):
         tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)

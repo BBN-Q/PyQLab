@@ -20,6 +20,8 @@ import PulseSequencePlotter
 
 TAZKey = 0
 
+#Minimum number of points fo r 
+
 class PulseBlock(object):
     '''
     The basic building block for pulse sequences. This is what we can concatenate together to make sequences.
@@ -117,54 +119,42 @@ def compile_sequence(pulseSeq, WFLibrary = {}, AWGFreq = 1.2e9):
     for tmpBlock in pulseSeq:
         tmpLLs = deepcopy(emptyLLs)
         
-        #Add the initial paddings
-        for tmpLL in tmpLLs.values():
-            tmpLL.append(create_padding_LL())
-            
         #Loop over each channel in the block and add LL elements
         for tmpChanName in tmpBlock.channelNames:
             for tmpPulse in tmpBlock.pulses[tmpChanName]:
-                tmpLL = LLElement()
+                tmpLLElement = LLElement()
                 if id(tmpPulse) not in WFLibrary[tmpChanName]:
                     WFLibrary[tmpChanName][id(tmpPulse)] = tmpPulse.generatePattern(AWGFreq)
-                tmpLL.key = id(tmpPulse)
-                tmpLL.isTimeAmp = tmpPulse.isTimeAmp
-                tmpLL.length = tmpPulse.numPoints(AWGFreq)
-                tmpLLs[tmpChanName].append(tmpLL)
+                tmpLLElement.key = id(tmpPulse)
+                tmpLLElement.isTimeAmp = tmpPulse.isTimeAmp
+                tmpLLElement.length = tmpPulse.numPoints(AWGFreq)
+                tmpLLs[tmpChanName].append(tmpLLElement)
             
-        #Add the final paddings
-        for tmpLL in tmpLLs.values():
-            tmpLL.append(create_padding_LL())
-        
-
         #Now adjust the paddings according the pulse block alignment
-        maxPts = tmpBlock.maxPts
-        for tmpLL in tmpLLs.values():
+        for k, miniLL in tmpLLs.items():
             numPts = 0
-            for tmpElement in tmpLL:
+            for tmpElement in miniLL:
                 numPts += tmpElement.length
-            padLength = maxPts-numPts
-            if tmpBlock.alignment == 'left':
-                #We pad the final LL element
-                tmpLL[-1].length = padLength
-            elif tmpBlock.alignment == 'right':
-                #We pad the first LL element
-                tmpLL[0].length = padLength
-            elif tmpBlock.alignment == 'centre':
-                #We split the difference
-                tmpLL[0].length = padLength//2
-                tmpLL[-1].length = padLength//2 + 1 if np.mod(padLength,2) else padLength//2
-        
-        #Trim empty paddings
-        for tmpLL in tmpLLs.values():
-            if tmpLL[0].length == 0:
-                del tmpLL[0]
-            if tmpLL[-1].length == 0:
-                del tmpLL[-1]
+            padLength = tmpBlock.maxPts-numPts
+            if padLength > 0:
+                if tmpBlock.alignment == 'left':
+                    #We pad the final LL element
+                    tmpLLs[k].append(create_padding_LL())
+                    tmpLLs[k][-1].length = padLength
+                elif tmpBlock.alignment == 'right':
+                    #We pad the first LL element
+                    tmpLLs[k].insert(0, create_padding_LL())
+                    tmpLLs[k][0].length = padLength
+                elif tmpBlock.alignment == 'centre':
+                    #We split the difference
+                    tmpLLs[k].insert(0, create_padding_LL())
+                    tmpLLs[k][0].length = padLength//2
+                    tmpLLs[k].append(create_padding_LL())
+                    tmpLLs[k][-1].length = padLength//2 + 1 if padLength%2 else padLength//2
         
         #Append this block onto the total pulse sequence
-        for tmpName, tmpLL in logicalLLs.items():
-            tmpLL += tmpLLs[tmpName]
+        for tmpName in logicalLLs.keys():
+            logicalLLs[tmpName] += tmpLLs[tmpName]
         
     return logicalLLs, WFLibrary
 
@@ -289,6 +279,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
 
                 elif tmpAWGName[:6] == 'BBNAPS':
+                    assert all([tmpEntry.length>15 for tmpEntry in tmpLLSeq]), 'Oops! For the APS all entries need to have greater than 16 points: offending channel {0}'.format(tmpChanName)
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
                     tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
