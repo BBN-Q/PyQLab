@@ -18,6 +18,13 @@ from TekPattern import write_Tek_file
 from APSPattern import write_APS_file
 import PulseSequencePlotter
 
+import hashlib
+
+#Some constants
+ADDRESS_UNIT = 4 #everything is done in units of 4 timesteps
+MIN_LL_ENTRY_COUNT = 3 #minimum length of mini link list
+MIN_LL_COUNT = 4 #minimum number of address units in a LL entry
+MIN_ENTRY_LENGTH = ADDRESS_UNIT*MIN_LL_COUNT
 TAZKey = 0
 
 #Minimum number of points fo r 
@@ -171,6 +178,34 @@ def APSChannels():
     '''
     return {chanStr:{'LLs':[], 'WFLibrary':{0:np.zeros(1)}} for chanStr in  ['ch1','ch2','ch3','ch4']}
         
+def APS_preprocess(miniLL, IWFLibrary, QWFLibrary):
+    '''
+    Helper function to deal with LL elements less than minimum LL entry count
+    '''
+    #Find the problem entries and fix
+    newMiniLL = []
+    entryct = 0
+    while entryct < len(miniLL)-1:
+        curEntry = miniLL[0]
+        if curEntry.length > MIN_ENTRY_LENGTH:
+            newMiniLL.append(curEntry)
+            entryct += 1
+        else:
+            nextEntry = miniLL[entryct+1]
+            #See if the next entry is a WF we can append too
+            #TODO: Handle repeats properly
+            if curEntry.isTimeAmp and not nextEntry.isTimeAmp:
+                #Concatenate the waveforms                
+                IpaddedWF = np.hstack((IWFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), IWFLibrary[nextEntry.key]))
+                #Hash the result to generate a new unique key and add
+                newKey = hashlib.sha1(IpaddedWF.view(np.uint8)).hexdigest()
+                IWFLibrary[newKey] = IpaddedWF
+                QWFLibrary[newKey] = np.hstack((IWFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), IWFLibrary[nextEntry.key]))
+                nextEntry.key = newKey
+                nextEntry.length = IWFLibrary[newKey].size
+                newMiniLL.append(nextEntry)
+                entryct += 2
+        
 def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
 
     '''
@@ -279,12 +314,12 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
 
                 elif tmpAWGName[:6] == 'BBNAPS':
-                    assert all([tmpEntry.length>15 for tmpEntry in tmpLLSeq]), 'Oops! For the APS all entries need to have greater than 16 points: offending channel {0}'.format(tmpChanName)
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
                     tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
                     tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
                     paddedLLs = [tmpInitPad]+tmpLLSeq+[tmpFinalPad] 
+                    APS_preprocess(paddedLLs, IWFLibrary[tmpChanName], QWFLibrary[tmpChanName])
 
                     hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']]['LLs'].append(paddedLLs)
                     hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']]['WFLibrary'] = IWFLibrary[tmpChanName]
@@ -385,7 +420,7 @@ def LL2sequence(miniLL, WFLibrary):
     idx = 0
     for tmpLLElement in miniLL:
         if tmpLLElement.isTimeAmp:
-            outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
+            outSeq[idx:idx+tmpLLElement.length] = WFLibrary[tmpLLElement.key]*np.ones(tmpLLElement.repeat)
         else:
             outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         idx += tmpLLElement.length*tmpLLElement.repeat
