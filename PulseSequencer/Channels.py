@@ -111,7 +111,7 @@ class QubitChannel(LogicalChannel):
     '''
     The main class for generating qubit pulses.  
     '''
-    def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0, dragScaling=0, **kwargs):
+    def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0, dragScaling=0, cutoff=2, **kwargs):
         super(QubitChannel, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel)
         self.pulseType = pulseType
         self.pulseLength = pulseLength
@@ -119,6 +119,7 @@ class QubitChannel(LogicalChannel):
         self.piAmp = piAmp
         self.pi2Amp = pi2Amp
         self.dragScaling = dragScaling
+        self.cutoff = cutoff
         self.pulseCache = {}
         
     def cachedPulse(pulseFunc):
@@ -130,44 +131,52 @@ class QubitChannel(LogicalChannel):
         
         return cacheWrap
 
+    def overrideDefaults(self, updateParams):
+        '''Helper function to update any parameters passed in and fill in the defaults otherwise.'''
+        paramsList = ['pulseType','pulseLength','bufferTime','piAmp','pi2Amp','dragScaling', 'cutoff']
+        #First get the default or updated values
+        updateValues = [updateParams[tmpName] if tmpName in updateParams else getattr(self, tmpName) for tmpName in paramsList]
+        #Return a dictionary        
+        return {paramName:paramValue for paramName,paramValue in zip(paramsList, updateValues)}
+                
     #Setup some common pulses.
-    def QId(self, delay=0):
+    def QId(self, **kwargs):
         ''' A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime. '''
         tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(PatternGen.QId(delay, bufferTime=self.bufferTime), self)    
+        tmpBlock.add_pulse(PatternGen.QId(**self.overrideDefaults(kwargs)), self)    
         return tmpBlock
         
-    def Xtheta(self, amp=0):
+    def Xtheta(self, amp=0, **kwargs):
         '''  A generic X rotation with a variable amplitude  '''
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=amp, phase=0, **self.overrideDefaults(kwargs))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
 
-    def Ytheta(self, amp=0):
+    def Ytheta(self, amp=0, **kwargs):
         ''' A generic Y rotation with a variable amplitude '''
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=0.25)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=amp, phase=0.25, **self.overrideDefaults(kwargs))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    def U90(self, phase=0):
+    def U90(self, phase=0, **kwargs):
         ''' A generic 90 degree rotation with variable phase. Phase is defined in portions of a circle. '''
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=phase)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=phase, **self.overrideDefaults(kwargs))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
 
-    def U180(self, phase=0):
+    def U180(self, phase=0, **kwargs):
         ''' A generic 180 degree rotation with variable phase.  '''
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=phase)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=phase, **self.overrideDefaults(kwargs))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
-    def Utheta(self, amp=0, phase=0):
+    def Utheta(self, amp=0, phase=0, **kwargs):
         '''  A generic rotation with variable amplitude and phase. '''
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=amp, dragScaling=self.dragScaling, phase=phase)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=amp, phase=phase, **self.overrideDefaults(kwargs))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
@@ -175,56 +184,56 @@ class QubitChannel(LogicalChannel):
     #Setup the default 90/180 rotations
     @cachedPulse
     def Xp(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
     def X90p(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
     
     @cachedPulse
     def Xm(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.5)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.5, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
     def X90m(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.5)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.5, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
     def Yp(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.25)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.25, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
     def Y90p(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.25)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.25, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
        
     @cachedPulse
     def Ym(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.piAmp, dragScaling=self.dragScaling, phase=0.75)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.75, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
         
     @cachedPulse
     def Y90m(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](time=self.pulseLength, cutoff=2, bufferTime=self.bufferTime, amp=self.pi2Amp, dragScaling=self.dragScaling, phase=0.75)
+        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.75, **self.overrideDefaults({}))
         tmpBlock = PulseSequencer.PulseBlock()
         tmpBlock.add_pulse(tmpPulse, self)
         return tmpBlock
