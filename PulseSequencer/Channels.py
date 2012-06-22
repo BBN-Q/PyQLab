@@ -341,8 +341,12 @@ class ChannelInfoView(QtGui.QMainWindow):
 
         #Add the buttons for adding/deleting channels
         hBox = QtGui.QHBoxLayout()
-        hBox.addWidget(QtGui.QPushButton('Add'))
-        hBox.addWidget(QtGui.QPushButton('Delete'))
+        addChanButton = QtGui.QPushButton('Add')
+        addChanButton.clicked.connect(self.add_channel)
+        hBox.addWidget(addChanButton)
+        deleteChanButton = QtGui.QPushButton('Delete')
+        deleteChanButton.clicked.connect(self.delete_channel)
+        hBox.addWidget(deleteChanButton)
         hBox.addStretch(1)
         vBox.addLayout(hBox)                
 
@@ -361,7 +365,6 @@ class ChannelInfoView(QtGui.QMainWindow):
         loadAction = QtGui.QAction('Load', self)
         loadAction.setShortcut('Ctrl+L')
         loadAction.setStatusTip('Load parameter file')
-#        loadAction.triggered.connect(self.close)
         
         saveAction = QtGui.QAction('Save',self)
         saveAction.setShortcut('Ctrl+S')
@@ -370,8 +373,6 @@ class ChannelInfoView(QtGui.QMainWindow):
         
         saveAsAction = QtGui.QAction('Save As',self)
         saveAsAction.setStatusTip('Save parameter file to new file')
-#        saveAction.triggered.connect(self.compile_sequence)
-
 
         exitAction = QtGui.QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
@@ -410,8 +411,19 @@ class ChannelInfoView(QtGui.QMainWindow):
         #Update the dictionary from the GUI fields
         for tmpChanName, tmpChan in self.channelDict.items():
             self.channelWidgets[tmpChanName].update_from_view()
-        save_channel_info(self.channelDict, self.fileName)       
-
+        save_channel_info(self.channelDict, self.fileName)  
+        
+    def add_channel(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText("Not implemented yet!")
+        msgBox.exec_()
+        
+    def delete_channel(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText("Not implemented yet!")
+        msgBox.exec_()
+        
+        
 class ChannelView(QtGui.QWidget):
     def __init__(self, channel):
         super(ChannelView, self).__init__()
@@ -454,8 +466,8 @@ class ChannelView(QtGui.QWidget):
 
 if __name__ == '__main__':
     channelDict = {}
-    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'BBNAPS1-12'}
-    channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'BBNAPS1-34'}
+    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'BBNAPS1-12', 'frequency':5}
+    channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'BBNAPS1-34', 'frequency':5}
 
     channelDict['measChannel'] = {'name':'measChannel', 'channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m1' }
     channelDict['digitizerTrig'] = {'name':'digitizerTrig','channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m2'}
@@ -469,9 +481,11 @@ if __name__ == '__main__':
     channelDict['BBNAPS1-12'] = {'name':'BBNAPS1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
     channelDict['BBNAPS1-34'] = {'name':'BBNAPS1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
 
-    channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateChannelShift':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
-    channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9,}    
-  
+    channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateChannelShift':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
+    channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
+
+    save_channel_info(channelDict, 'ChannelParams.json')
+
     #Look to see if iPython's event loop is running
     app = QtCore.QCoreApplication.instance()
     if app is None:

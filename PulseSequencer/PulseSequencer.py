@@ -301,16 +301,20 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 tmpCarrier = channelInfo[tmpPhysChan['carrierGen']]
                 tmpGateChannel = channelInfo[tmpCarrier['gateChannel']]
                 if tmpAWGName[:6] == 'TekAWG':
+                    
+                    #SSBFreq in normalized AWG timestep units
+                    SSBFreq = 1e9*(channelInfo[tmpChanName]['frequency']-tmpCarrier['frequency'])/AWGFreq                    
+                    
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
 
                     #I Channel
                     tmpInitPad.length = int(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
                     tmpFinalPad.length = int(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
-                    hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], IWFLibrary[tmpChanName]))
+                    hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], IWFLibrary[tmpChanName], SSBFreq, 0))
                     needZeroWF[tmpAWGName][tmpPhysChan['IChannel']] = False
                     #Q Channel
-                    hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], QWFLibrary[tmpChanName]))
+                    hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], QWFLibrary[tmpChanName], SSBFreq, 0.25))
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
 
                 elif tmpAWGName[:6] == 'BBNAPS':
@@ -408,7 +412,7 @@ def create_Tek_gate_seq(LL, WFLibrary, gateBuffer, gateMinWidth):
     return gateSeq            
                 
                     
-def LL2sequence(miniLL, WFLibrary):
+def LL2sequence(miniLL, WFLibrary, SSBFreq=0.0, SSBPhase=0.0):
     '''
     Helper function for converting a LL to a single sequence array for plotting or Tektronix purposes.
     '''
@@ -428,6 +432,9 @@ def LL2sequence(miniLL, WFLibrary):
         else:
             outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         idx += tmpLLElement.length*tmpLLElement.repeat
+    
+    #Apply the SSB modulation
+    outSeq *= np.cos(2*np.pi*SSBFreq*np.arange(outSeq.size) + 2*np.pi*SSBPhase)
     
     return outSeq    
     

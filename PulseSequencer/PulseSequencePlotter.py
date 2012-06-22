@@ -11,12 +11,6 @@ AWGFreq = 1e9
 
 import sys
 
-#from matplotlib import use
-#use('qtAgg')
-#import matplotlib
-#matplotlib.rcParams['backend.qt4']='PySide'
-#from PyQt4 import QtCore, QtGui
-
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 from matplotlib.figure import Figure
@@ -145,7 +139,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
                     self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
                     self.ax.text(0, vertShift,tmpAWGName+'-'+str(tmpChild.text(0)), fontsize=8)
                     vertShift += 2
-                    
+        self.ax.set_ylim((-1, vertShift))                    
         self.canvas.draw()
         
     def center(self):
