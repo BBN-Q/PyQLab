@@ -336,9 +336,13 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 #TODO: Deal with APS marker channels
                 tmpShift = tmpCarrier['gateChannelShift'] + tmpGateChannel['channelShift']
                 tmpInitPad.length = round(AWGFreq*(maxBackwardShift + tmpShift))                    
-                tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpShift))                     
-                hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']].append(create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))                                            
-                needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
+                tmpFinalPad.length = round(AWGFreq*(maxForwardShift - tmpShift))
+                #Multiple channels can map to the same marker (e.g. CR gates) so check if there is data and AND the two together if there is
+                if needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']]:
+                    hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']].append(create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))                                            
+                    needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
+                else:
+                    hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = np.logical_and(hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] , create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))
                 seqLength[tmpGateChannel['AWGName']] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
 
             #Marker channel require only a single channel
