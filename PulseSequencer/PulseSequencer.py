@@ -346,7 +346,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']].append(create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))                                            
                     needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
                 else:
-                    hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = np.logical_and(hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] , create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))
+                    hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = np.logical_or(hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] , create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))
                 seqLength[tmpGateChannel['AWGName']] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
 
             #Marker channel require only a single channel
@@ -375,7 +375,7 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     if needZeroWF[instrument][tmpChanName]:
                         hardwareLLs[instrument][tmpChanName]['LLs'].append([zeroLL, zeroLL, zeroLL])
                 
-    return hardwareLLs
+    return hardwareLLs 
 
 def create_Tek_gate_seq(LL, WFLibrary, gateBuffer, gateMinWidth):
     '''
