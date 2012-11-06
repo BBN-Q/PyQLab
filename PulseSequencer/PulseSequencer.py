@@ -302,20 +302,27 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 tmpGateChannel = channelInfo[tmpCarrier['gateChannel']]
                 if tmpAWGName[:6] == 'TekAWG':
                     
-                    #SSBFreq in normalized AWG timestep units
-                    SSBFreq = 1e9*(channelInfo[tmpChanName]['frequency']-tmpCarrier['frequency'])/AWGFreq                    
-                    
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
 
                     #I Channel
                     tmpInitPad.length = int(AWGFreq*(maxBackwardShift + tmpPhysChan['channelShift']))                    
                     tmpFinalPad.length = int(AWGFreq*(maxForwardShift - tmpPhysChan['channelShift']))                     
-                    hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], IWFLibrary[tmpChanName], SSBFreq, 0))
+                    hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], IWFLibrary[tmpChanName]))
                     needZeroWF[tmpAWGName][tmpPhysChan['IChannel']] = False
                     #Q Channel
-                    hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], QWFLibrary[tmpChanName], SSBFreq, 0.25))
+                    hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']].append(LL2sequence([tmpInitPad] + tmpLLSeq + [tmpFinalPad], QWFLibrary[tmpChanName]))
                     needZeroWF[tmpAWGName][tmpPhysChan['QChannel']] = False
+
+                    #SSBFreq in normalized AWG timestep units
+                    SSBFreq = 1e9*(channelInfo[tmpChanName]['frequency']-tmpCarrier['frequency'])/AWGFreq                    
+
+                    if np.abs(SSBFreq) > 1e-12:
+                        tmpWF = hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']][-1] +1j*hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']][-1]
+                        SSBWF = tmpWF*np.exp(1j*2*np.pi*np.arange(tmpWF.size))
+                        hardwareLLs[tmpAWGName][tmpPhysChan['IChannel']][-1] = SSBWF.real
+                        hardwareLLs[tmpAWGName][tmpPhysChan['QChannel']][-1] = SSBWF.imag
+                        
 
                 elif tmpAWGName[:6] == 'BBNAPS':
                     tmpInitPad = create_padding_LL()
@@ -347,6 +354,9 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                     needZeroWF[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = False
                 else:
                     hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] = np.logical_or(hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']] , create_Tek_gate_seq([tmpInitPad] + tmpLLSeq + [tmpFinalPad], AWFLibrary[tmpChanName], tmpCarrier['gateBuffer'], tmpCarrier['gateMinWidth']))
+                
+                #Set the sequence length for unused channels
+                seqLength[tmpAWGName] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
                 seqLength[tmpGateChannel['AWGName']] = hardwareLLs[tmpGateChannel['AWGName']][tmpGateChannel['channel']][-1].size
 
             #Marker channel require only a single channel
@@ -360,7 +370,6 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 needZeroWF[tmpAWGName][tmpPhysChan['channel']] = False
                    
         #Fill out unused channels with zero WFs
-
         for instrument in channelInfo['AWGList']:
             if instrument[:6] == 'TekAWG':
                 for tmpChanName in hardwareLLs[instrument].keys():
@@ -412,7 +421,7 @@ def create_Tek_gate_seq(LL, WFLibrary, gateBuffer, gateMinWidth):
     return gateSeq            
                 
                     
-def LL2sequence(miniLL, WFLibrary, SSBFreq=0.0, SSBPhase=0.0):
+def LL2sequence(miniLL, WFLibrary):
     '''
     Helper function for converting a LL to a single sequence array for plotting or Tektronix purposes.
     '''
@@ -432,9 +441,6 @@ def LL2sequence(miniLL, WFLibrary, SSBFreq=0.0, SSBPhase=0.0):
         else:
             outSeq[idx:idx+tmpLLElement.length] = np.tile(WFLibrary[tmpLLElement.key], tmpLLElement.repeat)
         idx += tmpLLElement.length*tmpLLElement.repeat
-    
-    #Apply the SSB modulation
-    outSeq *= np.cos(2*np.pi*SSBFreq*np.arange(outSeq.size) + 2*np.pi*SSBPhase)
     
     return outSeq    
     

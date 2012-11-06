@@ -11,7 +11,7 @@ from copy import deepcopy
 from itertools import chain
 import numpy as np
 
-def FlipFlop(targetQubit = 'q1', fileName='FlipFlop', dragScalings=np.linspace(-2,0,11), plotSeqs=True, readoutPulseLength=6.66e-6, AWGList=['TekAWG1','BBNAPS1']):
+def FlipFlop(targetQubit = 'q1', fileName='FlipFlop', dragScalings=np.linspace(-2,2,21), plotSeqs=True, readoutPulseLength=6.66e-6, AWGList=['TekAWG1','BBNAPS1']):
 
     #Load the channel information
     channelObjs, channelDicts = load_channel_info('ChannelParams.json') 
@@ -40,10 +40,15 @@ def FlipFlop(targetQubit = 'q1', fileName='FlipFlop', dragScalings=np.linspace(-
     pulseSeqs = list(chain.from_iterable(pulseSeqs))
 
     #Add a final pi for reference
-    pulseSeqs.append([targetQ.X180p(), readoutBlock])
+    pulseSeqs.append([targetQ.Xp(), readoutBlock])
     
     #Complile and write to file
     AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, fileName, 'FlipFlop')  
+    
+    import cPickle
+    with open('pulseSeq.pkl', 'wb') as FID:
+        cPickle.dump(AWGWFs, FID)
+    
     
     #If asked then call the plot GUI
     if plotSeqs:

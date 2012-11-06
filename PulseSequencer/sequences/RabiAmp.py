@@ -9,7 +9,7 @@ from PulseSequencePlotter import plot_pulse_seqs
 
 import numpy as np
 
-def RabiAmp(targetQubit = 'q1', fileName='Rabi', pulseAmps=np.linspace(-1,1,81), plotSeqs=True, readoutPulseLength=6.66e-6, AWGList=['TekAWG1','BBNAPS1']):
+def RabiAmp(targetQubit = 'q1', fileName='Rabi', pulseAmps=np.linspace(-1,1,81), plotSeqs=True, readoutPulseLength=1.67e-6, AWGList=['TekAWG1','TekAWG2']):
 
     #Load the channel information
     channelObjs, channelDicts = load_channel_info('ChannelParams.json') 
@@ -31,6 +31,10 @@ def RabiAmp(targetQubit = 'q1', fileName='Rabi', pulseAmps=np.linspace(-1,1,81),
     
     #Complile and write to file
     AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, fileName, 'Rabi')  
+    
+    import cPickle
+    with open('pulseSeq.pkl', 'wb') as FID:
+        cPickle.dump(AWGWFs, FID)
     
     #If asked then call the plot GUI
     if plotSeqs:

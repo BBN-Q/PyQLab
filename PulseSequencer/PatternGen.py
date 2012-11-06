@@ -99,12 +99,40 @@ class DRAG(Pulse):
         QQuad = self.dragScaling*derivScale*xPts*IQuad
         return IQuad+1j*QQuad
         
+class GaussOn(Pulse):
+    '''
+    A half-gaussian pulse going from zero to full
+    '''
+    def __init__(self, pulseLength=None, cutoff=2, **kwargs):
+        super(GaussOn, self).__init__(pulseLength, **kwargs)
+        self.cutoff = cutoff
+        
+    def generateShape(self, AWGFreq):
+        #Round to how many points we need
+        numPts = np.round(self.pulseLength*AWGFreq)
+        xPts = np.linspace(-self.cutoff, 0, numPts)
+        xStep = xPts[1] - xPts[0]
+        return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[0]-xStep)**2))
 
+class GaussOff(Pulse):
+    '''
+    A half-gaussian pulse going from zero to full
+    '''
+    def __init__(self, pulseLength=None, cutoff=2, **kwargs):
+        super(GaussOff, self).__init__(pulseLength, **kwargs)
+        self.cutoff = cutoff
+        
+    def generateShape(self, AWGFreq):
+        #Round to how many points we need
+        numPts = np.round(self.pulseLength*AWGFreq)
+        xPts = np.linspace(0, self.cutoff, numPts)
+        xStep = xPts[1] - xPts[0]
+        return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[-1]+xStep)**2))
         
 '''
 Dictionary linking pulse names to functions.
 '''
-pulseDict = {'square':Square,'gauss':Gaussian,'drag':DRAG}
+pulseDict = {'square':Square, 'gauss':Gaussian, 'drag':DRAG, 'gaussOn':GaussOn, 'gaussOff':GaussOff}
 
 
 
