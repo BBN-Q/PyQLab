@@ -178,9 +178,9 @@ def APSChannels():
     '''
     return {chanStr:{'LLs':[], 'WFLibrary':{0:np.zeros(1)}} for chanStr in  ['ch1','ch2','ch3','ch4']}
         
-def APS_preprocess(miniLL, IWFLibrary, QWFLibrary):
+def APS_preprocess(miniLL, WFLibrary, SSBFreq, SSBPhase=0, phaseResolution=65536):
     '''
-    Helper function to deal with LL elements less than minimum LL entry count
+    Helper function to deal with LL elements less than minimum LL entry count and SSB 
     '''
     #Find the problem entries and fix
     newMiniLL = []
@@ -196,16 +196,38 @@ def APS_preprocess(miniLL, IWFLibrary, QWFLibrary):
             #TODO: Handle repeats properly
             if curEntry.isTimeAmp and not nextEntry.isTimeAmp:
                 #Concatenate the waveforms                
-                IpaddedWF = np.hstack((IWFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), IWFLibrary[nextEntry.key]))
+                paddedWF = np.hstack((WFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), WFLibrary[nextEntry.key]))
                 #Hash the result to generate a new unique key and add
-                newKey = hashlib.sha1(IpaddedWF.view(np.uint8)).hexdigest()
-                IWFLibrary[newKey] = IpaddedWF
-                QWFLibrary[newKey] = np.hstack((IWFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), IWFLibrary[nextEntry.key]))
+                newKey = hashlib.sha1(paddedWF.view(np.uint8)).hexdigest()
+                WFLibrary[newKey] = paddedWF
                 nextEntry.key = newKey
-                nextEntry.length = IWFLibrary[newKey].size
+                nextEntry.length = WFLibrary[newKey].size
                 newMiniLL.append(nextEntry)
                 entryct += 2
-        
+    miniLL = newMiniLL
+    
+    if SSBFreq != 0:
+        WFvariants = {}
+        for key in WFLibrary.keys():
+            WFvariants[key] = {}
+        curPhase = 0.0
+        for ct, tmpEntry in enumerate(miniLL):
+            #Check whether we have this phase in our library already
+            curPhaseInt = np.round(curPhase*phaseResolution)
+            if curPhaseInt in WFvariants:
+                miniLL[ct].key = WFvariants[miniLL[ct].key][curPhaseInt]
+            else:
+                #Modulate the current waveform
+                tmpWF = np.exp(-1j*2*np.pi*(SSBFreq*np.arange(tmpEntry.length)+SSBPhase+curPhase))*WFLibrary[tmpEntry.key]
+                #Hash the result to generate the unique key 
+                newKey = hashlib.sha1(tmpWF.view(np.uint8)).hexdigest()
+                WFLibrary[newKey] = tmpWF
+                WFvariants[miniLL[ct].key][curPhaseInt] = newKey
+
+            #Update the phase 
+            curPhase += SSBFreq*tmpEntry.length
+            
+    
 def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
 
     '''
@@ -300,8 +322,9 @@ def logical2hardware(pulseSeqs, WFLibrary, channelInfo):
                 #Switch on the type of AWG
                 tmpCarrier = channelInfo[tmpPhysChan['carrierGen']]
                 tmpGateChannel = channelInfo[tmpCarrier['gateChannel']]
+                #SSBFreq in normalized AWG timestep units
+                SSBFreq = 1e9*(channelInfo[tmpChanName]['frequency']-tmpCarrier['frequency'])/AWGFreq                    
                 if tmpAWGName[:6] == 'TekAWG':
-                    
                     tmpInitPad = create_padding_LL()
                     tmpFinalPad = create_padding_LL()
 
