@@ -21,30 +21,46 @@ import numpy as np
 
 import PulseSequencer
 
+from APSPattern import read_APS_file
+#from TekPattern import read_Tek_file
+
+import argparse
+import os.path
+
 class PulseSeqPlotWindow(QtGui.QWidget):
     
     def __init__(self, AWGWFs=None):
         super(PulseSeqPlotWindow, self).__init__()
         
-        self.AWGWFs = AWGWFs
-        
-        if AWGWFs.keys()[0][:6] == 'TekAWG':
-            numSeqs = len(AWGWFs.values()[0].values()[0])
-        elif AWGWFs.keys()[0][:6] == 'BBNAPS':
-            numSeqs = len(AWGWFs[AWGWFs.keys()[0]]['ch1']['LLs'])
-        else:
-            raise NameError('Unknown AWG Type: we currently only handle TekAWG and BBNAPS.')
+        #See if we have files passed in
+        if isinstance(AWGWFs, list):
+            self.AWGWFs = {}
+            AWGFileNames = AWGWFs
+            for tmpFile in AWGFileNames:
+                #Ugly hack to see if we're loading a Tek or APS files
+                #Assume a naming convenction path/to/file/SequenceName-AWGName.h5
+                AWGName = (os.path.split(os.path.splitext(tmpFile)[0])[1]).split('-')[1]
+                if AWGName[:6] == 'TekAWG':
+                    self.AWGWFs[AWGName] = read_Tek_file(tmpFile)
+                elif AWGName[:6] == 'BBNAPS':
+                    self.AWGWFs[AWGName] = read_APS_file(tmpFile)
+                else:
+                    raise NameError('Unknown AWG Type for {0}: we currently only handle TekAWG and BBNAPS.'.format(tmpFile))
             
-        #Convert the BBNAPS LLs into pulse sequence waveforms
-        for tmpAWGName, tmpAWG in AWGWFs.items():
-            if tmpAWGName[:6] == 'BBNAPS':
-                tmpWFs = {}
-                for chanStr in tmpAWG.keys():
-                    tmpWFs[chanStr] = []
-                    for miniLL in tmpAWG[chanStr]['LLs']:
-                        tmpWFs[chanStr].append(PulseSequencer.LL2sequence(miniLL, tmpAWG[chanStr]['WFLibrary']))
-                AWGWFs[tmpAWGName] = tmpWFs
-                        
+        else:
+            self.AWGWFs = AWGWFs
+            #Convert the BBNAPS LLs into pulse sequence waveforms
+            for tmpAWGName, tmpAWG in AWGWFs.items():
+                if tmpAWGName[:6] == 'BBNAPS':
+                    tmpWFs = {}
+                    for chanStr in tmpAWG.keys():
+                        tmpWFs[chanStr] = []
+                        for miniLL in tmpAWG[chanStr]['LLs']:
+                            tmpWFs[chanStr].append(PulseSequencer.LL2sequence(miniLL, tmpAWG[chanStr]['WFLibrary']))
+                    AWGWFs[tmpAWGName] = tmpWFs
+        
+        numSeqs = len(AWGWFs.values()[0].values()[0])
+        
         #Create the GUI
         self.resize(1000,700)
         self.center()
@@ -171,16 +187,24 @@ def plot_pulse_seqs(AWGWFs):
 
 if __name__ == '__main__':
     
-    AWGWFs = {}
-    AWGWFs['TekAWG1'] = {}
-    AWGWFs['TekAWG1']['ch1'] = []
-    AWGWFs['TekAWG1']['ch2'] = []
-    AWGWFs['TekAWG1']['ch1m1'] = []
+    #See if we have been passed AWG files
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--AWGFiles', action='store', dest='AWGFiles',  nargs='*', default=None)    
+    options =  parser.parse_args(sys.argv[1:])
+
+    if options.AWGFiles:
+        plot_pulse_seqs(options.AWGFiles)
+        
+    else:
+        AWGWFs = {}
+        AWGWFs['TekAWG1'] = {}
+        AWGWFs['TekAWG1']['ch1'] = []
+        AWGWFs['TekAWG1']['ch2'] = []
+        AWGWFs['TekAWG1']['ch1m1'] = []
+        
+        for ct in range(1,10):
+            AWGWFs['TekAWG1']['ch1'].append(np.sin(np.linspace(0,ct*np.pi,10000)))
+            AWGWFs['TekAWG1']['ch2'].append(np.cos(np.linspace(0,ct*np.pi,10000)))
+            AWGWFs['TekAWG1']['ch1m1'].append(np.abs(AWGWFs['TekAWG1']['ch1'][-1]) < 0.5)
     
-    for ct in range(1,10):
-        AWGWFs['TekAWG1']['ch1'].append(np.sin(np.linspace(0,ct*np.pi,10000)))
-        AWGWFs['TekAWG1']['ch2'].append(np.cos(np.linspace(0,ct*np.pi,10000)))
-        AWGWFs['TekAWG1']['ch1m1'].append(np.abs(AWGWFs['TekAWG1']['ch1'][-1]) < 0.5)
-    
-    
-    plot_pulse_seqs(AWGWFs)
+        plot_pulse_seqs(AWGWFs)

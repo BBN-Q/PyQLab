@@ -13,58 +13,29 @@ import numpy as np
 
 #Some constants
 ADDRESS_UNIT = 4 #everything is done in units of 4 timesteps
-MIN_LL_ENTRY_COUNT = 3 #minimum length of mini link list
-MAX_WAVEFORM_PTS = 8192 #maximum size of waveform memory
-MAX_WAVEFORM_VALUE = 8191 #maximum waveform value i.e. 14bit DAC
-MAX_BANK_SIZE = 512 #maximum number of LL entries in a bank
+MIN_LL_ENTRY_COUNT = 2 #minimum length of mini link list
+MAX_WAVEFORM_PTS = 2**14 #maximum size of waveform memory
+MAX_WAVEFORM_VALUE = 2**13-1 #maximum waveform value i.e. 14bit DAC
+MAX_LL_ENTRIES = 4096 #maximum number of LL entries in a bank
+MAX_REPEAT_COUNT = 2^10-1;
 
-ELL_TIME_AMPLITUDE     = 2**15
-ELL_ZERO              = 2**14
-ELL_LL_TRIGGER         = 2**13
-ELL_FIRST_ENTRY        = 2**12;
-ELL_LAST_ENTRY         = 2**11;
-
-#ELL_TA_MAX             = hex2dec('FFFF');
-#ELL_TRIGGER_DELAY      = hex2dec('3FFF');
-#ELL_TRIGGER_MODE_SHIFT = 14;
-#ELL_TRIGGER_DELAY_UNIT = 3.333e-9;
-
-
-
+#APS bit masks
+START_MINILL_BIT = 16;
+END_MINILL_BIT = 15;
+WAIT_TRIG_BIT = 14;
+TA_PAIR_BIT = 13;
+        
 chanStrs = ['ch1','ch2','ch3','ch4']
+mrkStrs = ['ch1m1', 'ch2m1', 'ch3m1', 'ch4m1']
 chanStrs2 = ['chan_1','chan_2','chan_3','chan_4']
 
-def calc_offset(entry, offsets, isFirst=False, isLast=False):
+def calc_offset(entry, offsets):
     '''
     Helper function to calculate offset byte word from an entry.
-
-    From APSPattern.m    
-    % offset register format
-    %  15  14  13   12   11  10 9 8 7 6 5 4 3 2 1 0
-    % | A | Z | T | LS | LE |      Offset / 4      |
-    %
-    %  Address - Address of start of waveform / 4
-    %  A       - Time Amplitude Pair
-    %  Z       - Output is Zero
-    %  T       - Entry has valid output trigger delay
-    %  LS      - Start of Mini Link List (actually flags last entry of mini LL)
-    %  LE      - End of Mini Link List (actually flags penultimate entry of mini LL)
     '''
-    
     #First divide by the APS units
     offset = offsets[entry.key]//ADDRESS_UNIT
     
-    #Now add in each of the bitflags in turn
-    if entry.isTimeAmp:
-        offset += ELL_TIME_AMPLITUDE
-#    if entry.isZero:
-#        offset += ELL_ZERO
-    if entry.hasTrigger:
-        offset += ELL_LL_TRIGGER
-    if isFirst:
-        offset += ELL_FIRST_ENTRY
-    if isLast:
-        offset += ELL_LAST_ENTRY
     return offset
     
 def calc_trigger(entry):
@@ -94,10 +65,12 @@ def create_empty_bank():
     '''
     Helper function to initialize an empty bank.
     '''
-    return {'offset':np.zeros(MAX_BANK_SIZE, dtype=np.uint16), 'count':np.zeros(MAX_BANK_SIZE, dtype=np.uint16), 'trigger':np.zeros(MAX_BANK_SIZE, dtype=np.uint16), 'repeat':np.zeros(MAX_BANK_SIZE, dtype=np.uint16)}
+    return {'offset':np.zeros(MAX_LL_ENTRIES, dtype=np.uint16), 'count':np.zeros(MAX_LL_ENTRIES, dtype=np.uint16),
+            'trigger1':np.zeros(MAX_LL_ENTRIES, dtype=np.uint16), 'trigger2':np.zeros(MAX_LL_ENTRIES, dtype=np.uint16),
+            'repeat':np.zeros(MAX_LL_ENTRIES, dtype=np.uint16)}
  
 
-def write_bank_to_file(FID, bank, bankGroupStr, trimct=MAX_BANK_SIZE):
+def write_bank_to_file(FID, bank, bankGroupStr, trimct=MAX_LL_ENTRIES):
     '''
     Helper functionto write a bank dictionary to a group.
     '''
@@ -112,11 +85,13 @@ def write_bank_to_file(FID, bank, bankGroupStr, trimct=MAX_BANK_SIZE):
         bank[key].resize(trimct)
         FID.create_dataset(bankGroupStr + '/' + key, data=bank[key])
         
+
+        
+        
 def write_APS_file(AWGData, fileName):
     '''
     Main function to pack a bunch of LLs into an APS h5 file
     '''
-
     #Open the HDF5 file
     with h5py.File(fileName, 'w') as FID:  
     
@@ -198,10 +173,57 @@ def write_APS_file(AWGData, fileName):
                     
                         
             
-        FID['/'].attrs['Version'] = 1.6
+        FID['/'].attrs['Version'] = 2.0
         FID['/'].attrs['channelDataFor'] = np.int16(channelDataFor)
     
     
+def read_APS_file(fileName):
+    '''
+    Helper function to read back in data from a H5 file and reconstruct the sequence
+    '''
+    AWGData = {}
+    #APS bit masks
+    START_MINILL_MASK = 2**16;
+    TA_PAIR_MASK = 2**13;
+    REPEAT_MASK = 2**10-1
+            
+    
+    with h5py.File(fileName, 'r') as FID:
+        chanct = 0
+        for chanct, chanStr in enumerate(chanStrs2):
+            #If we're in IQ mode then the Q channel gets its linkListData from the I channel
+            if FID[chanStr].attrs['isIQMode'][0]:
+                tmpChan = 2*chanct//2
+                curLLData = FID[chanStrs[tmpChan]]['linkListData']
+            else:
+                curLLData = FID[chanStr]['linkListData']
+            numEntries = curLLData.attrs['length'][0]
+            AWGData[chanStrs[chanct]] = []
+            AWGData[mrkStrs[chanct]] = []
+            wfLib = FID[chanStr]['waveformLib']
+            for entryct in range(numEntries):
+                #If we are starting a new entry push back an empty array
+                if START_MINILL_MASK & curLLData['repeat'][entryct]:
+                    AWGData[chanStrs[chanct]].append(np.array([], dtype=np.float64))
+                    AWGData[chanStrs[chanct]].append(np.array([], dtype=np.bool))
+                #If it is a TA pair or regular pulse
+                curRepeat = curLLData['repeat'] & REPEAT_MASK
+                if TA_PAIR_MASK & curLLData['repeat'][entryct]:
+                    AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1], 
+                                                    np.tile(wfLib[curLLData['addr']*ADDRESS_UNIT:curLLData['addr']*ADDRESS_UNIT+4], curRepeat*(curLLData['count']+1))))
+                else:
+                    AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1], 
+                                                    np.tile(wfLib[curLLData['addr']*ADDRESS_UNIT:curLLData['addr']*ADDRESS_UNIT+4*(curLLData['count']-1)], curRepeat)))
+                #Add the trigger pulse
+                tmpPulse = np.zeros(ADDRESS_UNIT*curRepeat*(curLLData['count']+1), dtype=np.bool)
+                if chanct//2 == 0:
+                    if curLLData['trigger1'] > 0:
+                        tmpPulse[4*curLLData['trigger1']] = True
+                else:
+                    if curLLData['trigger2'] > 0:
+                        tmpPulse[4*curLLData['trigger2']] = True
+                AWGData[mrkStrs[chanct]][-1] = np.hstack((AWGData[mrkStrs[chanct]][-1], tmpPulse)) 
+
 
 if __name__ == '__main__':
 
