@@ -57,9 +57,9 @@ class PulseSeqPlotWindow(QtGui.QWidget):
                         tmpWFs[chanStr] = []
                         for miniLL in tmpAWG[chanStr]['LLs']:
                             tmpWFs[chanStr].append(PulseSequencer.LL2sequence(miniLL, tmpAWG[chanStr]['WFLibrary']))
-                    AWGWFs[tmpAWGName] = tmpWFs
+                    self.AWGWFs[tmpAWGName] = tmpWFs
         
-        numSeqs = len(AWGWFs.values()[0].values()[0])
+        numSeqs = np.max([len(tmpAWG.values()[0] for tmpAWG in self.AWGWFs.values())])
         
         #Create the GUI
         self.resize(1000,700)
@@ -94,11 +94,15 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         plotCheckBoxes.setMinimumWidth(150)
         plotCheckBoxes.setHeaderLabel('Channel Plot')
         plotCheckBoxes.itemClicked.connect(self.update_plot)
-        for tmpAWGName, tmpAWG in AWGWFs.items():
+        for tmpAWGName, tmpAWG in self.AWGWFs.items():
             tmpItem = QtGui.QTreeWidgetItem([tmpAWGName])
             for tmpChannelName in sorted(tmpAWG.keys()):
                 tmpChildItem = QtGui.QTreeWidgetItem([tmpChannelName])
-                tmpChildItem.setCheckState(0,QtCore.Qt.Checked)
+                #Default to not checked if there is nothing going on
+                if np.all(self.AWGWFs[tmpAWGName][tmpChannelName][0] == 0):
+                    tmpChildItem.setCheckState(0, QtCore.Qt.Unchecked)
+                else:
+                    tmpChildItem.setCheckState(0,QtCore.Qt.Checked)
                 tmpItem.addChild(tmpChildItem)
             plotCheckBoxes.addTopLevelItem(tmpItem)
             tmpItem.setExpanded(True)
@@ -152,7 +156,8 @@ class PulseSeqPlotWindow(QtGui.QWidget):
             for childct in range(tmpItem.childCount()):
                 tmpChild = tmpItem.child(childct)
                 if tmpChild.checkState(0) == QtCore.Qt.Checked:
-                    self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
+                    if curSegNum < len(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))]):
+                        self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
                     self.ax.text(0, vertShift,tmpAWGName+'-'+str(tmpChild.text(0)), fontsize=8)
                     vertShift += 2
         self.ax.set_ylim((-1, vertShift))                    
