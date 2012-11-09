@@ -8,8 +8,10 @@ Created on Tue May  8 20:39:26 2012
 
 import struct
 import io
+import h5py
 import numpy as np
 
+MAX_WAVEFORM_VALUE = 2**13-1 #maximum waveform value i.e. 14bit DAC
 
 
 def write_field(FID, fieldName, data, dataType):
@@ -48,7 +50,7 @@ def pack_waveform(analog, marker1, marker2):
     # ignore the one extra positive number and scale from [0,16382]
     analog[analog>1] = 1.0
     analog[analog<-1] = -1.0
-    binData = np.uint16( 8191*analog + 8191 );
+    binData = np.uint16( MAX_WAVEFORM_VALUE*analog + MAX_WAVEFORM_VALUE );
     
     binData += 2**14*marker1 + 2**15*marker2
     
@@ -159,6 +161,20 @@ def write_Tek_file(WFs, fileName, seqName, options=None):
             
     FID.close()
     
+def read_Tek_file(fileName):
+    '''
+    Helper function to read in TekAWG h5 dump for plotting.
+    '''
+    chanStrs = ['ch1','ch2','ch3','ch4']
+    mrkStrs = ['ch1m1', 'ch1m2', 'ch2m1', 'ch2m2', 'ch3m1', 'ch3m2', 'ch4m1', 'ch4m2']
+    AWGData = {}
+    with h5py.File(fileName, 'r') as FID:
+        for tmpChan in chanStrs:
+            AWGData[tmpChan] = [(1.0/MAX_WAVEFORM_VALUE)*(tmpSeq-MAX_WAVEFORM_VALUE-1) for tmpSeq in FID[tmpChan]]
+        for tmpChan in mrkStrs:
+            AWGData[tmpChan] = [np.array(tmpSeq, dtype=np.bool) for tmpSeq in FID[tmpChan]];
+    
+    return AWGData        
     
 if __name__ == '__main__':
 

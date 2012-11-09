@@ -22,7 +22,7 @@ import numpy as np
 import PulseSequencer
 
 from APSPattern import read_APS_file
-#from TekPattern import read_Tek_file
+from TekPattern import read_Tek_file
 
 import argparse
 import os.path
@@ -59,7 +59,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
                             tmpWFs[chanStr].append(PulseSequencer.LL2sequence(miniLL, tmpAWG[chanStr]['WFLibrary']))
                     self.AWGWFs[tmpAWGName] = tmpWFs
         
-        numSeqs = np.max([len(tmpAWG.values()[0] for tmpAWG in self.AWGWFs.values())])
+        numSeqs = np.max([len(tmpAWG.values()[0]) for tmpAWG in self.AWGWFs.values()])
         
         #Create the GUI
         self.resize(1000,700)

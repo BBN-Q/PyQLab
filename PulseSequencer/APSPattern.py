@@ -229,10 +229,10 @@ def read_APS_file(fileName):
                 #Add the trigger pulse
                 tmpPulse = np.zeros(ADDRESS_UNIT*curRepeat*(tmpCount[entryct]+1), dtype=np.bool)
                 if chanct//2 == 0:
-                    if curLLData['trigger1'] > 0:
+                    if tmpTrigger1[entryct] > 0:
                         tmpPulse[4*tmpTrigger1[entryct]] = True
                 else:
-                    if curLLData['trigger2'] > 0:
+                    if tmpTrigger2[entryct] > 0:
                         tmpPulse[4*tmpTrigger2[entryct]] = True
                 AWGData[mrkStrs[chanct]][-1] = np.hstack((AWGData[mrkStrs[chanct]][-1], tmpPulse)) 
                 
