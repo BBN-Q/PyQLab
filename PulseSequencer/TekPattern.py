@@ -165,14 +165,19 @@ def read_Tek_file(fileName):
     '''
     Helper function to read in TekAWG h5 dump for plotting.
     '''
-    chanStrs = ['ch1','ch2','ch3','ch4']
-    mrkStrs = ['ch1m1', 'ch1m2', 'ch2m1', 'ch2m2', 'ch3m1', 'ch3m2', 'ch4m1', 'ch4m2']
     AWGData = {}
+    waveformMask = 2**14-1;
+    marker1Mask = 2**14;
+    marker2Mask = 2**15;
+    
     with h5py.File(fileName, 'r') as FID:
-        for tmpChan in chanStrs:
-            AWGData[tmpChan] = [(1.0/MAX_WAVEFORM_VALUE)*(tmpSeq-MAX_WAVEFORM_VALUE-1) for tmpSeq in FID[tmpChan]]
-        for tmpChan in mrkStrs:
-            AWGData[tmpChan] = [np.array(tmpSeq, dtype=np.bool) for tmpSeq in FID[tmpChan]];
+        for chanct in range(1,5):
+            chanStr = 'ch{0}'.format(chanct)
+            marker1Str = 'ch{0}m1'.format(chanct)
+            marker2Str = 'ch{0}m2'.format(chanct)
+            AWGData[chanStr] = [(1.0/MAX_WAVEFORM_VALUE)*(np.int16(tmpSeq&waveformMask)-MAX_WAVEFORM_VALUE-1) for tmpSeq in FID[chanStr]]
+            AWGData[marker1Str] = [tmpSeq&marker1Mask == marker1Mask for tmpSeq in FID[chanStr]];
+            AWGData[marker2Str] = [tmpSeq&marker2Mask == marker2Mask for tmpSeq in FID[chanStr]];
     
     return AWGData        
     
