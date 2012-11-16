@@ -93,7 +93,7 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         plotCheckBoxes = QtGui.QTreeWidget()
         plotCheckBoxes.setMinimumWidth(150)
         plotCheckBoxes.setHeaderLabel('Channel Plot')
-        plotCheckBoxes.itemClicked.connect(self.update_plot)
+        plotCheckBoxes.itemClicked.connect(self.new_plot)
         for tmpAWGName, tmpAWG in self.AWGWFs.items():
             tmpItem = QtGui.QTreeWidgetItem([tmpAWGName])
             for tmpChannelName in sorted(tmpAWG.keys()):
@@ -139,16 +139,20 @@ class PulseSeqPlotWindow(QtGui.QWidget):
         vboxTot.addLayout(hboxBottom)
         
         self.setLayout(vboxTot) 
-        
-        self.update_plot()
+        self.lines = {}
+        self.new_plot()
 
-    def update_plot(self):
-        
+
+    def new_plot(self):
+        '''
+        Starts a new plot if the channels have changed
+        '''
         self.ax.clear()
 
         #Get the current segment number
         curSegNum = self.slider.sliderPosition()
         
+        self.lines = {}
         vertShift = 0
         for itemct in range(self.plotCheckBoxes.topLevelItemCount()):
             tmpItem = self.plotCheckBoxes.topLevelItem(itemct)
@@ -157,10 +161,28 @@ class PulseSeqPlotWindow(QtGui.QWidget):
                 tmpChild = tmpItem.child(childct)
                 if tmpChild.checkState(0) == QtCore.Qt.Checked:
                     if curSegNum < len(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))]):
-                        self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
+                        tmpChanStr = ''.join([tmpAWGName,str(tmpChild.text(0))]) 
+                        self.lines[tmpChanStr] = {}
+                        self.lines[tmpChanStr]['handle'], = self.ax.plot(self.AWGWFs[tmpAWGName][str(tmpChild.text(0))][curSegNum] + vertShift)
+                        self.lines[tmpChanStr]['vertShift'] = vertShift
+                        self.lines[tmpChanStr]['awgData'] = self.AWGWFs[tmpAWGName][str(tmpChild.text(0))]
                     self.ax.text(0, vertShift,tmpAWGName+'-'+str(tmpChild.text(0)), fontsize=8)
                     vertShift += 2
         self.ax.set_ylim((-1, vertShift))                    
+        self.canvas.draw()
+        
+
+    def update_plot(self):
+        '''
+        Just updates the y-date for the sequence number changes
+        '''
+        #Get the current segment number
+        curSegNum = self.slider.sliderPosition()
+
+        for tmpChanStr, tmpLine in self.lines.items():
+            if curSegNum < len(tmpLine['awgData']):
+                tmpLine['handle'].set_ydata(tmpLine['awgData'][curSegNum] + tmpLine['vertShift'])
+        
         self.canvas.draw()
         
     def center(self):
