@@ -63,7 +63,7 @@ class Square(Pulse):
         numPts = round(self.pulseLength*AWGFreq)
         return np.ones(numPts)
         
-class QId(Pulse):
+class Delay(Pulse):
     '''
     A delay between pulses.
     '''

@@ -6,10 +6,10 @@ Main classes for compiling pulse sequences.
 @author: cryan
 '''
 
+# from copy import copy
 from copy import deepcopy
 
 import numpy as np
-import hashlib
 
 import Channels
 import PulseSequencePlotter
@@ -33,7 +33,7 @@ class Pulse(object):
     def __add__(self, other):
         newLabel = self.label+"+"+other.label
         if self.qubits != other.qubits:
-            raise "Can only concatenate pulses acting on the same channel"
+            raise NameError("Can only concatenate pulses acting on the same channel")
         return Pulse(newLabel, self.qubits, np.append(self.shape, other.shape), self.frameChange + other.frameChange)
 
     # unary negation inverts the pulse shape
@@ -68,12 +68,11 @@ class PulseBlock(object):
     def __mul__(self, rhs):
         # make sure RHS is a PulseBlock
         rhs = rhs.promote()
-        # TODO: shallow copy should be sufficient here... how do I do that??
-        result = PulseBlock(self)
+        result = deepcopy(self)
         
-        for (k, v) in rhs.pulses:
+        for (k, v) in rhs.pulses.items():
             if k in result.pulses.keys():
-                raise "Attempted to multiply pulses acting on the same space"
+                raise NameError("Attempted to multiply pulses acting on the same space")
             else:
                 result.pulses[k] = v
         result.channels += rhs.channels
@@ -91,7 +90,7 @@ class PulseBlock(object):
     #The maximum number of points needed for any channel on this block
     @property
     def maxPts(self):
-        return max( map(size, self.pulses.values()) )
+        return max( map(np.size, self.pulses.values()) )
 
 class PulseSequence(object):
     '''

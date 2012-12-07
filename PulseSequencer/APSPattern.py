@@ -9,7 +9,7 @@ Created on Wed May 16 22:43:13 2012
 
 import h5py
 import numpy as np
-
+import hashlib
 
 #Some constants
 ADDRESS_UNIT = 4 #everything is done in units of 4 timesteps

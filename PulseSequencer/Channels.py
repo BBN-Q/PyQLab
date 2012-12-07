@@ -107,12 +107,12 @@ class LogicalMarkerChannel(LogicalChannel):
         tmpBlock.add_pulse(PatternGen.Square(length, amp=1), self)
         return tmpBlock
         
-class QubitChannel(LogicalChannel):
+class Qubit(LogicalChannel):
     '''
     The main class for generating qubit pulses.  
     '''
     def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0, dragScaling=0, cutoff=2, **kwargs):
-        super(QubitChannel, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel)
+        super(Qubit, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel)
         self.pulseType = pulseType
         self.pulseLength = pulseLength
         self.bufferTime = bufferTime
@@ -121,23 +121,6 @@ class QubitChannel(LogicalChannel):
         self.dragScaling = dragScaling
         self.cutoff = cutoff
         self.pulseCache = {}
-        
-    def cachedPulse(pulseFunc):
-        ''' Decorator for caching pulses to keep waveform memory usage down. '''
-        def cacheWrap(self):
-            if pulseFunc.__name__ not in self.pulseCache:
-                self.pulseCache[pulseFunc.__name__] = pulseFunc(self)
-            return self.pulseCache[pulseFunc.__name__]
-        
-        return cacheWrap
-
-    def overrideDefaults(self, updateParams):
-        '''Helper function to update any parameters passed in and fill in the defaults otherwise.'''
-        paramsList = ['pulseType','pulseLength','bufferTime','piAmp','pi2Amp','dragScaling', 'cutoff']
-        #First get the default or updated values
-        updateValues = [updateParams[tmpName] if tmpName in updateParams else getattr(self, tmpName) for tmpName in paramsList]
-        #Return a dictionary        
-        return {paramName:paramValue for paramName,paramValue in zip(paramsList, updateValues)}
         
         
 class Generator(object):
