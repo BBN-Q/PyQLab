@@ -48,6 +48,10 @@ class LogicalChannel(object):
     def isPhysical():
         return False
 
+    # add __eq__ method to make hashable
+    def __eq__(self, other):
+        return self.name == other.name and self.channelType == other.channelType and self.physicalChannel == other.physicalChannel
+
 class PhysicalChannel(object):
     '''
     The main class for actual AWG channels.
@@ -64,6 +68,10 @@ class PhysicalChannel(object):
     @property
     def isPhysical():
         return True
+
+    # add __eq__ method to make hashable
+    def __eq__(self, other):
+        return self.name == other.name and self.channelType == other.channelType and self.AWGName == other.AWGName
 
 
 class PhysicalMarkerChannel(PhysicalChannel):

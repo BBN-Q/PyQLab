@@ -6,8 +6,6 @@ Somewhat mimic Blake's PatternGen for creating pulse shapes.
 '''
 import numpy as np
 
-
-
 class Pulse(object):
     '''
     The basic pulse shape which will be inherited.
@@ -68,7 +66,7 @@ class Delay(Pulse):
     A delay between pulses.
     '''
     def __init__(self, pulseLength=None, **kwargs):
-        super(QId, self).__init__(pulseLength=pulseLength, isTimeAmp=True, **kwargs)
+        super(Delay, self).__init__(pulseLength=pulseLength, isTimeAmp=True, **kwargs)
         
     def generateShape(self, AWGFreq):
         #Return a single point at 0
