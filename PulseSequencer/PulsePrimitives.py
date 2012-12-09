@@ -1,5 +1,5 @@
-import PulseSequencer
-import Channels
+# import PulseSequencer
+# import Channels
 import PatternGen
 from PulseSequencer import Pulse
 
@@ -21,9 +21,9 @@ def cachedPulse(pulseFunc):
     
     return cacheWrap
 
-def Id(qubit, widht=0, **kwargs):
+def Id(qubit, width=0, **kwargs):
     ''' A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime. '''
-    shape = PatternGen.Delay(**overrideDefaults(qubit, kwargs))
+    shape = PatternGen.Delay(amp=0, phase=0, pulseLength=width)
     return Pulse("Id", (qubit), shape, 0.0)
 
 def Xtheta(qubit, amp=0, **kwargs):
