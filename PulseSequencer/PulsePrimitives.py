@@ -23,7 +23,8 @@ def cachedPulse(pulseFunc):
 
 def Id(qubit, width=0, **kwargs):
     ''' A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime. '''
-    shape = PatternGen.Delay(amp=0, phase=0, pulseLength=width)
+    kwargs['pulseLength'] = width
+    shape = PatternGen.Delay(amp=0, phase=0, **overrideDefaults(qubit, kwargs))
     return Pulse("Id", (qubit), shape, 0.0)
 
 def Xtheta(qubit, amp=0, **kwargs):
@@ -93,6 +94,7 @@ def Y90m(qubit):
     return Pulse("Y90m", (qubit), shape, 0.0)
 
 ## two-qubit primitivies
+# @cachedPulse
 def CNOT(source, target):
     # TODO construct the (source, target) channel and pull parameters from there
     # something like: channel = Qubit((source, target))

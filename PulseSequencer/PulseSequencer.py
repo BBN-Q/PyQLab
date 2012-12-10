@@ -115,7 +115,7 @@ def show(seq):
         qubits |= set(step.pulses.keys())
 
     # initialize empty arrays for each qubit
-    concatShapes = {q: np.array([]) for q in qubits}
+    concatShapes = {q: np.array([], dtype=np.complex128) for q in qubits}
 
     # now loop through steps and push on the pulse shape, or an Id operation if none specified
     for step in seq:
@@ -138,8 +138,10 @@ def show(seq):
 def unitTest1():
     from Channels import Qubit
     from PulsePrimitives import X90, Id
+    # eventually want q1 = Qubit('q1')
     q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
     ramsey = [[X90(q1), Id(q1, delay), X90(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
+    # ramsey = [[X90(q1), Id(q1, delay), X90(q1), MEAS(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
     show(ramsey[2])
     #compileSeq(ramsey)
 
@@ -149,7 +151,7 @@ def unitTest2():
     q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
     # goal is to make this just: q1 = Qubit('q1')
     q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-    # seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2))]
+    # seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2)), MEAS(q1,q2)]
     seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), Xm(q2), Y(q1)*X(q2)]
     show(seq)
     #compileSeq(seq)

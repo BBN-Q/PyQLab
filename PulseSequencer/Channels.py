@@ -72,7 +72,8 @@ class PhysicalChannel(object):
 
     # add __eq__ method to make hashable
     def __eq__(self, other):
-        return self.name == other.name and self.channelType == other.channelType and self.AWGName == other.AWGName
+        # return self.name == other.name and self.channelType == other.channelType and self.AWGName == other.AWGName
+        return id(self) == id(other)
 
 
 class PhysicalMarkerChannel(PhysicalChannel):
