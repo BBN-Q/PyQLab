@@ -6,7 +6,8 @@ Main classes for compiling pulse sequences.
 @author: cryan
 '''
 
-from copy import deepcopy
+from copy import copy
+# from copy import deepcopy
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,7 +70,11 @@ class PulseBlock(object):
     def __mul__(self, rhs):
         # make sure RHS is a PulseBlock
         rhs = rhs.promote()
-        result = deepcopy(self)
+        # we to go one layer deep in the copy so that we can manipulate self.pulses and self.channels w/o affecting the original object
+        # should bundle this behavior into a __copy__ method
+        result = copy(self)
+        result.pulses = copy(self.pulses)
+        result.channels = copy(self.channels)
         
         for (k, v) in rhs.pulses.items():
             if k in result.pulses.keys():
@@ -91,8 +96,8 @@ class PulseBlock(object):
     #The maximum number of points needed for any channel on this block
     @property
     def maxPts(self):
-        return max( [np.size(p.generateShape(AWGFreq)) for p in self.pulses.values()] )
-        # return max( map(np.size, self.pulses.values()) )
+        return max( [len(p.generateShape(AWGFreq)) for p in self.pulses.values()] )
+        # return max( map(len, self.pulses.values()) )
 
 class PulseSequence(object):
     '''
@@ -111,7 +116,7 @@ def show(seq):
 
     # initialize empty arrays for each qubit
     concatShapes = {q: np.array([]) for q in qubits}
-    
+
     # now loop through steps and push on the pulse shape, or an Id operation if none specified
     for step in seq:
         stepLength = step.maxPts
@@ -122,11 +127,13 @@ def show(seq):
                 concatShapes[q] = np.append(concatShapes[q], np.zeros(stepLength))
     
     # plot
-    for q in qubits:
-        waveformToPlot = np.real(concatShapes[q])
-        p = plt.plot(np.linspace(0,waveformToPlot.size/AWGFreq,waveformToPlot.size), waveformToPlot)
+    for (ct,q) in enumerate(qubits):
+        plt.subplot(len(qubits),1,ct+1)
+        waveformToPlot = concatShapes[q]
+        p = plt.plot(np.linspace(0,len(waveformToPlot)/AWGFreq,len(waveformToPlot)), np.real(waveformToPlot), 'r')
+        p = plt.plot(np.linspace(0,len(waveformToPlot)/AWGFreq,len(waveformToPlot)), np.imag(waveformToPlot), 'b')
         plt.ylim((-1.05,1.05))
-        plt.show(p)
+    plt.show(p)
 
 def unitTest1():
     from Channels import Qubit
@@ -137,16 +144,19 @@ def unitTest1():
     #compileSeq(ramsey)
 
 def unitTest2():
+    from Channels import Qubit
+    from PulsePrimitives import X90, X, Xm, Y, CNOT
     q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
     # goal is to make this just: q1 = Qubit('q1')
     q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-    seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2))]
+    # seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2))]
+    seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), Xm(q2), Y(q1)*X(q2)]
     show(seq)
     #compileSeq(seq)
 
 if __name__ == '__main__':
     unitTest1()
-    # unitTest2()
+    unitTest2()
 
     #Create a qubit channel
     # channelObjs, channelDicts = Channels.load_channel_info('ChannelParams.json') 

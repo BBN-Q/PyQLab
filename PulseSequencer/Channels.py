@@ -50,7 +50,8 @@ class LogicalChannel(object):
 
     # add __eq__ method to make hashable
     def __eq__(self, other):
-        return self.name == other.name and self.channelType == other.channelType and self.physicalChannel == other.physicalChannel
+        # return self.name == other.name and self.channelType == other.channelType and self.physicalChannel == other.physicalChannel
+        return id(self) == id(other)
 
 class PhysicalChannel(object):
     '''
