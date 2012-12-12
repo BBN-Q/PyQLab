@@ -15,9 +15,6 @@ from PySide import QtGui, QtCore
 
 from operator import itemgetter
 
-import PatternGen
-import PulseSequencer
-
 from math import tan,cos,pi
 
 class ChannelTypes(object):
