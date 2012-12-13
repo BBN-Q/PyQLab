@@ -23,6 +23,13 @@ class MultiQubit(unittest.TestCase):
         seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), Xm(q2), Y(q1)*X(q2)]
         show(seq)
         #compileSeq(seq)
+    
+    def test_align(self):
+        q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        # goal is to make this just: q1 = Qubit('q1')
+        q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        seq = [align(X90(q1)*Utheta(q1, 'pulseLength=100e-9'), 'right'), Y90(q1)*Y90(q2)]
+        show(seq)
 
 
 if __name__ == "__main__":
