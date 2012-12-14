@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
 
-from ..QGL import *
+
+from QGL import *
 
 
 class SingleQubit(unittest.TestCase):
