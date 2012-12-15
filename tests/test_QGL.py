@@ -46,7 +46,7 @@ class MultiQubit(unittest.TestCase):
         q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
         # goal is to make this just: q1 = Qubit('q1')
         q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-        seq = [align(X90(q1)*Utheta(q1, 'pulseLength=100e-9'), 'right'), Y90(q1)*Y90(q2)]
+        seq = [align(X90(q1)*Utheta(q2, 'pulseLength=100e-9'), 'right'), Y90(q1)*Y90(q2)]
         show(seq)
 
 
