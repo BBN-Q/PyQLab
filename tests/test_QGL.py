@@ -28,11 +28,14 @@ class SingleQubit(unittest.TestCase):
         assert(len(wfLib[self.q1]) == 12) # 10 non-zero delays + X90 + TAZ
 
 class MultiQubit(unittest.TestCase):
+    def setUp(self):
+        self.q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        # goal is to make this just: q1 = Qubit('q1')
+        self.q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
 
     def test_Operators(self):
-        q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-        # goal is to make this just: q1 = Qubit('q1')
-        q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        q1 = self.q1
+        q2 = self.q2
         # seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2)), MEAS(q1,q2)]
         seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), Xm(q2), Y(q1)*X(q2)]
         show(seq)
@@ -41,12 +44,15 @@ class MultiQubit(unittest.TestCase):
     def test_compile(self):
         seq = self.test_Operators()
         LL, wfLib = Compiler.compile_sequence(seq)
+        assert(len(LL[self.q1]) == 1)
+        assert(len(LL[self.q1][0]) == 5)
+        assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
+        assert(len(wfLib[self.q2]) == 3) # Y, X, TAZ
     
     def test_align(self):
-        q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-        # goal is to make this just: q1 = Qubit('q1')
-        q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-        seq = [align(X90(q1)*Utheta(q2, 'pulseLength=100e-9'), 'right'), Y90(q1)*Y90(q2)]
+        q1 = self.q1
+        q2 = self.q2
+        seq = [align(X90(q1)*Xtheta(q2, amp=0.5, pulseLength=100e-9), 'right'), Y90(q1)*Y90(q2)]
         show(seq)
 
 
