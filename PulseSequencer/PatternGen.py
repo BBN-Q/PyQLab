@@ -6,9 +6,7 @@ Somewhat mimic Blake's PatternGen for creating pulse shapes.
 '''
 import numpy as np
 
-
-
-class Pulse(object):
+class Pattern(object):
     '''
     The basic pulse shape which will be inherited.
     '''
@@ -20,7 +18,7 @@ class Pulse(object):
         self.isTimeAmp = False if isTimeAmp is None else isTimeAmp
         
     #Generate the bare shape: should be overwritten in subclasses
-    def generateShape(self):
+    def generateShape(self, AWGFreq):
         return np.array([])
 
     #Create the full patter with buffering points    
@@ -35,7 +33,7 @@ class Pulse(object):
 '''
 Some basic shapes.
 '''
-class Gaussian(Pulse):
+class Gaussian(Pattern):
     '''
     A simple gaussian shaped pulse. 
     cutoff is how many sigma the pulse goes out
@@ -51,7 +49,7 @@ class Gaussian(Pulse):
         xStep = xPts[1] - xPts[0]
         return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[-1]+xStep)**2))
         
-class Square(Pulse):
+class Square(Pattern):
     '''
     A simple rectangular shaped pulse. 
     '''
@@ -63,22 +61,26 @@ class Square(Pulse):
         numPts = round(self.pulseLength*AWGFreq)
         return np.ones(numPts)
         
-class QId(Pulse):
+class Delay(Pattern):
     '''
     A delay between pulses.
     '''
     def __init__(self, pulseLength=None, **kwargs):
-        super(QId, self).__init__(pulseLength=pulseLength, isTimeAmp=True, **kwargs)
+        super(Delay, self).__init__(pulseLength=pulseLength, isTimeAmp=True, **kwargs)
         
     def generateShape(self, AWGFreq):
         #Return a single point at 0
-        return np.zeros(1, dtype=np.complex)
+        # return np.zeros(1, dtype=np.complex)
+        numPts = np.round(self.pulseLength*AWGFreq)
+        return np.zeros(numPts, dtype=np.complex)
 
     def generatePattern(self, AWGFreq):
         #Overload to also return only a single point
-        return np.zeros(1, dtype=np.complex)
+        # return np.zeros(1, dtype=np.complex)
+        numPts = np.round(self.pulseLength*AWGFreq)
+        return np.zeros(numPts, dtype=np.complex)
 
-class DRAG(Pulse):
+class DRAG(Pattern):
     '''
     A gaussian pulse with a drag correction on the quadrature channel.
     '''
@@ -99,7 +101,7 @@ class DRAG(Pulse):
         QQuad = self.dragScaling*derivScale*xPts*IQuad
         return IQuad+1j*QQuad
         
-class GaussOn(Pulse):
+class GaussOn(Pattern):
     '''
     A half-gaussian pulse going from zero to full
     '''
@@ -114,7 +116,7 @@ class GaussOn(Pulse):
         xStep = xPts[1] - xPts[0]
         return np.exp(-0.5*(xPts**2)) - np.exp(-0.5*((xPts[0]-xStep)**2))
 
-class GaussOff(Pulse):
+class GaussOff(Pattern):
     '''
     A half-gaussian pulse going from zero to full
     '''

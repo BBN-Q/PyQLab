@@ -1,13 +1,10 @@
 '''
-Created on Jan 8, 2012
 
-Main classes for compiling pulse sequences.
+Quantum Gate Language Module
 
-@author: cryan
 '''
 
 from copy import copy
-# from copy import deepcopy
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,10 +21,11 @@ class Pulse(object):
         shape - numpy array pulse shape
         frameChange - accumulated phase from the pulse
     '''
-    def __init__(self, label, qubits, shape, frameChange):
+    def __init__(self, label, qubits, shape, phase, frameChange):
         self.label = label
         self.qubits = qubits
-        self.shape = shape
+        self.shape = shape.astype(np.complex) # for now, do this since we are gettern objects from PatternGen rather than lists
+        self.phase = phase
         self.frameChange = frameChange
 
     # adding pulses concatenates the pulse shapes
@@ -48,8 +46,7 @@ class Pulse(object):
     def promote(self):
         # promote a Pulse to a PulseBlock
         pb =  PulseBlock()
-        pb.pulses = {self.qubits: self.shape}
-        pb.channels = [self.qubits]
+        pb.pulses = {self.qubits: self}
         return pb
 
 class PulseBlock(object):
@@ -63,7 +60,6 @@ class PulseBlock(object):
         #How multiple channels are aligned.
         self.alignment = 'left'
         self.pulses = {}
-        self.channels = []
 
     #Overload the multiplication operator to combine pulse blocks
     def __mul__(self, rhs):
@@ -73,14 +69,12 @@ class PulseBlock(object):
         # should bundle this behavior into a __copy__ method
         result = copy(self)
         result.pulses = copy(self.pulses)
-        result.channels = copy(self.channels)
         
         for (k, v) in rhs.pulses.items():
             if k in result.pulses.keys():
                 raise NameError("Attempted to multiply pulses acting on the same space")
             else:
                 result.pulses[k] = v
-        result.channels += rhs.channels
         return result
 
     #PulseBlocks don't need to be promoted, so just return self
@@ -90,18 +84,18 @@ class PulseBlock(object):
     #A list of the channels used in this block
     @property
     def channelNames(self):
-        return [channel.name for channel in self.channels]
+        return [channel.name for channel in self.pulses.keys()]
 
     #The maximum number of points needed for any channel on this block
     @property
     def maxPts(self):
-        return max( [len(p.generateShape(AWGFreq)) for p in self.pulses.values()] )
-        # return max( map(len, self.pulses.values()) )
+        return max([len(p.shape) for p in self.pulses.values()])
 
-class PulseSequence(object):
-    '''
-    A collection of pulse blocks which forms a sequence.
-    '''
+def align(pulseBlock, mode="center"):
+    # make sure we have a PulseBlock
+    pulseBlock = pulseBlock.promote()
+    pulseBlock.alignment = mode
+    return pulseBlock
 
 AWGFreq = 1e9
 
@@ -121,7 +115,7 @@ def show(seq):
         stepLength = step.maxPts
         for q in qubits:
             if q in step.pulses.keys():
-                concatShapes[q] = np.append(concatShapes[q], step.pulses[q].generatePattern(AWGFreq))
+                concatShapes[q] = np.append(concatShapes[q], step.pulses[q].shape)
             else:
                 concatShapes[q] = np.append(concatShapes[q], np.zeros(stepLength))
     
@@ -134,52 +128,6 @@ def show(seq):
         plt.ylim((-1.05,1.05))
     plt.show(p)
 
-def unitTest1():
-    from Channels import Qubit
-    from PulsePrimitives import X90, Id
-    # eventually want q1 = Qubit('q1')
-    q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-    ramsey = [[X90(q1), Id(q1, delay), X90(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
-    # ramsey = [[X90(q1), Id(q1, delay), X90(q1), MEAS(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
-    show(ramsey[2])
-    #compileSeq(ramsey)
-
-def unitTest2():
-    from Channels import Qubit
-    from PulsePrimitives import X90, X, Xm, Y, CNOT
-    q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-    # goal is to make this just: q1 = Qubit('q1')
-    q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
-    # seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), X(q2)+Xm(q2), Y(q1)*(X(q2)+Xm(q2)), MEAS(q1,q2)]
-    seq = [X90(q1), X(q1)*Y(q2), CNOT(q1,q2), Xm(q2), Y(q1)*X(q2)]
-    show(seq)
-    #compileSeq(seq)
 
 if __name__ == '__main__':
-    unitTest1()
-    unitTest2()
-
-    #Create a qubit channel
-    # channelObjs, channelDicts = Channels.load_channel_info('ChannelParams.json') 
-    # 
-    # #Pull out some short references
-    # q1 = channelObjs['q1']
-    # q2 = channelObjs['q2']
-    # digitizerTrig = channelObjs['digitizerTrig']
-    # measChannel = channelObjs['measChannel']
-    # 
-    # channelDicts['AWGList'] = ['TekAWG1', 'BBNAPS1']
-    # 
-    # #Define a typical sequence: say Pi Ramsey
-    # readoutBlock = gatePulse(digitizerTrig, 100e-9)*gatePulse(measChannel, 2e-6)
-    # def single_ramsey_sequence(pulseSpacing):
-    #     tmpSeq = [X90p(q1), Xp(q2), X90p(q1), readoutBlock]
-    #     tmpSeq[1].alignment = 'centre'
-    #     return tmpSeq
-    #     
-    # pulseSeqs = [single_ramsey_sequence(pulseSpacing) for pulseSpacing in np.linspace(1e-6,20e-6,100)]
-    # 
-    # #Complile and write to file
-    # AWGWFs, _LLs, _WFLibrary = compile_sequences(pulseSeqs, channelDicts, 'silly', 'silly') 
-    # 
-    # PulseSequencePlotter.plot_pulse_seqs(AWGWFs)
+    pass

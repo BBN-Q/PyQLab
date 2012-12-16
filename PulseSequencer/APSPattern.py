@@ -9,14 +9,14 @@ Created on Wed May 16 22:43:13 2012
 
 import h5py
 import numpy as np
-
+import hashlib
 
 #Some constants
 ADDRESS_UNIT = 4 #everything is done in units of 4 timesteps
 MIN_LL_ENTRY_COUNT = 2 #minimum length of mini link list
-MAX_WAVEFORM_PTS = 2**14 #maximum size of waveform memory
+MAX_WAVEFORM_PTS = 2**15 #maximum size of waveform memory
 MAX_WAVEFORM_VALUE = 2**13-1 #maximum waveform value i.e. 14bit DAC
-MAX_LL_ENTRIES = 4096 #maximum number of LL entries in a bank
+MAX_LL_ENTRIES = 8192 #maximum number of LL entries in a bank
 MAX_REPEAT_COUNT = 2^10-1;
 
 #APS bit masks
@@ -28,6 +28,55 @@ TA_PAIR_BIT = 12;
 chanStrs = ['ch1','ch2','ch3','ch4']
 mrkStrs = ['ch1m1', 'ch2m1', 'ch3m1', 'ch4m1']
 chanStrs2 = ['chan_1','chan_2','chan_3','chan_4']
+
+def APS_preprocess(miniLL, WFLibrary, SSBFreq, SSBPhase=0, phaseResolution=65536):
+    '''
+    Helper function to deal with LL elements less than minimum LL entry count and SSB 
+    '''
+    #Find the problem entries and fix
+    newMiniLL = []
+    entryct = 0
+    while entryct < len(miniLL)-1:
+        curEntry = miniLL[0]
+        if curEntry.length > MIN_ENTRY_LENGTH:
+            newMiniLL.append(curEntry)
+            entryct += 1
+        else:
+            nextEntry = miniLL[entryct+1]
+            #See if the next entry is a WF we can append too
+            #TODO: Handle repeats properly
+            if curEntry.isTimeAmp and not nextEntry.isTimeAmp:
+                #Concatenate the waveforms                
+                paddedWF = np.hstack((WFLibrary[curEntry.key]*np.ones(curEntry.length//ADDRESS_UNIT), WFLibrary[nextEntry.key]))
+                #Hash the result to generate a new unique key and add
+                newKey = hashlib.sha1(paddedWF.view(np.uint8)).hexdigest()
+                WFLibrary[newKey] = paddedWF
+                nextEntry.key = newKey
+                nextEntry.length = WFLibrary[newKey].size
+                newMiniLL.append(nextEntry)
+                entryct += 2
+    miniLL = newMiniLL
+    
+    if SSBFreq != 0:
+        WFvariants = {}
+        for key in WFLibrary.keys():
+            WFvariants[key] = {}
+        curPhase = 0.0
+        for ct, tmpEntry in enumerate(miniLL):
+            #Check whether we have this phase in our library already
+            curPhaseInt = np.round(curPhase*phaseResolution)
+            if curPhaseInt in WFvariants:
+                miniLL[ct].key = WFvariants[miniLL[ct].key][curPhaseInt]
+            else:
+                #Modulate the current waveform
+                tmpWF = np.exp(-1j*2*np.pi*(SSBFreq*np.arange(tmpEntry.length)+SSBPhase+curPhase))*WFLibrary[tmpEntry.key]
+                #Hash the result to generate the unique key 
+                newKey = hashlib.sha1(tmpWF.view(np.uint8)).hexdigest()
+                WFLibrary[newKey] = tmpWF
+                WFvariants[miniLL[ct].key][curPhaseInt] = newKey
+
+            #Update the phase 
+            curPhase += SSBFreq*tmpEntry.length
 
 def calc_offset(entry, offsets):
     '''
@@ -43,15 +92,15 @@ def calc_trigger(entry):
     Helper function to calculate trigger LL entries
     
     From APSPattern.m
-    % handle trigger values
-    %% Trigger Delay
-    %  15  14  13   12   11  10 9 8 7 6 5 4 3 2 1 0
-    % | Mode |                Delay                |
-    % Mode 0 0 = short pulse (0)
-    %      0 1 = rising edge (1)
-    %      1 0 = falling edge (2)
-    %      1 1 = no change (3)
-    % Delay = time in 4 sample increments ( 0 - 54.5 usec at max rate)
+     handle trigger values
+     Trigger Delay
+      15  14  13   12   11  10 9 8 7 6 5 4 3 2 1 0
+     | Mode |                Delay                |
+     Mode 0 0 = short pulse (0)
+          0 1 = rising edge (1)
+          1 0 = falling edge (2)
+          1 1 = no change (3)
+     Delay = time in 4 sample increments ( 0 - 54.5 usec at max rate)
     '''
     if entry.hasTrigger:
         assert entry.triggerDelay < 65536, 'Oops, maximum trigger delayis 65536 timesteps and you have asked for {0}'.format(entry.triggerDelay)
@@ -84,9 +133,6 @@ def write_bank_to_file(FID, bank, bankGroupStr, trimct=MAX_LL_ENTRIES):
     for key in bank.keys():
         bank[key].resize(trimct)
         FID.create_dataset(bankGroupStr + '/' + key, data=bank[key])
-        
-
-        
         
 def write_APS_file(AWGData, fileName):
     '''

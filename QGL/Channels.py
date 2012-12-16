@@ -10,14 +10,10 @@ Created on Jan 19, 2012
 
 import sys
 import json
+import PulseShapes
 
 from PySide import QtGui, QtCore
-
 from operator import itemgetter
-
-import PatternGen
-import PulseSequencer
-
 from math import tan,cos,pi
 
 class ChannelTypes(object):
@@ -48,14 +44,19 @@ class LogicalChannel(object):
     def isPhysical():
         return False
 
+    # add __eq__ method to make hashable
+    def __eq__(self, other):
+        return id(self) == id(other)
+
 class PhysicalChannel(object):
     '''
     The main class for actual AWG channels.
     '''
-    def __init__(self, name=None, AWGName=None, channelType=None):
+    def __init__(self, name=None, AWGName=None, channelType=None, samplingRate=1.0e9):
         self.name = name
         self.channelType = channelType
         self.AWGName = AWGName
+        self.samplingRate = samplingRate
 
     @property
     def isLogical():
@@ -65,27 +66,31 @@ class PhysicalChannel(object):
     def isPhysical():
         return True
 
+    # add __eq__ method to make hashable
+    def __eq__(self, other):
+        return id(self) == id(other)
+
 
 class PhysicalMarkerChannel(PhysicalChannel):
     '''
     An digital output channel on an AWG.
     '''
-    def __init__(self, name=None, AWGName=None, channel=None, channelShift=0.0, **kwargs):
+    def __init__(self, name=None, AWGName=None, channel=None, delay=0.0, **kwargs):
         super(PhysicalMarkerChannel, self).__init__(name=name, AWGName=AWGName, channelType=ChannelTypes.marker)
         self.channelType = ChannelTypes.marker
-        self.channelShift = channelShift
+        self.delay = delay
         self.channel = channel
         
 class QuadratureChannel(PhysicalChannel):
     '''
     Something used to implement a standard qubit channel with two analog channels and a microwave gating channel.
     '''
-    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, channelShift=0.0, ampFactor=1.0, phaseSkew=0.0, **kwargs):
+    def __init__(self, name=None, AWGName=None, carrierGen=None, IChannel=None, QChannel=None, delay=0.0, ampFactor=1.0, phaseSkew=0.0, **kwargs):
         super(QuadratureChannel, self).__init__(name=name, AWGName=AWGName, channelType=ChannelTypes.quadratureMod)
         self.carrierGen = carrierGen
         self.IChannel = IChannel
         self.QChannel = QChannel
-        self.channelShift = channelShift
+        self.delay = delay
         self.ampFactor = ampFactor
         self.phaseSkew = phaseSkew
 
@@ -107,148 +112,30 @@ class LogicalMarkerChannel(LogicalChannel):
         tmpBlock.add_pulse(PatternGen.Square(length, amp=1), self)
         return tmpBlock
         
-class QubitChannel(LogicalChannel):
+class Qubit(LogicalChannel):
     '''
     The main class for generating qubit pulses.  
     '''
-    def __init__(self, name=None, physicalChannel=None, freq=None, piAmp=0.0, pi2Amp=0.0, pulseType='gauss', pulseLength=0.0, bufferTime=0.0, dragScaling=0, cutoff=2, **kwargs):
-        super(QubitChannel, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel)
-        self.pulseType = pulseType
+    def __init__(self, name=None, physicalChannel=PhysicalChannel(), freq=None, piAmp=0.0, pi2Amp=0.0, shapeFun=PulseShapes.gaussian, pulseLength=0.0, bufferTime=0.0, dragScaling=0, cutoff=2, **kwargs):
+        super(Qubit, self).__init__(name=name, channelType=ChannelTypes.quadratureMod, physicalChannel=physicalChannel)
+        self.shapeFun = shapeFun
         self.pulseLength = pulseLength
         self.bufferTime = bufferTime
         self.piAmp = piAmp
         self.pi2Amp = pi2Amp
         self.dragScaling = dragScaling
-        self.cutoff = cutoff
-        self.pulseCache = {}
-        
-    def cachedPulse(pulseFunc):
-        ''' Decorator for caching pulses to keep waveform memory usage down. '''
-        def cacheWrap(self):
-            if pulseFunc.__name__ not in self.pulseCache:
-                self.pulseCache[pulseFunc.__name__] = pulseFunc(self)
-            return self.pulseCache[pulseFunc.__name__]
-        
-        return cacheWrap
-
-    def overrideDefaults(self, updateParams):
-        '''Helper function to update any parameters passed in and fill in the defaults otherwise.'''
-        paramsList = ['pulseType','pulseLength','bufferTime','piAmp','pi2Amp','dragScaling', 'cutoff']
-        #First get the default or updated values
-        updateValues = [updateParams[tmpName] if tmpName in updateParams else getattr(self, tmpName) for tmpName in paramsList]
-        #Return a dictionary        
-        return {paramName:paramValue for paramName,paramValue in zip(paramsList, updateValues)}
-                
-    #Setup some common pulses.
-    def QId(self, **kwargs):
-        ''' A delay or do-nothing in the form of a pulse i.e. it will take pulseLength+2*bufferTime. '''
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(PatternGen.QId(**self.overrideDefaults(kwargs)), self)    
-        return tmpBlock
-        
-    def Xtheta(self, amp=0, **kwargs):
-        '''  A generic X rotation with a variable amplitude  '''
-        tmpPulse = PatternGen.pulseDict[kwargs['pulseType'] if 'pulseType' in kwargs else self.pulseType](amp=amp, phase=0, **self.overrideDefaults(kwargs))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-
-    def Ytheta(self, amp=0, **kwargs):
-        ''' A generic Y rotation with a variable amplitude '''
-        tmpPulse = PatternGen.pulseDict[kwargs['pulseType'] if 'pulseType' in kwargs else self.pulseType](amp=amp, phase=0.25, **self.overrideDefaults(kwargs))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    def U90(self, phase=0, **kwargs):
-        ''' A generic 90 degree rotation with variable phase. Phase is defined in portions of a circle. '''
-        tmpPulse = PatternGen.pulseDict[kwargs['pulseType'] if 'pulseType' in kwargs else self.pulseType](amp=self.pi2Amp, phase=phase, **self.overrideDefaults(kwargs))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-
-    def U180(self, phase=0, **kwargs):
-        ''' A generic 180 degree rotation with variable phase.  '''
-        tmpPulse = PatternGen.pulseDict[kwargs['pulseType'] if 'pulseType' in kwargs else self.pulseType](amp=self.piAmp, phase=phase, **self.overrideDefaults(kwargs))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    def Utheta(self, amp=0, phase=0, **kwargs):
-        '''  A generic rotation with variable amplitude and phase. '''
-        tmpPulse = PatternGen.pulseDict[kwargs['pulseType'] if 'pulseType' in kwargs else self.pulseType](amp=amp, phase=phase, **self.overrideDefaults(kwargs))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-
-    #Setup the default 90/180 rotations
-    @cachedPulse
-    def Xp(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    @cachedPulse
-    def X90p(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-    
-    @cachedPulse
-    def Xm(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.5, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    @cachedPulse
-    def X90m(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.5, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    @cachedPulse
-    def Yp(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.25, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    @cachedPulse
-    def Y90p(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.25, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-       
-    @cachedPulse
-    def Ym(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.piAmp, phase=0.75, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
-    @cachedPulse
-    def Y90m(self):
-        tmpPulse = PatternGen.pulseDict[self.pulseType](amp=self.pi2Amp, phase=0.75, **self.overrideDefaults({}))
-        tmpBlock = PulseSequencer.PulseBlock()
-        tmpBlock.add_pulse(tmpPulse, self)
-        return tmpBlock
-        
+        self.cutoff = cutoff        
         
 class Generator(object):
     '''
     Although not quite a channel, it is tightly linked to channels.
     '''
-    def __init__(self, name=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, gateChannelShift=0.0):
+    def __init__(self, name=None, gateChannel=None, gateBuffer=0.0, gateMinWidth=0.0, gateDelay=0.0):
         self.name = name
         self.gateChannel = gateChannel
         self.gateBuffer = gateBuffer
         self.gateMinWidth = gateMinWidth
-        self.gateChannelShift = gateChannelShift
+        self.gateDelay = gateDelay
         
         
 def save_channel_info(channelDict, fileName=None):
@@ -481,29 +368,32 @@ class ChannelView(QtGui.QWidget):
 
 if __name__ == '__main__':
     channelDict = {}
-    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG2-12', 'frequency':5}
+    channelDict['q1'] = {'name':'q1', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'BBNAPS1-12', 'frequency':5}
     channelDict['q2'] = {'name':'q2', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG2-34', 'frequency':5}
     channelDict['CR'] = {'name':'CR', 'channelType':'quadratureMod', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'piAmp':1.0, 'pi2Amp':0.5, 'pulseType':'drag', 'pulseLength':40e-9, 'bufferTime':2e-9, 'dragScaling':1, 'physicalChannel':'TekAWG1-12', 'frequency':5}
 
     channelDict['measChannel'] = {'name':'measChannel', 'channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m1' }
     channelDict['digitizerTrig'] = {'name':'digitizerTrig','channelType':'marker', 'isLogical':True, 'isPhysical':False, 'isGenerator':False, 'physicalChannel':'TekAWG1-ch3m2'}
 
-    channelDict['TekAWG1-12'] = {'name':'TekAWG1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
-    channelDict['TekAWG1-34'] = {'name':'TekAWG1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
-    channelDict['TekAWG1-ch1m1'] = {'name':'TekAWG1-ch1m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch1m1', 'channelShift':0e-9 }    
-    channelDict['TekAWG1-ch2m1'] = {'name':'TekAWG1-ch2m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch2m1', 'channelShift':0e-9 }
-    channelDict['TekAWG1-ch3m1'] = {'name':'TekAWG2-ch3m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'channel':'ch3m1', 'channelShift':0e-9 }    
-    channelDict['TekAWG1-ch3m2'] = {'name':'TekAWG2-ch3m2', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'channel':'ch3m2', 'channelShift':0e-9 }
+    channelDict['TekAWG1-12'] = {'name':'TekAWG1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch1', 'QChannel':'ch2', 'delay':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
+    channelDict['TekAWG1-34'] = {'name':'TekAWG1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'IChannel':'ch3', 'QChannel':'ch4', 'delay':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
+    channelDict['TekAWG1-ch1m1'] = {'name':'TekAWG1-ch1m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch1m1', 'delay':0e-9 }    
+    channelDict['TekAWG1-ch2m1'] = {'name':'TekAWG1-ch2m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG1', 'channel':'ch2m1', 'delay':0e-9 }
+    channelDict['TekAWG1-ch3m1'] = {'name':'TekAWG2-ch3m1', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'channel':'ch3m1', 'delay':0e-9 }    
+    channelDict['TekAWG1-ch3m2'] = {'name':'TekAWG2-ch3m2', 'channelType':'marker', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'channel':'ch3m2', 'delay':0e-9 }
   
-    channelDict['BBNAPS1-12'] = {'name':'BBNAPS1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
-    channelDict['BBNAPS1-34'] = {'name':'BBNAPS1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
+    channelDict['BBNAPS1-12'] = {'name':'BBNAPS1-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch1', 'QChannel':'ch2', 'delay':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
+    channelDict['BBNAPS1-34'] = {'name':'BBNAPS1-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'BBNAPS1', 'IChannel':'ch3', 'QChannel':'ch4', 'delay':0e-9, 'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
 
-    channelDict['TekAWG2-12'] = {'name':'TekAWG2-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'IChannel':'ch1', 'QChannel':'ch2', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
-    channelDict['TekAWG2-34'] = {'name':'TekAWG2-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'IChannel':'ch3', 'QChannel':'ch4', 'channelShift':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
+    channelDict['TekAWG2-12'] = {'name':'TekAWG2-12', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'IChannel':'ch1', 'QChannel':'ch2', 'delay':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'QPC1-1691'}
+    channelDict['TekAWG2-34'] = {'name':'TekAWG2-34', 'channelType':'quadratureMod', 'isLogical':False, 'isPhysical':True, 'isGenerator':False, 'AWGName':'TekAWG2', 'IChannel':'ch3', 'QChannel':'ch4', 'delay':0e-9,  'correctionT':[[1,0],[0,1]], 'ampFactor':1.0, 'phaseSkew':0.0, 'carrierGen':'Agilent1'}
 
 
-    channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateChannelShift':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
-    channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateChannelShift':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
+    channelDict['QPC1-1691'] = {'name':'QPC1-1691', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch1m1', 'gateDelay':-50.0e-9, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
+    channelDict['Agilent1'] = {'name':'Agilent1', 'channelType':'generator', 'isLogical':False, 'isPhysical':False, 'isGenerator':True, 'gateChannel':'TekAWG1-ch2m1', 'gateDelay':0.0, 'gateBuffer':20e-9, 'gateMinWidth':100e-9, 'frequency':5}    
+
+    channelDict['TekAWG1'] = {'type':'Tek5000'}
+    channelDict['BBNAPS1'] = {'type':'BBNAPS'}
 
     save_channel_info(channelDict, 'ChannelParams.json')
 
