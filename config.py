@@ -10,7 +10,7 @@ import numpy as np
 #Load the configuration from the json file and populate the global configuration dictionary
 import json
 from os import getenv
-PyQLabCfgFile = getenv('PyQLabCfgFile')
+PyQLabCfgFile = getenv('PYQLAB_CFGFILE')
 if PyQLabCfgFile:
 	with open(PyQLabCfgFile, 'r') as f:
 		PyQLabCfg = json.load(f)
