@@ -7,6 +7,8 @@ from QGL import *
 
 class SingleQubit(unittest.TestCase):
     def setUp(self):
+        # this should read:
+        # self.q1 = QubitFactory('q1')
         self.q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
 
     def test_Ramsey(self):
