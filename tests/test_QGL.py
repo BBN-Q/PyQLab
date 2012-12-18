@@ -25,7 +25,6 @@ class SingleQubit(unittest.TestCase):
         LL, wfLib = Compiler.compile_sequences(seq)
         assert(len(LL[self.q1]) == 11)
         assert(len(LL[self.q1][0]) == 2)
-        print [len(miniLL) == 3 for miniLL in LL[self.q1][1:]]
         assert( all([len(miniLL) == 3 for miniLL in LL[self.q1][1:]]) )
         assert(len(wfLib[self.q1]) == 12) # 10 non-zero delays + X90 + TAZ
 
@@ -45,11 +44,11 @@ class MultiQubit(unittest.TestCase):
     
     def test_compile(self):
         seq = self.test_Operators()
-        LL, wfLib = Compiler.compile_sequence(seq)
+        LL, wfLib = Compiler.compile_sequences(seq)
         assert(len(LL[self.q1]) == 1)
         assert(len(LL[self.q1][0]) == 5)
         assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
-        assert(len(wfLib[self.q2]) == 3) # Y, X, TAZ
+        assert(len(wfLib[self.q2]) == 4) # Y, X, Xm, TAZ
     
     def test_align(self):
         q1 = self.q1
