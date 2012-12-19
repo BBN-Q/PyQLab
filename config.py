@@ -4,7 +4,6 @@
 
 
 #Package imports
-from QGL import *
 import numpy as np
 
 #Load the configuration from the json file and populate the global configuration dictionary
