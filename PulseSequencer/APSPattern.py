@@ -229,13 +229,13 @@ def read_APS_file(fileName):
     '''
     AWGData = {}
     #APS bit masks
-    START_MINILL_MASK = 2**START_MINILL_BIT;
-    TA_PAIR_MASK = 2**TA_PAIR_BIT;
+    START_MINILL_MASK = 2**START_MINILL_BIT
+    END_MINILL_MASK = 2**END_MINILL_BIT
+    TA_PAIR_MASK = 2**TA_PAIR_BIT
     REPEAT_MASK = 2**10-1
             
     
     with h5py.File(fileName, 'r') as FID:
-        chanct = 0
         for chanct, chanStr in enumerate(chanStrs2):
             #If we're in IQ mode then the Q channel gets its linkListData from the I channel
             if FID[chanStr].attrs['isIQMode'][0]:
@@ -244,11 +244,11 @@ def read_APS_file(fileName):
             else:
                 curLLData = FID[chanStr]['linkListData']
             #Pull out the LL data
-            tmpAddr = curLLData['addr'].value
-            tmpCount = curLLData['count'].value
-            tmpRepeat = curLLData['repeat'].value
-            tmpTrigger1 = curLLData['trigger1'].value
-            tmpTrigger2 = curLLData['trigger2'].value
+            tmpAddr = curLLData['addr'].value.flatten()
+            tmpCount = curLLData['count'].value.flatten()
+            tmpRepeat = curLLData['repeat'].value.flatten()
+            tmpTrigger1 = curLLData['trigger1'].value.flatten()
+            tmpTrigger2 = curLLData['trigger2'].value.flatten()
             numEntries = curLLData.attrs['length'][0]
    
             #Pull out and scale the waveform data
@@ -264,6 +264,7 @@ def read_APS_file(fileName):
                 if START_MINILL_MASK & tmpRepeat[entryct]:
                     AWGData[chanStrs[chanct]].append(np.array([], dtype=np.float64))
                     AWGData[mrkStrs[chanct]].append(np.array([], dtype=np.bool))
+                    startIndex = entryct
                 #If it is a TA pair or regular pulse
                 curRepeat = (tmpRepeat[entryct] & REPEAT_MASK)+1
                 if TA_PAIR_MASK & curLLData['repeat'][entryct][0]:
@@ -272,17 +273,26 @@ def read_APS_file(fileName):
                 else:
                     AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1], 
                                                     np.tile(wfLib[tmpAddr[entryct]*ADDRESS_UNIT:tmpAddr[entryct]*ADDRESS_UNIT+4*(tmpCount[entryct]+1)], curRepeat)))
-                #Add the trigger pulse
-                tmpPulse = np.zeros(ADDRESS_UNIT*curRepeat*(tmpCount[entryct]+1), dtype=np.bool)
-                if chanct//2 == 0:
-                    if tmpTrigger1[entryct] > 0:
-                        tmpPulse[4*tmpTrigger1[entryct]] = True
-                else:
-                    if tmpTrigger2[entryct] > 0:
-                        tmpPulse[4*tmpTrigger2[entryct]] = True
-                AWGData[mrkStrs[chanct]][-1] = np.hstack((AWGData[mrkStrs[chanct]][-1], tmpPulse)) 
-                
+                #Add an empty trigger pulse for now because trigger pulses can go beyond LL element
+                #so we'll deal with them on a second pass
+                AWGData[mrkStrs[chanct]][-1] = np.hstack((AWGData[mrkStrs[chanct]][-1], 
+                                        np.zeros(ADDRESS_UNIT*curRepeat*(tmpCount[entryct]+1), dtype=np.bool))) 
+
+                if END_MINILL_MASK & tmpRepeat[entryct]:
+                    #Now deal with triggers
+                    curIndex = 0
+                    for entryct2 in range(startIndex,entryct+1):
+                        if np.mod(chanct,2) == 0:
+                            if tmpTrigger1[entryct2] > 0:
+                                AWGData[mrkStrs[chanct]][-1][curIndex+ADDRESS_UNIT*tmpTrigger1[entryct2]] = True
+                        else:
+                            if tmpTrigger2[entryct2] > 0:
+                                AWGData[mrkStrs[chanct]][-1][curIndex+ADDRESS_UNIT*tmpTrigger2[entryct2]] = True
+                        curRepeat = (tmpRepeat[entryct2] & REPEAT_MASK)+1
+                        curIndex += ADDRESS_UNIT*curRepeat*(tmpCount[entryct2]+1)
+    
     return AWGData
+ 
 
 
 if __name__ == '__main__':
