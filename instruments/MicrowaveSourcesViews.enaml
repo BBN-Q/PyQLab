@@ -1,0 +1,9 @@
+from enaml.layout.api import vertical, horizontal, align, spacer, vbox
+from enaml.widgets.api import (
+    Window, Label, Field, Form, DateSelector, CheckBox, GroupBox, Container,
+    PushButton
+)
+
+enamldef MicrowaveSourceView(Form):
+	attr uwsource
+	
