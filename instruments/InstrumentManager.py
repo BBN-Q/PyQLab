@@ -1,5 +1,11 @@
-import os
-os.environ['ETS_TOOLKIT'] = 'qt4'
+# import os
+# os.environ['ETS_TOOLKIT'] = 'qt4'
+# from traits.etsconfig.api import ETSConfig
+# ETSConfig.toolkit = 'qt4'
+from traits.api import HasTraits, List, Instance
+from traitsui.api import TreeEditor, TreeNode, View, Item, VGroup, HGroup, spring
+
+
 
 import sys
 from pyface.qt import QtGui, QtCore
@@ -7,92 +13,80 @@ from pyface.qt import QtGui, QtCore
 from MicrowaveSources import AgilentN51853A, MicrowaveSource, MicrowaveSourceView
 from AWGs import AWG, APS
 
-class InstrumentManager(QtGui.QWidget):
-	"""
-	A widget for managing instruments and instrument settings.
-	"""
-	def __init__(self, instruments, parent=None):
-		super(InstrumentManager, self).__init__(parent=parent)
+class InstrumentLibrary(HasTraits):
+	#The instrument library basically has lists of Sources, AWGs and Digitizers
+	sources = List(MicrowaveSource)
+	AWGs = List(AWG)
+	digitizers = List()
 
-		self.instruments = instruments
-
-		instrumentTree = QtGui.QTreeWidget()
-		instrumentTree.setHeaderLabel('Instrument Library')
-
-		sources = QtGui.QTreeWidgetItem(['Sources'])
-		awgs = QtGui.QTreeWidgetItem(['AWGs'])
-		self.instrViews = {}
-
-		for instrName, instr in self.instruments.items():
+	def load_settings(self, settings):
+		#Loop over the instruments and add to appropriate list
+		for instr in settings.values():
 			if isinstance(instr, MicrowaveSource):
-				sources.addChild(QtGui.QTreeWidgetItem([instrName]))
-				self.instrViews[instrName] = instr.edit_traits(view=MicrowaveSourceView).control
-			if isinstance(instr, AWG):
-				awgs.addChild(QtGui.QTreeWidgetItem([instrName]))
-				self.instrViews[instrName] = instr.edit_traits().control
-			self.instrViews[instrName].hide()
+				self.sources.append(instr)
+			elif isinstance(instr, AWG):
+				self.AWGs.append(instr)
 
-		instrumentTree.addTopLevelItem(sources)
-		instrumentTree.addTopLevelItem(awgs)
-		instrumentTree.itemClicked.connect(lambda item: self.update_view(item))
-
-
-		#Add the buttons for adding/deleting channels
-		tmpWidget = QtGui.QWidget()
-
-		#vbox for library tree and add/delete buttons
-		vBox = QtGui.QVBoxLayout(tmpWidget)
-		vBox.addWidget(instrumentTree)
-
-		hBox = QtGui.QHBoxLayout()
-		addChanButton = QtGui.QPushButton('Add')
-		# addChanButton.clicked.connect(self.add_channel)
-		hBox.addWidget(addChanButton)
-		deleteChanButton = QtGui.QPushButton('Delete')
-		# deleteChanButton.clicked.connect(self.delete_channel)
-		hBox.addWidget(deleteChanButton)
-		hBox.addStretch(1)
-		vBox.addLayout(hBox) 
-
-		#Main splitter to hold tree and instrument views
-		hSplitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
-		hSplitter.addWidget(tmpWidget)
-		for view in self.instrViews.values():
-			hSplitter.addWidget(view)
-
-
-		#Main layout
-		mainBox = QtGui.QHBoxLayout()
-		mainBox.addWidget(hSplitter)
-		self.setLayout(mainBox)
-		self.setWindowTitle('Instrument Manager')
-		# self.resize(600, 480)
+InstrumentEditor = TreeEditor(
+	nodes=[
+		TreeNode(node_for = [InstrumentLibrary],
+				auto_open = True,
+				children = '',
+				label = '=Instrument Library',
+				view = View()),
+		TreeNode(node_for = [InstrumentLibrary],
+				auto_open = True,
+				children = 'sources',
+				label = '=Sources',
+				view = View()),
+		TreeNode(node_for = [InstrumentLibrary],
+				auto_open = True,
+				children = 'AWGs',
+				label = "=AWG's",
+				view = View()),
+		TreeNode(node_for = [InstrumentLibrary],
+				auto_open = True,
+				children = 'digitizers',
+				label = "=Digitizers",
+				view = View()),
+		TreeNode(node_for = [MicrowaveSource],
+				auto_open = True,
+				label = 'name',
+				view = MicrowaveSourceView),
+		TreeNode(node_for = [AWG],
+				auto_open = True,
+				label = 'name')])
 
 
-	def update_view(self, showItem):
-		for itemName, widget in self.instrViews.items():
-			if itemName == showItem.text(0):
-				widget.show()
-			else:
-				widget.hide()
+InstrumentLibraryView = View(Item(name='instrLib', editor=InstrumentEditor, show_label=False), title='InstrumentEditor', resizable=True)
 
+class InstrumentManager(HasTraits):
+	instrLib = Instance(InstrumentLibrary)
+
+	def load_settings(self, settings):
+		self.instrLib.load_settings(settings)
 
 
 if __name__ == '__main__':
 	#Look to see if iPython's event loop is running
-	app = QtCore.QCoreApplication.instance()
-	if app is None:
-		app = QtGui.QApplication(sys.argv)
+	# app = QtCore.QCoreApplication.instance()
+	# if app is None:
+	# 	app = QtGui.QApplication(sys.argv)
 
 	instruments = {}
-	instruments['Agilent1'] = AgilentN51853A()
-	instruments['Agilent2'] = AgilentN51853A()
-	instruments['BBNAPS1'] = APS()
+	instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
+	instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
+	instruments['BBNAPS1'] = APS(name='BBNAPS1')
+
+	instrMan = InstrumentManager()
+	instrMan.instrLib = InstrumentLibrary()
+	instrMan.load_settings(instruments)
+	instrMan.configure_traits(view = InstrumentLibraryView)
 
 
-	mainWindow = InstrumentManager(instruments)
-	mainWindow.show()
-	sys.exit(app.exec_())
+	# mainWindow = InstrumentManager(instruments)
+	# mainWindow.show()
+	# sys.exit(app.exec_())
 
 	# try: 
 	#     from IPython.lib.guisupport import start_event_loop_qt4
