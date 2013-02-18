@@ -1,5 +1,5 @@
 from traits.api import Str, Int, Float, Bool, Enum
-from traitsui.api import View, Item, HGroup
+from traitsui.api import View, Item, VGroup, HGroup, spring
 
 from Instrument import Instrument
 
@@ -11,13 +11,14 @@ class MicrowaveSource(Instrument):
     modulate = Bool(False, desc='whether output is modulated', label='Modulate')
     alc = Bool(False, desc='whether automatic level control is on', label='ALC')
 
-MicrowaveSourceView = View(Item(name = 'address'),
-             Item(name = 'power', springy=True),
-             Item(name = 'frequency'),
-             HGroup(Item(name = 'alc'),
-             Item(name = 'modulate'),
-             Item(name = 'pulseModulate')),
-             Item(name = 'pulseModSource'))
+MicrowaveSourceView = View(VGroup(
+            Item(name = 'address'),
+            Item(name = 'power'),
+            Item(name = 'frequency'),
+            HGroup(Item(name = 'alc', enabled_when='not modulate'),
+            Item(name = 'modulate'),
+            Item(name = 'pulseModulate', enabled_when='modulate')),
+            Item(name = 'pulseModSource', enabled_when='modulate'), spring), resizable=True)
 
 class AgilentN51853A(MicrowaveSource):
 	pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')

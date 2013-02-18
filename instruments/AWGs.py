@@ -17,7 +17,6 @@ class APS(AWG):
 	triggerInterval = Float(1e-4, desc='internal trigger interval', label='Trigger Int.')
 	samplingRate = Float(1200, desc='sampling rate in MHz', label='Sampling Rate')
     
-
 class Tek5014(AWG):
 	pass
 

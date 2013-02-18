@@ -16,10 +16,10 @@ class ExpSettingsView(QtGui.QMainWindow):
         self.ui = loader.load(file)
         file.close()
 
-        self.instrumentManager = InstrumentManager(settings['instruments'], parent=self.ui.instrumentTab)
-
-
-
+        tmpBox = QtGui.QHBoxLayout(self.ui.instrumentTab)
+        self.instrumentManager = InstrumentManager(settings['instruments'])
+        tmpBox.addWidget(self.instrumentManager)
+        tmpBox.addStretch(1)
 
 
 

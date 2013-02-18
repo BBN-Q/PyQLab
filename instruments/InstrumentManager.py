@@ -5,7 +5,7 @@ import sys
 from pyface.qt import QtGui, QtCore
 
 from MicrowaveSources import AgilentN51853A, MicrowaveSource, MicrowaveSourceView
-from AWGs import AWG
+from AWGs import AWG, APS
 
 class InstrumentManager(QtGui.QWidget):
 	"""
@@ -15,10 +15,6 @@ class InstrumentManager(QtGui.QWidget):
 		super(InstrumentManager, self).__init__(parent=parent)
 
 		self.instruments = instruments
-
-
-		hSplitter = QtGui.QSplitter(QtCore.Qt.Horizontal, self)
-
 
 		instrumentTree = QtGui.QTreeWidget()
 		instrumentTree.setHeaderLabel('Instrument Library')
@@ -41,13 +37,12 @@ class InstrumentManager(QtGui.QWidget):
 		instrumentTree.itemClicked.connect(lambda item: self.update_view(item))
 
 
-
 		#Add the buttons for adding/deleting channels
 		tmpWidget = QtGui.QWidget()
 
+		#vbox for library tree and add/delete buttons
 		vBox = QtGui.QVBoxLayout(tmpWidget)
 		vBox.addWidget(instrumentTree)
-
 
 		hBox = QtGui.QHBoxLayout()
 		addChanButton = QtGui.QPushButton('Add')
@@ -57,14 +52,21 @@ class InstrumentManager(QtGui.QWidget):
 		# deleteChanButton.clicked.connect(self.delete_channel)
 		hBox.addWidget(deleteChanButton)
 		hBox.addStretch(1)
-		vBox.addLayout(hBox)   
+		vBox.addLayout(hBox) 
 
+		#Main splitter to hold tree and instrument views
+		hSplitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
 		hSplitter.addWidget(tmpWidget)
 		for view in self.instrViews.values():
 			hSplitter.addWidget(view)
 
+
+		#Main layout
+		mainBox = QtGui.QHBoxLayout()
+		mainBox.addWidget(hSplitter)
+		self.setLayout(mainBox)
 		self.setWindowTitle('Instrument Manager')
-		self.resize(600, 480)
+		# self.resize(600, 480)
 
 
 	def update_view(self, showItem):
@@ -85,6 +87,9 @@ if __name__ == '__main__':
 	instruments = {}
 	instruments['Agilent1'] = AgilentN51853A()
 	instruments['Agilent2'] = AgilentN51853A()
+	instruments['BBNAPS1'] = APS()
+
+
 	mainWindow = InstrumentManager(instruments)
 	mainWindow.show()
 	sys.exit(app.exec_())
