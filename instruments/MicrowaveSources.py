@@ -24,6 +24,10 @@ class AgilentN51853A(MicrowaveSource):
 	pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
 	pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
 
+
+#List of possible sources for other views
+MicrowaveSourceList = [AgilentN51853A]
+
 if __name__ == "__main__":
 
 	uwSource = AgilentN51853A()
