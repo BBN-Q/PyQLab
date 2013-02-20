@@ -10,6 +10,8 @@ class MicrowaveSource(Instrument):
     frequency = Float(5.0, desc='frequency in GHz', label='Frequency')
     modulate = Bool(False, desc='whether output is modulated', label='Modulate')
     alc = Bool(False, desc='whether automatic level control is on', label='ALC')
+    pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
+    pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
 
 MicrowaveSourceView = View(VGroup(
             Item(name = 'address'),
@@ -21,12 +23,16 @@ MicrowaveSourceView = View(VGroup(
             Item(name = 'pulseModSource', enabled_when='modulate'), spring), resizable=True)
 
 class AgilentN51853A(MicrowaveSource):
-	pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
-	pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
+    pass
 
+class HS9000(MicrowaveSource):
+    pass
+
+class LabBrick(MicrowaveSource):
+    pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN51853A]
+MicrowaveSourceList = [AgilentN51853A, HS9000, LabBrick]
 
 if __name__ == "__main__":
 

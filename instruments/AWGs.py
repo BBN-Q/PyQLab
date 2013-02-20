@@ -20,3 +20,5 @@ class APS(AWG):
 class Tek5014(AWG):
 	pass
 
+AWGList = [APS, Tek5014]
+

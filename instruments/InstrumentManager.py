@@ -1,19 +1,18 @@
-# import os
-# os.environ['ETS_TOOLKIT'] = 'qt4'
-# from traits.etsconfig.api import ETSConfig
-# ETSConfig.toolkit = 'qt4'
+import sys
+import os
+os.environ['ETS_TOOLKIT'] = 'qt4'
+from pyface.qt import QtGui, QtCore
+
 from traits.api import HasTraits, List, Instance
 from traitsui.api import TreeEditor, TreeNode, View, Item, VGroup, HGroup, spring, Handler
 from traitsui.menu import Menu, Action, Separator
 from traitsui.qt4.tree_editor import NewAction, DeleteAction, RenameAction
 
 
-import sys
-from pyface.qt import QtGui, QtCore
 
 from MicrowaveSources import MicrowaveSourceList, MicrowaveSource, MicrowaveSourceView
 
-from AWGs import AWG, APS
+from AWGs import AWGList, AWG
 
 class InstrumentLibrary(HasTraits):
 	#The instrument library basically has lists of Sources, AWGs and Digitizers
@@ -29,14 +28,17 @@ class InstrumentLibrary(HasTraits):
 			elif isinstance(instr, AWG):
 				self.AWGs.append(instr)
 
-PrintSources = Action(name='Print sources..', action='handler.print_sources(object)')
+print_sources = Action(name='Print sources..', action='handler.print_sources(object)')
+print_awgs = Action(name='Print AWGs...', action='handler.print_awgs(object)')
 
 class TreeHandler(Handler):
 
 	def print_sources(self, object):
-		print('Got here!')
-		print(object.__dict__)
 		for instr in object.sources:
+			print(instr.name)
+
+	def print_awgs(self, object):
+		for instr in object.AWGs:
 			print(instr.name)
 
 InstrumentEditor = TreeEditor(
@@ -45,19 +47,21 @@ InstrumentEditor = TreeEditor(
 				auto_open = True,
 				children = '',
 				label = '=Instrument Library',
-				view = View()),
+				view = View(width=600, height=200)), #empty view with some sizing for the instrument panels
 		TreeNode(node_for = [InstrumentLibrary],
 				auto_open = True,
 				children = 'sources',
 				label = '=Sources',
 				view = View(),
-				menu = Menu(NewAction, PrintSources),
+				menu = Menu(NewAction, print_sources),
 				add = MicrowaveSourceList),
 		TreeNode(node_for = [InstrumentLibrary],
 				auto_open = True,
 				children = 'AWGs',
 				label = "=AWG's",
-				view = View()),
+				view = View(),
+				menu = Menu(NewAction, print_awgs),
+				add = AWGList),
 		TreeNode(node_for = [InstrumentLibrary],
 				auto_open = True,
 				children = 'digitizers',
@@ -68,11 +72,10 @@ InstrumentEditor = TreeEditor(
 				label = 'name',
 				menu = Menu(DeleteAction, Separator(), RenameAction),
 				view = MicrowaveSourceView),
-		TreeNode(node_for = [AWG],
+		TreeNode(node_for = AWGList,
 				auto_open = True,
 				menu = Menu(DeleteAction, Separator(), RenameAction),
 				label = 'name')])
-
 
 InstrumentLibraryView = View(Item(name='instrLib', editor=InstrumentEditor, show_label=False),
 					 title='InstrumentEditor', handler=TreeHandler(), width=.3, resizable=True)
@@ -91,6 +94,7 @@ if __name__ == '__main__':
 	# 	app = QtGui.QApplication(sys.argv)
 
 	from MicrowaveSources import AgilentN51853A
+	from AWGs import APS
 	instruments = {}
 	instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
 	instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
