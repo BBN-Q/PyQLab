@@ -1,14 +1,8 @@
-import sys
-import os
-os.environ['ETS_TOOLKIT'] = 'qt4'
-from pyface.qt import QtGui, QtCore
 
 from traits.api import HasTraits, List, Instance
 from traitsui.api import TreeEditor, TreeNode, View, Item, VGroup, HGroup, spring, Handler
 from traitsui.menu import Menu, Action, Separator
 from traitsui.qt4.tree_editor import NewAction, DeleteAction, RenameAction
-
-
 
 from MicrowaveSources import MicrowaveSourceList, MicrowaveSource, MicrowaveSourceView
 
@@ -78,20 +72,16 @@ InstrumentEditor = TreeEditor(
 				label = 'name')])
 
 InstrumentLibraryView = View(Item(name='instrLib', editor=InstrumentEditor, show_label=False),
-					 title='InstrumentEditor', handler=TreeHandler(), width=.3, resizable=True)
+					 title='InstrumentEditor', handler=TreeHandler(), resizable=True)
 
 class InstrumentManager(HasTraits):
-	instrLib = Instance(InstrumentLibrary)
+	instrLib = Instance(InstrumentLibrary, ())
 
 	def load_settings(self, settings):
 		self.instrLib.load_settings(settings)
 
 
 if __name__ == '__main__':
-	#Look to see if iPython's event loop is running
-	# app = QtCore.QCoreApplication.instance()
-	# if app is None:
-	# 	app = QtGui.QApplication(sys.argv)
 
 	from MicrowaveSources import AgilentN51853A
 	from AWGs import APS
@@ -101,19 +91,9 @@ if __name__ == '__main__':
 	instruments['BBNAPS1'] = APS(name='BBNAPS1')
 
 	instrMan = InstrumentManager()
-	instrMan.instrLib = InstrumentLibrary()
 	instrMan.load_settings(instruments)
 	instrMan.configure_traits(view = InstrumentLibraryView)
 
-
-	# mainWindow = InstrumentManager(instruments)
-	# mainWindow.show()
-	# sys.exit(app.exec_())
-
-	# try: 
-	#     from IPython.lib.guisupport import start_event_loop_qt4
-	#     start_event_loop_qt4(app)
-	# except ImportError:
 
 
 

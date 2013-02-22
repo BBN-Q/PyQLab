@@ -13,14 +13,14 @@ class MicrowaveSource(Instrument):
     pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
     pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
 
-MicrowaveSourceView = View(VGroup(
+MicrowaveSourceView = View(HGroup(VGroup(
             Item(name = 'address'),
             Item(name = 'power'),
             Item(name = 'frequency'),
             HGroup(Item(name = 'alc', enabled_when='not modulate'),
             Item(name = 'modulate'),
             Item(name = 'pulseModulate', enabled_when='modulate')),
-            Item(name = 'pulseModSource', enabled_when='modulate'), spring), resizable=True)
+            Item(name = 'pulseModSource', enabled_when='modulate'), spring), spring, show_border=True), resizable=True)
 
 class AgilentN51853A(MicrowaveSource):
     pass
