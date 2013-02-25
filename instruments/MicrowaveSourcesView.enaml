@@ -1,0 +1,42 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox
+from enaml.stdlib.fields import FloatField
+
+enamldef MicrowaveSourceForm(Container):
+	attr uwSource
+	GroupBox:
+		title = uwSource.name
+		Form:
+			Label: 
+				text = 'Address'
+			Field: 
+				text := uwSource.address
+			Label:
+				text = 'Power'
+			FloatField:
+				maximum = 25
+				value := uwSource.power
+			Label:
+				text = 'Frequency'
+			FloatField:
+				maximum = 20
+				minimum = 0
+				value := uwSource.frequency
+			Label: 
+				text = "Modulation"
+			CheckBox: modOn:
+				checked := uwSource.modulate
+			Label:
+				text = "Modulate Source"
+			ComboBox:
+				index <<  ['Internal','External'].index(uwSource.pulseModSource)
+				index >> ['Internal','External'][index]
+				items << list(uwSource.trait('pulseModSource').handler.values)
+
+enamldef MicrowaveSourceView(Window):
+	id: main
+	attr uwSource
+	Container:
+		MicrowaveSourceForm:
+			uwSource := main.uwSource
+
+		

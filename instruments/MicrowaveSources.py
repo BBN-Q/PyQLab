@@ -1,5 +1,9 @@
 from traits.api import Str, Int, Float, Bool, Enum
-from traitsui.api import View, Item, VGroup, HGroup, spring
+# from traitsui.api import View, Item, VGroup, HGroup, Group, spring
+
+import enaml
+from enaml.stdlib.sessions import show_simple_view
+from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 
@@ -13,14 +17,6 @@ class MicrowaveSource(Instrument):
     pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
     pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
 
-MicrowaveSourceView = View(HGroup(VGroup(
-            Item(name = 'address'),
-            Item(name = 'power'),
-            Item(name = 'frequency'),
-            HGroup(Item(name = 'alc', enabled_when='not modulate'),
-            Item(name = 'modulate'),
-            Item(name = 'pulseModulate', enabled_when='modulate')),
-            Item(name = 'pulseModSource', enabled_when='modulate'), spring), spring, show_border=True), resizable=True)
 
 class AgilentN51853A(MicrowaveSource):
     pass
@@ -35,7 +31,8 @@ class LabBrick(MicrowaveSource):
 MicrowaveSourceList = [AgilentN51853A, HS9000, LabBrick]
 
 if __name__ == "__main__":
+    uwSource = AgilentN51853A(name='Agilent1')
+    with enaml.imports():
+        from MicrowaveSourcesView import MicrowaveSourceView
 
-	uwSource = AgilentN51853A()
-	uwSource.configure_traits(view=MicrowaveSourceView)
-
+    session = show_simple_view(MicrowaveSourceView(uwSource=uwSource))

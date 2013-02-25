@@ -1,0 +1,34 @@
+from enaml.widgets.api import Window, Label, Field, Container, Slider, GroupBox, PushButton, ComboBox, ListControl, ListItem, Stack, StackItem
+from enaml.stdlib.fields import FloatField
+from enaml.widgets.include import Include
+from enaml.layout.api import hbox
+from enaml.core.api import Looper
+
+from MicrowaveSourcesView import MicrowaveSourceForm
+
+enamldef SourcesView(Container):
+	attr sources
+	constraints = [hbox(sourceList, sourceStack)]
+	ListControl:
+		id: sourceList
+		Looper:
+			iterable << sources
+			ListItem:
+				text = loop_item.name
+				clicked :: sourceStack.index = loop_index
+
+	Stack:
+		id: sourceStack
+		Looper:
+			iterable << sources
+			StackItem:
+				MicrowaveSourceForm:
+					uwSource=loop_item
+
+enamldef InstrumentManagerView(Window):
+	id: main
+	attr instrLib
+	Container:
+		SourcesView:
+			sources=instrLib.sources
+

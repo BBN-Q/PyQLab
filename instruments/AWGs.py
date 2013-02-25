@@ -3,7 +3,6 @@ AWGs
 """
 
 from traits.api import Str, Int, Float, Bool, Enum
-from traitsui.api import View, Item, HGroup
 
 from Instrument import Instrument
 
