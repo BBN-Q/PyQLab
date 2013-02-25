@@ -35,6 +35,7 @@ enamldef MicrowaveSourceForm(Container):
 enamldef MicrowaveSourceView(Window):
 	id: main
 	attr uwSource
+	title = uwSource.name
 	Container:
 		MicrowaveSourceForm:
 			uwSource := main.uwSource

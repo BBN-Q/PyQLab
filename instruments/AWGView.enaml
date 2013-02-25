@@ -1,0 +1,35 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox
+from enaml.stdlib.fields import FloatField
+
+enamldef AWGForm(Container):
+	attr awg
+	GroupBox:
+		title = awg.name
+		Form:
+			Label: 
+				text = 'Address'
+			Field: 
+				text := awg.address
+			Label:
+				text = 'Trigger Interval'
+			FloatField:
+				maximum = 15
+				minimum = 10e-9
+				value := awg.triggerInterval
+			Label:
+				text = "Trigger Source"
+			ComboBox:
+				index <<  ['Internal','External'].index(awg.triggerSource)
+				index >> ['Internal','External'][index]
+				items << list(awg.trait('triggerSource').handler.values)
+
+enamldef AWGView(Window):
+	id: main
+	attr awg
+	title = awg.name
+	Container:
+		AWGForm:
+			awg := main.awg
+
+
+

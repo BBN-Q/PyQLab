@@ -1,22 +1,22 @@
-from enaml.widgets.api import Window, Label, Field, Container, Slider, GroupBox, PushButton, ComboBox, ListControl, ListItem, Stack, StackItem
+from enaml.widgets.api import Window, Notebook, Page, Container, ListControl, ListItem, Stack, StackItem, PushButton
 from enaml.stdlib.fields import FloatField
 from enaml.widgets.include import Include
-from enaml.layout.api import hbox
+from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper
 
 from MicrowaveSourcesView import MicrowaveSourceForm
+from AWGView import AWGForm
 
 enamldef SourcesView(Container):
 	attr sources
-	constraints = [hbox(sourceList, sourceStack)]
+	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack)]
 	ListControl:
 		id: sourceList
-		Looper:
+		Looper: sourceLooper:
 			iterable << sources
 			ListItem:
 				text = loop_item.name
 				clicked :: sourceStack.index = loop_index
-
 	Stack:
 		id: sourceStack
 		Looper:
@@ -24,11 +24,53 @@ enamldef SourcesView(Container):
 			StackItem:
 				MicrowaveSourceForm:
 					uwSource=loop_item
+	PushButton:
+		id: addSourceButton
+		text = 'Add'
+	PushButton:
+		id: deleteSourceButton
+		text = 'Delete'
+		clicked ::
+			for item in sourceLooper.items:
+				print(item)
+			print(sources.pop(sourceStack.index))
+			print('got here')
+
+enamldef AWGsView(Container):
+	attr AWGs
+	constraints = [hbox(awgList, awgStack)]
+	ListControl:
+		id: awgList
+		Looper:
+			iterable << AWGs
+			ListItem:
+				text = loop_item.name
+				clicked :: awgStack.index = loop_index
+	Stack:
+		id: awgStack
+		Looper:
+			iterable << AWGs
+			StackItem:
+				AWGForm:
+					awg=loop_item
+
 
 enamldef InstrumentManagerView(Window):
 	id: main
 	attr instrLib
+	title = 'Instrument Library'
 	Container:
-		SourcesView:
-			sources=instrLib.sources
+		Notebook:
+			tab_style = 'preferences'
+			Page:
+				title = 'Sources'
+				closable = False
+				SourcesView:
+					sources = instrLib.sources
+			Page:
+				title = "AWG's"
+				closable = False
+				AWGsView:
+					AWGs = instrLib.AWGs
+
 
