@@ -1,8 +1,7 @@
 
-from traits.api import HasTraits, List, Instance
+from traits.api import HasTraits, List, Instance, Float
 import enaml
 from enaml.stdlib.sessions import show_simple_view
-from enaml.qt.qt_application import QtApplication
 
 
 from MicrowaveSources import MicrowaveSourceList, MicrowaveSource
@@ -38,9 +37,6 @@ if __name__ == '__main__':
 
 	show_simple_view(InstrumentManagerView(instrLib=instrLib))
 
-	# app = QtApplication([session])
-	# app.start_session('Test')
-	# app.start()
 
 
 

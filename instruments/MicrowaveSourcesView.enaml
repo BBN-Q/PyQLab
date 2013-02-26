@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField
 enamldef MicrowaveSourceForm(Container):
 	attr uwSource
 	GroupBox:
-		title = uwSource.name
+		title := uwSource.name
 		Form:
 			Label: 
 				text = 'Address'

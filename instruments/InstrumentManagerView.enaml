@@ -1,13 +1,14 @@
-from enaml.widgets.api import Window, Notebook, Page, Container, ListControl, ListItem, Stack, StackItem, PushButton
-from enaml.stdlib.fields import FloatField
+from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem, Stack, StackItem, PushButton
 from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper
 
 from MicrowaveSourcesView import MicrowaveSourceForm
+from MicrowaveSources import MicrowaveSource
 from AWGView import AWGForm
 
 enamldef SourcesView(Container):
+	id: sourceView
 	attr sources
 	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack)]
 	ListControl:
@@ -15,7 +16,8 @@ enamldef SourcesView(Container):
 		Looper: sourceLooper:
 			iterable << sources
 			ListItem:
-				text = loop_item.name
+				text := loop_item.name
+				editable = True
 				clicked :: sourceStack.index = loop_index
 	Stack:
 		id: sourceStack
@@ -23,18 +25,23 @@ enamldef SourcesView(Container):
 			iterable << sources
 			StackItem:
 				MicrowaveSourceForm:
-					uwSource=loop_item
+					uwSource := loop_item
 	PushButton:
 		id: addSourceButton
-		text = 'Add'
+		text = sourceView.sources[0].name
+		clicked ::
+			print(sources)
+			from MicrowaveSources import AgilentN51853A
+			sourceView.sources.append(AgilentN51853A(name='Source'.format()))
+			print(sources)
+
 	PushButton:
 		id: deleteSourceButton
 		text = 'Delete'
 		clicked ::
-			for item in sourceLooper.items:
-				print(item)
-			print(sources.pop(sourceStack.index))
-			print('got here')
+			print(sources)
+			sourceView.sources.pop(sourceList.index)
+			print(sources)
 
 enamldef AWGsView(Container):
 	attr AWGs
@@ -66,11 +73,11 @@ enamldef InstrumentManagerView(Window):
 				title = 'Sources'
 				closable = False
 				SourcesView:
-					sources = instrLib.sources
+					sources := instrLib.sources
 			Page:
 				title = "AWG's"
 				closable = False
 				AWGsView:
-					AWGs = instrLib.AWGs
+					AWGs := instrLib.AWGs
 
 
