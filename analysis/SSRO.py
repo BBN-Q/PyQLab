@@ -1,11 +1,16 @@
 import numpy as np
 from scipy.io import loadmat
 from scipy.signal import butter, lfilter
+from scipy.io import loadmat
 
-from sklearn import decomposition
-from sklearn import svm
+from sklearn import decomposition, preprocessing
+from sklearn import svm, grid_search
 
-import matplotlib.pyplot as plt
+import pywt
+
+import glob
+
+# import matplotlib.pyplot as plt
 
 def create_fake_data(SNR, dt, maxTime, numShots, T1=1.0):
 	"""
@@ -36,7 +41,7 @@ def extract_meas_data(fileName, numAvgs):
 	"""
 
 	#Load the matlab data
-	avgData = np.mean(loadmat(fileName)['demodSignal'].reshape((3200, 8000/numAvgs, numAvgs), order='F'), axis=2)
+	rawData = np.mean(loadmat(fileName)['demodSignal'].reshape((3200, 8000/numAvgs, numAvgs), order='F'), axis=2)
 
 	#Decimate by a factor of 8 twice
 	b,a = butter(5, 0.5/8)
@@ -91,34 +96,56 @@ def test_nn(SNR):
 	pass
 
 
+def load_exp_data(path):
+	matFiles = glob.glob(path+'*.mat')
+	allRecords = None
+	for matFile in matFiles:
+		if allRecords is not None:
+			allRecords = np.dstack((allRecords, np.squeeze(loadmat(matFile)['demodSignal']) ))
+		else:
+			allRecords = np.squeeze(loadmat(matFile)['demodSignal'])
 
+	return allRecords[:,0,:], allRecords[:,1,:]
 
+def wavelet_transform(measRecords, wavelet):
+	"""
+	Take and array of measurment records, wavelet transform and return the most significant components.
+	"""
+	out = []
+	for record in measRecords:
+		cA3, cD3, cD2, cD1 = pywt.wavedec(record, wavelet, level=3)
+		out.append(np.hstack((cA3, cD3)))
+	return np.array(out)
 
 if __name__ == '__main__':
 	pass
 
-	SNR = 48
-	fakeData = create_fake_data(SNR, 1e-3, 1, 2000)
-	pca = decomposition.PCA(whiten=True)
-	pca.fit(fakeData)
+	SNR = 1e4
+	fakeData = create_fake_data(SNR, 1e-3, 1, 4000)
 
 	#Use PCA to extract fewer useful features
-	pca.n_components = 500
-	trainData = pca.transform(fakeData)
+	pca = decomposition.PCA()
+	pca.n_components = 40
+	pca.fit(fakeData)
 
-	validateData =  pca.transform(create_fake_data(SNR, 1e-3, 1, 2000))
-	trueStates = np.tile([0,1], 1000).flatten()
+	# trainData = pca.transform(fakeData)
+	# validateData =  pca.transform(create_fake_dpata(SNR, 1e-2, 1, 2000))
 
-	clf = svm.NuSVC()
+	trueStates = np.tile([0,1], 2000).flatten()
 
-	testScores = []
-	for nu in [0.1, 0.5, 0.9]:
-		clf.nu = nu
-		testScores.append([])
-		for gamma in np.linspace(0, 0.2/500, 10):
-			clf.gamma = gamma
-			clf.fit(trainData, trueStates)
-			testScores[-1].append(2*clf.score(validateData, trueStates) - 1)
+	# trueStates = np.hstack((np.zeros(1000), np.ones(1000)))
+	# testData = wavelet_transform(fakeData, 'db4')
+	testData = pca.transform(fakeData)
+	# scaler = preprocessing.Scaler().fit(testData)
+	# testData = scaler.transform(testData)
+
+	searchParams = {'gamma':(1.0/100)*np.logspace(-3, 0, 40), 'nu':np.arange(0.01, 0.2, 0.02)}
+	clf = grid_search.GridSearchCV(svm.NuSVC(cache_size=500), searchParams, n_jobs=1)
+	clf.fit(testData, trueStates)
+
+
+	# fakeData = create_fake_data(SNR, 1e-2, 1, 5000)
+	# validateData = scaler.transform(validateData)
 
 
 	# numAvgs = 10
