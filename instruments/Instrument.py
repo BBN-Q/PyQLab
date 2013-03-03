@@ -1,4 +1,4 @@
-from traits.api import HasTraits
+from traits.api import HasTraits, Bool
 
 import json
 
@@ -6,6 +6,7 @@ class Instrument(HasTraits):
 	"""
 	Main super-class for all instruments.
 	"""
+	enabled = Bool(True, desc='Whether the unit is used/enabled.')
 
 	def get_settings(self):
 		return self.__getstate__()
