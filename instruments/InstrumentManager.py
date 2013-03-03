@@ -29,6 +29,7 @@ if __name__ == '__main__':
 	instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
 	instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
 	instruments['BBNAPS1'] = APS(name='BBNAPS1')
+	instruments['BBNAPS2'] = APS(name='BBNAPS2')
 
 	instrLib = InstrumentLibrary()
 	instrLib.load_settings(instruments)

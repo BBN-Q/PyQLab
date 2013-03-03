@@ -1,66 +1,62 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem, Stack, StackItem, PushButton
 from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
-from enaml.core.api import Looper
+from enaml.core.api import Looper, Include, Object
 
-from MicrowaveSourcesView import MicrowaveSourceForm
-from MicrowaveSources import MicrowaveSource
+import MicrowaveSources
+from MicrowaveSourcesView import MicrowaveSourceForm, AddSourceDialog
 from AWGView import AWGForm
 
 enamldef SourcesView(Container):
 	id: sourceView
 	attr sources
 	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack)]
-	ListControl:
-		id: sourceList
+	ListControl: sourceList:
+		row_changed :: 
+			sourceStack.index = event.new
 		Looper: sourceLooper:
-			iterable << sources
+			iterable << [source for source in sources]
 			ListItem:
 				text := loop_item.name
 				editable = True
-				clicked :: sourceStack.index = loop_index
-	Stack:
-		id: sourceStack
+				checkable = True
+				checked := loop_item.enabled
+
+	Stack: sourceStack:
 		Looper:
-			iterable << sources
+			iterable << [source for source in sources]
 			StackItem:
 				MicrowaveSourceForm:
 					uwSource := loop_item
-	PushButton:
-		id: addSourceButton
-		text = sourceView.sources[0].name
+	PushButton: addSourceButton:
+		text = 'Add'
 		clicked ::
-			print(sources)
-			from MicrowaveSources import AgilentN51853A
-			sourceView.sources.append(AgilentN51853A(name='Source'.format()))
-			print(sources)
+			AddSourceDialog(root_object(), sourceList = sources)
 
-	PushButton:
-		id: deleteSourceButton
+	PushButton: deleteSourceButton:
 		text = 'Delete'
 		clicked ::
-			print(sources)
-			sourceView.sources.pop(sourceList.index)
-			print(sources)
+			sources.pop(sourceStack.index)
 
 enamldef AWGsView(Container):
 	attr AWGs
 	constraints = [hbox(awgList, awgStack)]
-	ListControl:
-		id: awgList
+	ListControl: awgList:
+		row_changed :: 
+			awgStack.index = event.new
 		Looper:
-			iterable << AWGs
+			iterable << [awg for awg in AWGs]
 			ListItem:
-				text = loop_item.name
-				clicked :: awgStack.index = loop_index
-	Stack:
-		id: awgStack
+				text := loop_item.name
+				editable = True
+				checkable = True
+				checked := loop_item.enabled
+	Stack: awgStack:
 		Looper:
-			iterable << AWGs
+			iterable << [awg for awg in AWGs]
 			StackItem:
 				AWGForm:
 					awg=loop_item
-
 
 enamldef InstrumentManagerView(Window):
 	id: main
@@ -73,11 +69,11 @@ enamldef InstrumentManagerView(Window):
 				title = 'Sources'
 				closable = False
 				SourcesView:
-					sources := instrLib.sources
+					sources = instrLib.sources
 			Page:
 				title = "AWG's"
 				closable = False
 				AWGsView:
-					AWGs := instrLib.AWGs
+					AWGs = instrLib.AWGs
 
 
