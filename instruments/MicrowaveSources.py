@@ -1,21 +1,19 @@
 from traits.api import Str, Int, Float, Bool, Enum
-# from traitsui.api import View, Item, VGroup, HGroup, Group, spring
 
 import enaml
 from enaml.stdlib.sessions import show_simple_view
-from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 
 class MicrowaveSource(Instrument):
     name = Str
-    address = Str('', desc='address of unit as GPIB or I.P.', label='Address')
-    power = Float(0.0, desc='output power in dBm', label='Output Power')
-    frequency = Float(5.0, desc='frequency in GHz', label='Frequency')
-    modulate = Bool(False, desc='whether output is modulated', label='Modulate')
-    alc = Bool(False, desc='whether automatic level control is on', label='ALC')
-    pulseModulate = Bool(False, desc='whether pulse modulation is on', label='Pulse Mod.')
-    pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation', label='Pulse Mod. Source')
+    address = Str('', desc='Address of unit as GPIB or I.P.')
+    power = Float(0.0, desc='Output power in dBm')
+    frequency = Float(5.0, desc='Frequency in GHz')
+    modulate = Bool(False, desc='Whether output is modulated')
+    alc = Bool(False, desc='whether automatic level control is on')
+    pulseModulate = Bool(False, desc='Whether pulse modulation is on')
+    pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation')
 
 
 class AgilentN51853A(MicrowaveSource):
