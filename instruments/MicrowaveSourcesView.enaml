@@ -1,6 +1,30 @@
-from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, PushButton
 from enaml.stdlib.fields import FloatField
+from enaml.layout.api import hbox, vbox, spacer
 
+from MicrowaveSources import MicrowaveSourceList
+
+enamldef AddSourceDialog(Window):
+	title = 'Add a new source...'
+	modality = 'window_modal'
+	attr sourceList
+	Container:
+		constraints = [vbox(modelChoiceLabel, modelChoiceCombo, hbox(spacer, okButton, cancelButton))]
+		Label: modelChoiceLabel:
+			text = 'New Source Model'
+		ComboBox: modelChoiceCombo:
+			index = 0
+			items = [source.__name__ for source in MicrowaveSourceList]
+		PushButton: okButton:
+			text = 'OK'
+			clicked ::
+				sourceList.append(MicrowaveSourceList[modelChoiceCombo.index](name='NewSource'))
+				close()
+		PushButton: cancelButton:
+			text = 'Cancel'
+			clicked ::
+				close()
+		
 enamldef MicrowaveSourceForm(Container):
 	attr uwSource
 	GroupBox:
@@ -10,27 +34,37 @@ enamldef MicrowaveSourceForm(Container):
 				text = 'Address'
 			Field: 
 				text := uwSource.address
+				tool_tip = uwSource.trait('address').desc
 			Label:
 				text = 'Power'
 			FloatField:
 				maximum = 25
 				value := uwSource.power
+				tool_tip = uwSource.trait('power').desc
 			Label:
 				text = 'Frequency'
 			FloatField:
 				maximum = 20
 				minimum = 0
 				value := uwSource.frequency
+				tool_tip = uwSource.trait('frequency').desc
+			Label:
+				text = 'ALC'
+			CheckBox:
+				checked := uwSource.alc
+				enabled << not modOn.checked
 			Label: 
 				text = "Modulation"
 			CheckBox: modOn:
 				checked := uwSource.modulate
+				tool_tip = uwSource.trait('modulate').desc
 			Label:
 				text = "Modulate Source"
 			ComboBox:
 				index <<  ['Internal','External'].index(uwSource.pulseModSource)
 				index >> ['Internal','External'][index]
 				items << list(uwSource.trait('pulseModSource').handler.values)
+				tool_tip = uwSource.trait('pulseModSource').desc
 
 enamldef MicrowaveSourceView(Window):
 	id: main
