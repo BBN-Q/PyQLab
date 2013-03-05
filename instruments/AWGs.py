@@ -2,23 +2,35 @@
 AWGs
 """
 
-from traits.api import Str, Int, Float, Bool, Enum
+from traits.api import HasTraits, List, Instance, Str, Int, Float, Range, Bool, Enum
 
 from Instrument import Instrument
 
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
+
+class AWGChannel(Instrument):
+	amplitude = Range(value=1.0, low=0.0, high=1.0, desc="Scaling applied to channel amplitude")
+	offset = Range(value=0.0, low=-1.0, high=1.0, desc='D.C. offset applied to channel')
+	enabled = Bool(True, desc='Whether the channel output is enabled.')
+
 class AWG(Instrument):
-	pass
+	triggerSource = Enum('Internal', 'External', desc='Source of trigger')
+	triggerInterval = Float(1e-4, desc='Internal trigger interval')
+	samplingRate = Float(1200, desc='Sampling rate in MHz')
+	numChannels = Int
+	channels = List(AWGChannel)
+
+	def __init__(self, **traits):
+		super(AWG, self).__init__(**traits)
+		for ct in range(self.numChannels):
+			self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
 
 class APS(AWG):
-	name = Str
-	address = Str('', desc='address of unit as serial number', label='Address')
-	triggerSource = Enum('Internal', 'External', desc='source of trigger', label='Trigger Source')
-	triggerInterval = Float(1e-4, desc='internal trigger interval', label='Trigger Int.')
-	samplingRate = Float(1200, desc='sampling rate in MHz', label='Sampling Rate')
-    
+	address = Str('', desc='Address of unit as serial number')
+	numChannels = 4
+
 class Tek5014(AWG):
 	pass
 

@@ -1,5 +1,33 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox
 from enaml.stdlib.fields import FloatField
+from enaml.core.api import Looper, Include
+
+
+enamldef ChannelView(Container):
+	attr chan
+	GroupBox:
+		title = chan.name
+		Form:
+			Label: 
+				text = 'Amp.'
+			FloatField:
+				maximum = 1.0
+				minimum = 0.0
+				value := chan.amplitude
+				tool_tip = chan.trait('amplitude').desc
+			Label: 
+				text = 'Offset'
+			FloatField:
+				maximum = 1.0
+				minimum = -1.0
+				value := chan.offset
+				tool_tip = chan.trait('offset').desc
+			Label:
+				text = 'Enabled'
+			CheckBox:
+				checked := chan.enabled
+				tool_tip = chan.trait('enabled').desc
+
 
 enamldef AWGForm(Container):
 	attr awg
@@ -16,12 +44,16 @@ enamldef AWGForm(Container):
 				maximum = 15
 				minimum = 10e-9
 				value := awg.triggerInterval
+				tool_tip = awg.trait('triggerInterval').desc
 			Label:
 				text = "Trigger Source"
 			ComboBox:
 				index <<  ['Internal','External'].index(awg.triggerSource)
 				index >> ['Internal','External'][index]
 				items << list(awg.trait('triggerSource').handler.values)
+				tool_tip = awg.trait('triggerSource').desc
+			Include:
+				objects = [ChannelView(chan=chan) for ct,chan in enumerate(awg.channels)]
 
 enamldef AWGView(Window):
 	id: main
