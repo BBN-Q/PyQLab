@@ -16,6 +16,7 @@ enamldef ExpSettingsView(MainWindow):
 			tool_tip << 'Save to {}'.format(curFileName)
 			triggered :: expSettings.write_to_file()
 	Container:
+		padding = 5
 		Notebook:
 			tab_style = 'preferences'
 			Page:

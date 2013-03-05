@@ -10,7 +10,8 @@ from AWGView import AWGForm
 enamldef SourcesView(Container):
 	id: sourceView
 	attr sources
-	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack)]
+	padding = 5
+	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack, spacer)]
 	ListControl: sourceList:
 		row_changed :: 
 			sourceStack.index = event.new

@@ -29,7 +29,9 @@ enamldef MicrowaveSourceForm(Container):
 	attr uwSource
 	GroupBox:
 		title := uwSource.name
+		padding = 5
 		Form:
+			padding = 2
 			Label: 
 				text = 'Address'
 			Field: 

@@ -22,7 +22,7 @@ class ExpSettings(HasTraits):
 
     def write_to_file(self):
         with open(self.curFileName,'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.QLabEncoder)
+            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2)
 
 
 if __name__ == '__main__':
