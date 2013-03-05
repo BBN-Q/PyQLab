@@ -1,0 +1,35 @@
+from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, Action
+from enaml.widgets.include import Include
+from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Looper, Include
+
+from instruments.InstrumentManagerView import InstrumentManagerView
+
+enamldef ExpSettingsView(MainWindow):
+	id: main
+	attr expSettings
+	attr curFileName := expSettings.curFileName
+	title = 'Experiment Settings'
+	ToolBar:
+		Action:
+			text = 'Save'
+			tool_tip << 'Save to {}'.format(curFileName)
+			triggered :: expSettings.write_to_file()
+	Container:
+		Notebook:
+			tab_style = 'preferences'
+			Page:
+				title = 'Instruments'
+				closable = False
+				InstrumentManagerView:
+					instrLib = expSettings.instrLib
+			Page:
+				title = "Measurements"
+				closable = False
+			Page:
+				title = "Sweeps"
+				closable = False
+		GroupBox:
+			title = 'Quick Picker'
+			Label:
+				text = "Experiment quick picker...."
