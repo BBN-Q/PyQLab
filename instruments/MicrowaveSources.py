@@ -6,7 +6,6 @@ from enaml.stdlib.sessions import show_simple_view
 from Instrument import Instrument
 
 class MicrowaveSource(Instrument):
-    name = Str
     address = Str('', desc='Address of unit as GPIB or I.P.')
     power = Float(0.0, desc='Output power in dBm')
     frequency = Float(5.0, desc='Frequency in GHz')
