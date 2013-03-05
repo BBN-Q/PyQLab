@@ -1,7 +1,7 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem, Stack, StackItem, PushButton
 from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
-from enaml.core.api import Looper, Include, Object
+from enaml.core.api import Looper, Include
 
 import MicrowaveSources
 from MicrowaveSourcesView import MicrowaveSourceForm, AddSourceDialog
@@ -58,22 +58,28 @@ enamldef AWGsView(Container):
 				AWGForm:
 					awg=loop_item
 
-enamldef InstrumentManagerView(Window):
-	id: main
+enamldef InstrumentManagerView(Container):
+	id: instrLibTabs
+	attr instrLib
+	Notebook:
+		tab_style = 'preferences'
+		Page:
+			title = 'Sources'
+			closable = False
+			SourcesView:
+				sources = instrLibTabs.instrLib.sources
+		Page:
+			title = "AWG's"
+			closable = False
+			AWGsView:
+				AWGs = instrLibTabs.instrLib.AWGs
+
+enamldef InstrumentManagerWindow(Window):
+	id: instrLibWin
 	attr instrLib
 	title = 'Instrument Library'
 	Container:
-		Notebook:
-			tab_style = 'preferences'
-			Page:
-				title = 'Sources'
-				closable = False
-				SourcesView:
-					sources = instrLib.sources
-			Page:
-				title = "AWG's"
-				closable = False
-				AWGsView:
-					AWGs = instrLib.AWGs
+		InstrumentManagerView:
+			instrLib = instrLibWin.instrLib
 
 

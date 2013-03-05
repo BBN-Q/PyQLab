@@ -1,9 +1,8 @@
-
 from traits.api import HasTraits, List, Instance, Float
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
-
+from Instrument import Instrument
 from MicrowaveSources import MicrowaveSourceList, MicrowaveSource
 from AWGs import AWGList, AWG
 
@@ -34,9 +33,9 @@ if __name__ == '__main__':
 	instrLib = InstrumentLibrary()
 	instrLib.load_settings(instruments)
 	with enaml.imports():
-		from InstrumentManagerView import InstrumentManagerView
+		from InstrumentManagerView import InstrumentManagerWindow
 
-	show_simple_view(InstrumentManagerView(instrLib=instrLib))
+	show_simple_view(InstrumentManagerWindow(instrLib=instrLib))
 
 
 
