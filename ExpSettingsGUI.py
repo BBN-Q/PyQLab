@@ -12,9 +12,9 @@ import JSONHelpers
 
 class ExpSettings(HasTraits):
 
-    instrLib = Instance(InstrumentLibrary)
+    instruments = Instance(InstrumentLibrary)
     sweeps = List()
-    measurments = List()
+    measurements = List()
     curFileName = Str('DefaultExpSettings.json', tranient=True)
 
     def load_from_file(self, fileName):
@@ -32,10 +32,9 @@ if __name__ == '__main__':
     instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
     instruments['BBNAPS1'] = APS(name='BBNAPS1')
     instruments['BBNAPS2'] = APS(name='BBNAPS2')
-    instrLib = InstrumentLibrary()
-    instrLib.load_settings(instruments)
+    instrLib = InstrumentLibrary(instrDict=instruments)
 
-    expSettings= ExpSettings(instrLib=instrLib)
+    expSettings= ExpSettings(instruments=instrLib)
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView

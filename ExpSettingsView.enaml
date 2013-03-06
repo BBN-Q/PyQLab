@@ -23,7 +23,7 @@ enamldef ExpSettingsView(MainWindow):
 				title = 'Instruments'
 				closable = False
 				InstrumentManagerView:
-					instrLib = expSettings.instrLib
+					instrLib = expSettings.instruments
 			Page:
 				title = "Measurements"
 				closable = False

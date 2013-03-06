@@ -1,4 +1,4 @@
-from traits.api import HasTraits, List, Instance, Float
+from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
@@ -7,18 +7,25 @@ from MicrowaveSources import MicrowaveSourceList, MicrowaveSource
 from AWGs import AWGList, AWG
 
 class InstrumentLibrary(HasTraits):
-	#The instrument library basically has lists of Sources, AWGs and Digitizers
+	#All the instruments are stored as a dictionary keyed of the instrument name
+	instrDict = Dict(Str, Instrument)
+
+	#For the view we keep separate lists by type
+	#These could be cached properties but then I can't write back to them from the view
 	sources = List(MicrowaveSource)
 	AWGs = List(AWG)
-	digitizers = List()
 
-	def load_settings(self, settings):
-		#Loop over the instruments and add to appropriate list
-		for instr in settings.values():
-			if isinstance(instr, MicrowaveSource):
-				self.sources.append(instr)
-			elif isinstance(instr, AWG):
-				self.AWGs.append(instr)
+	@on_trait_change('instrDict[]')
+	def update_lists(self):
+		self.sources = filter(lambda instr: isinstance(instr, MicrowaveSource), self.instrDict.values())
+		self.AWGs = filter(lambda instr: isinstance(instr, AWG), self.instrDict.values())
+
+	def add_instrument(self, newInstr):
+		self.instrDict[newInstr.name] = newInstr
+
+	def remove_instrument(self, deadInstrName):
+		del self.instrDict[deadInstrName]
+
 
 if __name__ == '__main__':
 
@@ -30,8 +37,7 @@ if __name__ == '__main__':
 	instruments['BBNAPS1'] = APS(name='BBNAPS1')
 	instruments['BBNAPS2'] = APS(name='BBNAPS2')
 
-	instrLib = InstrumentLibrary()
-	instrLib.load_settings(instruments)
+	instrLib = InstrumentLibrary(instrDict=instruments)
 	with enaml.imports():
 		from InstrumentManagerView import InstrumentManagerWindow
 

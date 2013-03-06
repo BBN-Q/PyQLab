@@ -7,9 +7,17 @@ import MicrowaveSources
 from MicrowaveSourcesView import MicrowaveSourceForm, AddSourceDialog
 from AWGView import AWGForm
 
+#Enaml doesn't support lambda's in notification operators so we need to make one up here to pass to callbacks
+def get_add_instr_callback(add_instr_func):
+	def add_instr_callback(newInstr):
+		add_instr_func(newInstr)
+	return add_instr_callback
+
 enamldef SourcesView(Container):
 	id: sourceView
 	attr sources
+	attr add_instr_func
+	attr remove_instr_func
 	padding = 5
 	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack, spacer)]
 	ListControl: sourceList:
@@ -29,19 +37,21 @@ enamldef SourcesView(Container):
 			StackItem:
 				MicrowaveSourceForm:
 					uwSource := loop_item
+
 	PushButton: addSourceButton:
 		text = 'Add'
 		clicked ::
-			AddSourceDialog(root_object(), sourceList = sources)
-
+			AddSourceDialog(root_object(), callback=get_add_instr_callback(sourceView.add_instr_func))
 	PushButton: deleteSourceButton:
 		text = 'Delete'
 		clicked ::
-			sources.pop(sourceStack.index)
+			remove_instr_func(sources[sourceStack.index].name)
 
 enamldef AWGsView(Container):
 	attr AWGs
-	constraints = [hbox(awgList, awgStack)]
+	attr add_instr_func
+	attr remove_instr_func
+	constraints = [hbox(vbox(awgList, hbox(addAWGButton, deleteAWGButton)), awgStack)]
 	ListControl: awgList:
 		row_changed :: 
 			awgStack.index = event.new
@@ -59,8 +69,18 @@ enamldef AWGsView(Container):
 				AWGForm:
 					awg=loop_item
 
+	PushButton: addAWGButton:
+		text = 'Add'
+		clicked ::
+			AddSourceDialog(root_object(), callback = lambda newAWG : add_instr_func(newAWG))
+	PushButton: deleteAWGButton:
+		text = 'Delete'
+		clicked ::
+			remove_instr_func(AWGs[awgStack.index].name)
+
+
+
 enamldef InstrumentManagerView(Container):
-	id: instrLibTabs
 	attr instrLib
 	Notebook:
 		tab_style = 'preferences'
@@ -68,12 +88,17 @@ enamldef InstrumentManagerView(Container):
 			title = 'Sources'
 			closable = False
 			SourcesView:
-				sources = instrLibTabs.instrLib.sources
+				sources << instrLib.sources
+				add_instr_func = instrLib.add_instrument
+				remove_instr_func = instrLib.remove_instrument
+
 		Page:
 			title = "AWG's"
 			closable = False
 			AWGsView:
-				AWGs = instrLibTabs.instrLib.AWGs
+				AWGs << instrLib.AWGs
+				add_instr_func = instrLib.add_instrument
+				remove_instr_func = instrLib.remove_instrument
 
 enamldef InstrumentManagerWindow(Window):
 	id: instrLibWin

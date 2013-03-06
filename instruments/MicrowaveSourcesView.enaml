@@ -7,7 +7,7 @@ from MicrowaveSources import MicrowaveSourceList
 enamldef AddSourceDialog(Window):
 	title = 'Add a new source...'
 	modality = 'window_modal'
-	attr sourceList
+	attr callback
 	Container:
 		constraints = [vbox(modelChoiceLabel, modelChoiceCombo, hbox(spacer, okButton, cancelButton))]
 		Label: modelChoiceLabel:
@@ -18,7 +18,7 @@ enamldef AddSourceDialog(Window):
 		PushButton: okButton:
 			text = 'OK'
 			clicked ::
-				sourceList.append(MicrowaveSourceList[modelChoiceCombo.index](name='NewSource'))
+				callback(MicrowaveSourceList[modelChoiceCombo.index](name='NewSource'))
 				close()
 		PushButton: cancelButton:
 			text = 'Cancel'
