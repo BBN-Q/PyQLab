@@ -16,14 +16,14 @@ class ExpSettings(HasTraits):
     instruments = Instance(InstrumentLibrary)
     sweeps = List()
     measurements = List()
-    curFileName = Str('DefaultExpSettings.json', tranient=True)
+    curFileName = Str('DefaultExpSettings.json', transient=True)
 
     def load_from_file(self, fileName):
         pass
 
     def write_to_file(self):
         with open(self.curFileName,'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2)
+            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':
