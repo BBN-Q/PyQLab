@@ -1,0 +1,73 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
+	PushButton, Splitter, SplitItem, ListControl, ListItem, Stack, StackItem
+from enaml.stdlib.fields import FloatField
+from enaml.core.api import Looper, Include
+from enaml.layout.api import hbox, vbox, spacer
+
+enamldef PointsSweepForm(GroupBox):
+	attr sweep
+	attr possibleInstrs
+	title = '{} ({})'.format(sweep.name, sweep.label)
+	Form:
+		Label:
+			text = 'Start'
+		FloatField:
+			value := sweep.start
+		Label:
+			text = 'Stop'
+		FloatField:
+			value := sweep.stop
+		Label:
+			text = 'Step'
+		FloatField:
+			value := sweep.step
+		ComboBox:
+			index << possibleInstrs.index(sweep.instr) if possibleInstrs else 0
+			index :: sweep.instr = possibleInstrs[index]
+			items << [instr.name for instr in possibleInstrs]
+
+enamldef PointsSweepWindow(Window):
+	id: pointSweepTest
+	attr sweep
+	attr possibleInstrs
+	title = sweep.name
+	Container:
+		PointsSweepForm:
+			sweep := pointSweepTest.sweep
+			possibleInstrs = pointSweepTest.possibleInstrs
+
+
+enamldef SweepManager(Container):
+	id: sweepManager
+	attr sweeps : list = []
+	attr possibleInstrs
+	constraints = [
+		hbox(sweepList, sweepStack),
+		sweepList.width <= 300]
+	ListControl: sweepList:
+		resist_width = 'weak'
+		row_changed :: 
+			sweepStack.index = event.new
+		Looper:
+			iterable << sweeps
+			ListItem:
+				text := loop_item.name
+				editable = True
+				checkable = True
+				checked := True
+	Stack: sweepStack:
+			Looper:
+				iterable << sweepManager.sweeps
+				StackItem:
+					PointsSweepForm:
+						sweep := loop_item
+						possibleInstrs = sweepManager.possibleInstrs
+
+enamldef SweepManagerWindow(Window):
+	id: sweepManagerTest
+	attr sweeps : list = []
+	attr possibleInstrs
+	title = 'Sweep Manager'
+	SweepManager:
+		sweeps := sweepManagerTest.sweeps
+		possibleInstrs = sweepManagerTest.possibleInstrs

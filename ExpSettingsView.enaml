@@ -4,6 +4,7 @@ from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
 from instruments.InstrumentManagerView import InstrumentManagerView
+from SweepsViews import SweepManager
 
 enamldef ExpSettingsView(MainWindow):
 	id: main
@@ -23,13 +24,16 @@ enamldef ExpSettingsView(MainWindow):
 				title = 'Instruments'
 				closable = False
 				InstrumentManagerView:
-					instrLib = expSettings.instruments
+					instrLib := expSettings.instruments
 			Page:
 				title = "Measurements"
 				closable = False
 			Page:
 				title = "Sweeps"
 				closable = False
+				SweepManager:
+					sweeps := expSettings.sweeps
+					possibleInstrs := expSettings.instruments.instrDict.values()
 		GroupBox:
 			title = 'Quick Picker'
 			Label:

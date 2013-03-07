@@ -6,6 +6,7 @@ from enaml.stdlib.sessions import show_simple_view
 from instruments.InstrumentManager import InstrumentLibrary
 from instruments.MicrowaveSources import AgilentN51853A
 from instruments.AWGs import APS
+import Sweeps
 
 import json
 import JSONHelpers
@@ -34,7 +35,10 @@ if __name__ == '__main__':
     instruments['BBNAPS2'] = APS(name='BBNAPS2')
     instrLib = InstrumentLibrary(instrDict=instruments)
 
-    expSettings= ExpSettings(instruments=instrLib)
+    testSweep1 = Sweeps.Frequency(name='TestSweep1', start=5, stop=6, step=0.1, instr=instruments['Agilent1'])
+    testSweep2 = Sweeps.Power(name='TestSweep2', start=-20, stop=0, step=0.5, instr=instruments['Agilent2'])
+
+    expSettings= ExpSettings(instruments=instrLib, sweeps=[testSweep1, testSweep2])
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
