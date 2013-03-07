@@ -1,11 +1,12 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem, Stack, StackItem, PushButton
-from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
 import MicrowaveSources
 from MicrowaveSourcesView import MicrowaveSourceForm, AddSourceDialog
 from AWGView import AWGForm
+
+from traits.api import List
 
 #Enaml doesn't support lambda's in notification operators so we need to make one up here to pass to callbacks
 def get_add_instr_callback(add_instr_func):
@@ -15,7 +16,7 @@ def get_add_instr_callback(add_instr_func):
 
 enamldef SourcesView(Container):
 	id: sourceView
-	attr sources
+	attr sources : list 
 	attr add_instr_func
 	attr remove_instr_func
 	padding = 5
@@ -23,8 +24,8 @@ enamldef SourcesView(Container):
 	ListControl: sourceList:
 		row_changed :: 
 			sourceStack.index = event.new
-		Looper: sourceLooper:
-			iterable << [source for source in sources]
+		Looper: 
+			iterable << sources
 			ListItem:
 				text := loop_item.name
 				editable = True
@@ -33,7 +34,7 @@ enamldef SourcesView(Container):
 
 	Stack: sourceStack:
 		Looper:
-			iterable << [source for source in sources]
+			iterable << sources
 			StackItem:
 				MicrowaveSourceForm:
 					uwSource := loop_item
@@ -48,15 +49,15 @@ enamldef SourcesView(Container):
 			remove_instr_func(sources[sourceStack.index].name)
 
 enamldef AWGsView(Container):
-	attr AWGs
+	attr AWGs : list 
 	attr add_instr_func
 	attr remove_instr_func
-	constraints = [hbox(vbox(awgList, hbox(addAWGButton, deleteAWGButton)), awgStack)]
+	constraints = [hbox(vbox(awgList, hbox(addAWGButton, deleteAWGButton, spacer)), awgStack)]
 	ListControl: awgList:
 		row_changed :: 
 			awgStack.index = event.new
 		Looper:
-			iterable << [awg for awg in AWGs]
+			iterable << AWGs
 			ListItem:
 				text := loop_item.name
 				editable = True
@@ -64,7 +65,7 @@ enamldef AWGsView(Container):
 				checked := loop_item.enabled
 	Stack: awgStack:
 		Looper:
-			iterable << [awg for awg in AWGs]
+			iterable << AWGs
 			StackItem:
 				AWGForm:
 					awg=loop_item
@@ -72,7 +73,7 @@ enamldef AWGsView(Container):
 	PushButton: addAWGButton:
 		text = 'Add'
 		clicked ::
-			AddSourceDialog(root_object(), callback = lambda newAWG : add_instr_func(newAWG))
+			AddSourceDialog(root_object(), callback = get_add_instr_callback(add_instr_func))
 	PushButton: deleteAWGButton:
 		text = 'Delete'
 		clicked ::

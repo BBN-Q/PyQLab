@@ -7,11 +7,10 @@ from enaml.core.api import Looper, Include
 enamldef ChannelView(GroupBox):
 	attr chan
 	share_layout=True
-	hug_width='weak'
-	resist_width='weak'
 	title = chan.name
 	padding = 0
 	Form:
+		resist_width='weak'
 		padding = 2
 		share_layout=True
 		Label: 
@@ -37,35 +36,34 @@ enamldef ChannelView(GroupBox):
 			tool_tip = chan.trait('enabled').desc
 
 
-enamldef AWGForm(Container):
+enamldef AWGForm(GroupBox):
 	attr awg
-	GroupBox:
-		padding = 5
-		title = awg.name
-		constraints = [vbox(hbox(formItems, spacer.flex()), channels)]
-		Form: formItems:
-			Label: 
-				text = 'Address'
-			Field: 
-				text := awg.address
-			Label:
-				text = 'Trigger Interval'
-			FloatField:
-				maximum = 15
-				minimum = 10e-9
-				value := awg.triggerInterval
-				tool_tip = awg.trait('triggerInterval').desc
-			Label:
-				text = "Trigger Source"
-			ComboBox:
-				index <<  ['Internal','External'].index(awg.triggerSource)
-				index >> ['Internal','External'][index]
-				items << list(awg.trait('triggerSource').handler.values)
-				tool_tip = awg.trait('triggerSource').desc
-		Container: channels:
-			constraints = [hbox(*inc.objects)]
-			Include: inc:
-				objects << [ChannelView(chan=chan) for chan in awg.channels]
+	padding = 5
+	title = awg.name
+	constraints = [vbox(hbox(formItems, spacer.flex()), channels)]
+	Form: formItems:
+		Label: 
+			text = 'Address'
+		Field: 
+			text := awg.address
+		Label:
+			text = 'Trigger Interval'
+		FloatField:
+			maximum = 15
+			minimum = 10e-9
+			value := awg.triggerInterval
+			tool_tip = awg.trait('triggerInterval').desc
+		Label:
+			text = "Trigger Source"
+		ComboBox:
+			index <<  ['Internal','External'].index(awg.triggerSource)
+			index >> ['Internal','External'][index]
+			items << list(awg.trait('triggerSource').handler.values)
+			tool_tip = awg.trait('triggerSource').desc
+	Container: channels:
+		constraints = [hbox(*inc.objects)]
+		Include: inc:
+			objects << [ChannelView(chan=chan) for chan in awg.channels]
 
 enamldef AWGView(Window):
 	id: main
