@@ -1,0 +1,70 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
+	PushButton, ListControl, ListItem, Stack, StackItem
+from enaml.stdlib.fields import FloatField, IntField
+from enaml.core.api import Looper, Include
+from enaml.layout.api import hbox, vbox, spacer
+
+
+enamldef DigitalHomodyneForm(GroupBox):
+	attr myFilter
+	title := myFilter.name
+	Form:
+		Label:
+			text = 'Box Car Start'
+		IntField:
+			value := myFilter.boxCarStart
+			tool_tip = myFilter.trait('boxCarStart').desc
+		Label:
+			text = 'Box Car Stop'
+		IntField:
+			value := myFilter.boxCarStop
+			tool_tip = myFilter.trait('boxCarStop').desc
+		Label:
+			text = 'I.F. Freq'
+		FloatField:
+			value := myFilter.IFfreq
+			tool_tip = myFilter.trait('IFfreq').desc
+		Label:
+			text = 'Sampling Rate'
+		FloatField:
+			value := myFilter.samplingRate
+			tool_tip = myFilter.trait('samplingRate').desc
+
+
+enamldef MeasFilterWindow(Window):
+	id: filterTest
+	attr myFilter
+	DigitalHomodyneForm:
+		myFilter := filterTest.myFilter
+
+enamldef MeasFilterManager(Container):
+	id: measFilterManager
+	attr filters : list = []
+	constraints = [
+		hbox(filterList, filterStack),
+		filterList.width <= 300]
+	ListControl: filterList:
+		resist_width = 'weak'
+		row_changed :: 
+			filterStack.index = event.new
+		Looper:
+			iterable << filters
+			ListItem:
+				text := loop_item.name
+				editable = True
+				checkable = True
+				checked := True
+	Stack: filterStack:
+			Looper:
+				iterable << measFilterManager.filters
+				StackItem:
+					DigitalHomodyneForm:
+						myFilter := loop_item
+
+enamldef MeasFilterManagerWindow(Window):
+	id: measFilterManagerTest
+	attr filters : list = []
+	title = 'Filter Manager'
+	MeasFilterManager:
+		filters := measFilterManagerTest.filters
+

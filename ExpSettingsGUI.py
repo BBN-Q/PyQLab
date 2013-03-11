@@ -7,6 +7,7 @@ from instruments.InstrumentManager import InstrumentLibrary
 from instruments.MicrowaveSources import AgilentN51853A
 from instruments.AWGs import APS
 import Sweeps
+import MeasFilters
 
 import json
 import JSONHelpers
@@ -38,7 +39,10 @@ if __name__ == '__main__':
     testSweep1 = Sweeps.Frequency(name='TestSweep1', start=5, stop=6, step=0.1, instr=instruments['Agilent1'])
     testSweep2 = Sweeps.Power(name='TestSweep2', start=-20, stop=0, step=0.5, instr=instruments['Agilent2'])
 
-    expSettings= ExpSettings(instruments=instrLib, sweeps=[testSweep1, testSweep2])
+    testFilter1 = MeasFilters.DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
+    testFilter2 = MeasFilters.DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6)
+
+    expSettings= ExpSettings(instruments=instrLib, sweeps=[testSweep1, testSweep2], measurements=[testFilter1, testFilter2])
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView

@@ -5,6 +5,7 @@ from enaml.core.api import Looper, Include
 
 from instruments.InstrumentManagerView import InstrumentManagerView
 from SweepsViews import SweepManager
+from MeasFiltersViews import MeasFilterManager
 
 enamldef ExpSettingsView(MainWindow):
 	id: main
@@ -28,6 +29,8 @@ enamldef ExpSettingsView(MainWindow):
 			Page:
 				title = "Measurements"
 				closable = False
+				MeasFilterManager:
+					filters := expSettings.measurements
 			Page:
 				title = "Sweeps"
 				closable = False
