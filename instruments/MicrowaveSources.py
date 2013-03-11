@@ -10,9 +10,9 @@ class MicrowaveSource(Instrument):
     power = Float(0.0, desc='Output power in dBm')
     frequency = Float(5.0, desc='Frequency in GHz')
     modulate = Bool(False, desc='Whether output is modulated')
-    alc = Bool(False, desc='whether automatic level control is on')
+    alc = Bool(False, desc='Whether automatic level control is on')
     pulseModulate = Bool(False, desc='Whether pulse modulation is on')
-    pulseModSource = Enum('Internal', 'External', desc='source of pulse modulation')
+    pulseModSource = Enum('Internal', 'External', desc='Source of pulse modulation')
 
 
 class AgilentN51853A(MicrowaveSource):

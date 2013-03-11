@@ -54,13 +54,14 @@ enamldef MicrowaveSourceForm(GroupBox):
 		CheckBox:
 			checked := uwSource.alc
 			enabled << not modOn.checked
+			tool_tip = uwSource.trait('alc').desc
 		Label: 
 			text = "Modulation"
 		CheckBox: modOn:
 			checked := uwSource.modulate
 			tool_tip = uwSource.trait('modulate').desc
 		Label:
-			text = "Modulate Source"
+			text = "Modulation Source"
 		ComboBox:
 			index <<  ['Internal','External'].index(uwSource.pulseModSource)
 			index :: uwsource.pulseModSource = ['Internal','External'][index]
