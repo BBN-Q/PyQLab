@@ -1,9 +1,11 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-	PushButton, ListControl, ListItem, Stack, StackItem
+	PushButton, SpinBox, StackItem
 from enaml.stdlib.fields import FloatField, IntField
-from enaml.core.api import Looper, Include
+from enaml.core.api import Conditional
 from enaml.layout.api import hbox, vbox, spacer
 
+
+from EnamlHelpers import DictManagerView, DictManager
 
 enamldef DigitalHomodyneForm(GroupBox):
 	attr myFilter
@@ -29,7 +31,21 @@ enamldef DigitalHomodyneForm(GroupBox):
 		FloatField:
 			value := myFilter.samplingRate
 			tool_tip = myFilter.trait('samplingRate').desc
+		Label:
+			text = "Source Channel"
+		SpinBox:
+			minimum = 1
+			maximum = 2
+			value := myFilter.channel
 
+enamldef FilterStackView(StackItem):
+	id: fsk
+	attr myFilter
+	Conditional:
+		#isinstance(myFilter, DigitalHomodyne) shoudl work but doesn't return true
+		condition = myFilter.__class__.__name__ == 'DigitalHomodyne'
+		DigitalHomodyneForm:
+			myFilter := fsk.myFilter
 
 enamldef MeasFilterWindow(Window):
 	id: filterTest
@@ -37,34 +53,33 @@ enamldef MeasFilterWindow(Window):
 	DigitalHomodyneForm:
 		myFilter := filterTest.myFilter
 
-enamldef MeasFilterManager(Container):
-	id: measFilterManager
-	attr filters : list = []
-	constraints = [
-		hbox(filterList, filterStack),
-		filterList.width <= 300]
-	ListControl: filterList:
-		resist_width = 'weak'
-		row_changed :: 
-			filterStack.index = event.new
-		Looper:
-			iterable << filters
-			ListItem:
-				text := loop_item.name
-				editable = True
-				checkable = True
-				checked := True
-	Stack: filterStack:
-			Looper:
-				iterable << measFilterManager.filters
-				StackItem:
-					DigitalHomodyneForm:
-						myFilter := loop_item
+enamldef AddFilterDialog(Window):
+	title = 'Add a new source...'
+	modality = 'window_modal'
+	attr filterDict
+	attr filterList
+	Container:
+		constraints = [vbox(modelChoiceLabel, modelChoiceCombo, hbox(spacer, okButton, cancelButton))]
+		Label: modelChoiceLabel:
+			text = 'New Filter Model'
+		ComboBox: modelChoiceCombo:
+			index = 0
+			items = [f.__name__ for f in filterList]
+		PushButton: okButton:
+			text = 'OK'
+			clicked ::
+				filterDict.update({'NewFilter':filterList[modelChoiceCombo.index](name='NewFilter')})
+				close()
+		PushButton: cancelButton:
+			text = 'Cancel'
+			clicked ::
+				close()
 
 enamldef MeasFilterManagerWindow(Window):
 	id: measFilterManagerTest
-	attr filters : list = []
+	attr filterLib
 	title = 'Filter Manager'
-	MeasFilterManager:
-		filters := measFilterManagerTest.filters
+	DictManagerView:
+		dictManager = DictManager(itemDict=filterLib.filterDict, dictName='filterDict')
+		addDialog = lambda root, filterDict, filterList=measFilterManagerTest.filterLib.filterList : AddFilterDialog(root, filterDict=filterDict, filterList=filterList)
 
