@@ -5,7 +5,7 @@ from enaml.core.api import Conditional
 from enaml.layout.api import hbox, vbox, spacer
 
 
-from EnamlHelpers import DictManagerView, DictManager
+from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
 enamldef DigitalHomodyneForm(GroupBox):
 	attr myFilter
@@ -53,35 +53,13 @@ enamldef MeasFilterWindow(Window):
 	DigitalHomodyneForm:
 		myFilter := filterTest.myFilter
 
-enamldef AddFilterDialog(Window):
-	title = 'Add a new source...'
-	modality = 'window_modal'
-	attr filterDict
-	attr filterList
-	Container:
-		constraints = [vbox(modelChoiceLabel, modelChoiceCombo, hbox(spacer, okButton, cancelButton))]
-		Label: modelChoiceLabel:
-			text = 'New Filter Model'
-		ComboBox: modelChoiceCombo:
-			index = 0
-			items = [f.__name__ for f in filterList]
-		PushButton: okButton:
-			text = 'OK'
-			clicked ::
-				filterDict.update({'NewFilter':filterList[modelChoiceCombo.index](name='NewFilter')})
-				close()
-		PushButton: cancelButton:
-			text = 'Cancel'
-			clicked ::
-				close()
-
 enamldef MeasFilterManager(Container):
 	id: measFilterManager
 	attr filterLib
 	DictManagerView:
 		myDict = filterLib.filterDict
-		addDialog = lambda root, filterDict, filterList=measFilterManagerTest.filterLib.filterList : \
-			AddFilterDialog(root, filterDict=filterDict, filterList=filterList)
+		addDialog = lambda root, filterDict=filterLib.filterDict, filterList=filterLib.filterList : \
+			AddDialog(root, itemDict=filterDict, newClassList=filterList, objText='Filter')
 
 enamldef MeasFilterManagerWindow(Window):
 	id: measFilterManagerTest

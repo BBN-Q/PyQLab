@@ -2,7 +2,7 @@
 Measurement filters
 """
 
-from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, on_trait_change, Function
+from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool
 import enaml
 
 class MeasFilter(HasTraits):
@@ -38,8 +38,6 @@ class MeasFilterLibrary(HasTraits):
 
 	def load_from_file(self):
 		pass
-
-
 
 if __name__ == "__main__":
 

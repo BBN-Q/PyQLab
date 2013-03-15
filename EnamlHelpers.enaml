@@ -4,7 +4,7 @@ Reusable widgets for handling lists and dictionaries
 
 from traits.api import HasTraits, Dict, TraitDictObject, List, Any, on_trait_change, WeakRef, Instance, Str
 
-from enaml.widgets.api import Container, Stack, StackItem, ListControl, ListItem, PushButton
+from enaml.widgets.api import Window, Container, Stack, StackItem, ListControl, ListItem, PushButton, Form, Label, Field, ComboBox
 from enaml.core.api import Looper, Include
 
 from enaml.layout.api import hbox, vbox, spacer
@@ -84,6 +84,34 @@ enamldef DictManagerView(Container):
 			print(dictManager.itemDict)
 			print(dictManager.stackItems)
 			import pdb; pdb.set_trace()
+
+enamldef AddDialog(Window):
+	attr itemDict
+	attr newClassList
+	attr objText
+	title = 'Add a new {}...'.format(objText)
+	modality = 'window_modal'
+	Container:
+		constraints = [vbox(myForm, hbox(spacer, okButton, cancelButton))]
+		Form: myForm:
+			Label:
+				text = 'New Name'
+			Field: newName:
+				text = 'New'+objText
+			Label: modelChoiceLabel:
+				text = 'New {} Model'.format(objText)
+			ComboBox: modelChoice:
+				index = 0
+				items = [f.__name__ for f in newClassList]
+		PushButton: okButton:
+			text = 'OK'
+			clicked ::
+				itemDict.update({'NewFilter':newClassList[modelChoice.index](name=newName.text)})
+				close()
+		PushButton: cancelButton:
+			text = 'Cancel'
+			clicked ::
+				close()
 
 
 
