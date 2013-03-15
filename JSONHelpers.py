@@ -5,16 +5,20 @@ from traits.api import HasTraits
 from instruments.InstrumentManager import InstrumentLibrary
 from instruments.Instrument import Instrument
 from Sweeps import Sweep
+from MeasFilters import MeasFilterLibrary
 
 class QLabEncoder(json.JSONEncoder):
 	"""
 	Helper for QLab to encode all the classes we use.
 	"""
-	def default(self, obj):
+	def default(self, obj, filterEnabled=True):
 		if isinstance(obj, HasTraits):
 			#For the instrument library pull out enabled instruments from the dictionary
 			if isinstance(obj, InstrumentLibrary):
-				tmpDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
+				tmpDict = {name:instr for name,instr in obj.instrDict.items() if (not filterEnabled or instr.enabled)}
+			#For the measurment library just pull-out enabled measurements from the filter dictionary
+			if isinstance(obj, MeasFilterLibrary):
+				tmpDict = {name:filt for name,filt in obj.filterDict.items() if (not filterEnabled or filt.enabled)}
 			#For sweeps we need to return instrument name and stop there
 			elif isinstance(obj, Sweep):
 				tmpDict = obj.__getstate__()

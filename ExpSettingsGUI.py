@@ -16,7 +16,7 @@ class ExpSettings(HasTraits):
 
     instruments = Instance(InstrumentLibrary)
     sweeps = List()
-    measurements = List()
+    measurements = Instance(MeasFilters.MeasFilterLibrary)
     curFileName = Str('DefaultExpSettings.json', transient=True)
 
     def load_from_file(self, fileName):
@@ -41,8 +41,9 @@ if __name__ == '__main__':
 
     testFilter1 = MeasFilters.DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
     testFilter2 = MeasFilters.DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6)
+    filterLib = MeasFilters.MeasFilterLibrary(filterDict={'M1':testFilter1, 'M2':testFilter2})
 
-    expSettings= ExpSettings(instruments=instrLib, sweeps=[testSweep1, testSweep2], measurements=[testFilter1, testFilter2])
+    expSettings= ExpSettings(instruments=instrLib, sweeps=[testSweep1, testSweep2], measurements=filterLib)
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView

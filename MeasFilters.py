@@ -3,9 +3,7 @@ Measurement filters
 """
 
 from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, on_trait_change, Function
-import JSONHelpers
 import enaml
-
 
 class MeasFilter(HasTraits):
 	name = Str
@@ -30,9 +28,11 @@ class Correlator(MeasFilter):
 class MeasFilterLibrary(HasTraits):
 	filterDict = Dict(Str, MeasFilter)
 	libFile = Str('MeasFilterLibrary.json', transient=True)
-	filterList = List([DigitalHomodyne, Correlator])
+	filterList = List([DigitalHomodyne, Correlator], transient=True)
 
 	def write_to_file(self):
+		#Move import here to avoid circular import
+		import JSONHelpers
 		with open(self.libFile,'w') as FID:
 			json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
 

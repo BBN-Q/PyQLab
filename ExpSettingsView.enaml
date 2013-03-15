@@ -30,7 +30,7 @@ enamldef ExpSettingsView(MainWindow):
 				title = "Measurements"
 				closable = False
 				MeasFilterManager:
-					filters := expSettings.measurements
+					filterLib := expSettings.measurements
 			Page:
 				title = "Sweeps"
 				closable = False

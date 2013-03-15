@@ -75,12 +75,17 @@ enamldef AddFilterDialog(Window):
 			clicked ::
 				close()
 
-enamldef MeasFilterManagerWindow(Window):
-	id: measFilterManagerTest
+enamldef MeasFilterManager(Container):
+	id: measFilterManager
 	attr filterLib
-	title = 'Filter Manager'
 	DictManagerView:
 		myDict = filterLib.filterDict
 		addDialog = lambda root, filterDict, filterList=measFilterManagerTest.filterLib.filterList : \
 			AddFilterDialog(root, filterDict=filterDict, filterList=filterList)
 
+enamldef MeasFilterManagerWindow(Window):
+	id: measFilterManagerTest
+	attr filterLib
+	title = 'Filter Manager'
+	MeasFilterManager:
+		filterLib := measFilterManagerTest.filterLib
