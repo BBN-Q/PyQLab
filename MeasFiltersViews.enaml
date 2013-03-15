@@ -80,6 +80,7 @@ enamldef MeasFilterManagerWindow(Window):
 	attr filterLib
 	title = 'Filter Manager'
 	DictManagerView:
-		dictManager = DictManager(itemDict=filterLib.filterDict, dictName='filterDict')
-		addDialog = lambda root, filterDict, filterList=measFilterManagerTest.filterLib.filterList : AddFilterDialog(root, filterDict=filterDict, filterList=filterList)
+		myDict = filterLib.filterDict
+		addDialog = lambda root, filterDict, filterList=measFilterManagerTest.filterLib.filterList : \
+			AddFilterDialog(root, filterDict=filterDict, filterList=filterList)
 

@@ -32,10 +32,6 @@ class MeasFilterLibrary(HasTraits):
 	libFile = Str('MeasFilterLibrary.json', transient=True)
 	filterList = List([DigitalHomodyne, Correlator])
 
-	@on_trait_change('filterDict_items')
-	def trigger_callback(self, obj, name, new):
-		print('Decorator trait notifier triggered')
-
 	def write_to_file(self):
 		with open(self.libFile,'w') as FID:
 			json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)

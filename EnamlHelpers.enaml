@@ -13,36 +13,50 @@ class DictManager(HasTraits):
 	"""
 	Helper to manage a list next to a set of stack items
 	"""
-	stackItems = List
 	listItems = List
+	stackItems = List
 	itemDict = Instance(TraitDictObject)
 	dictName = Str
 
 	def __init__(self, **kwargs):
 		super(DictManager, self).__init__(**kwargs)
-		self.itemDict.object().on_trait_change(self.update_lists, self.dictName+'_items')
-		for key,value in self.itemDict.items():
-			self.listItems.append(ListItem(text=key))
-			self.stackItems.append(value.get_stack_view())
-
-	def sillyprinter(self):
-		print('Got here!')
-
-	def update_lists(self, obj, name, new):
-		print('Got into updating lists')
-		import pdb; pdb.set_trace()
-		for name,item in new.removed.items():
-			names = [item.name for item in listItems]
-			deadIndex = names.index(name)
-			del self.listItems[deadIndex]
-			del self.stackItems[deadIndex]
-		for name,item in new.added.items():
-			self.listItems.append(ListItem(text=name))
+		dictName = self.itemDict.object().get().keys()[[self.itemDict==item for item in self.itemDict.object().get().values()].index(True)]
+		self.itemDict.object().on_trait_change(self.update_lists, dictName+'_items')
+		self.itemDict.object().on_trait_change(self.name_change, dictName+'.name')
+		for item in self.itemDict.values():
+			self.listItems.append(MyListItem(myItem=item))
 			self.stackItems.append(item.get_stack_view())
 
+	def name_change(self, obj, name, old, new):
+		"""
+		Since the dictionary is keyed off item names we need to change the dictionary
+		"""
+		self.itemDict[new] = self.itemDict.pop(old)
 
+	def update_lists(self, obj, name, new):
+		if new.removed:
+			#List current dictionary names
+			goodNames = self.itemDict.keys()
+			#Find all items in list that are no longer there
+			#We do this to also catch name changes where the item name is different to new.removed.keys()
+			for ct, item in enumerate(reversed(self.listItems)):
+				if item.text not in goodNames:
+					del self.listItems[-(ct+1)]
+					del self.stackItems[-(ct+1)]
+		for item in new.added.values():
+			self.listItems.append(MyListItem(myItem=item))
+			self.stackItems.append(item.get_stack_view())
+
+enamldef MyListItem(ListItem):
+	attr myItem
+	text := myItem.name
+	editable = True
+	checked := myItem.enabled
+	checkable = True
+	
 enamldef DictManagerView(Container):
-	attr dictManager 
+	attr dictManager = DictManager(itemDict=myDict)
+	attr myDict 
 	attr addDialog
 	constraints = [
 		hbox(vbox(myList, hbox(addButton, deleteButton, printer, spacer)), myStack),
@@ -52,10 +66,10 @@ enamldef DictManagerView(Container):
 		row_changed ::
 			myStack.index = event.new
 		Include: listInc:
-			objects := dictManager.listItems
+			objects << [item for item in dictManager.listItems]
 	Stack: myStack:
 		Include: stackInc:
-			objects := dictManager.stackItems
+			objects << [item for item in dictManager.stackItems]
 	PushButton: addButton:
 		text = 'Add'
 		clicked ::
@@ -63,7 +77,7 @@ enamldef DictManagerView(Container):
 	PushButton: deleteButton:
 		text = 'Delete'
 		clicked ::
-			itemDict.pop(myList.list_items[myList.current_row].text)
+			myDict.pop(myList.list_items[myList.current_row].text)
 	PushButton: printer:
 		text = 'Print dicitonary'
 		clicked ::
