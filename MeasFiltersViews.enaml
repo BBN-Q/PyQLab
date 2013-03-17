@@ -7,6 +7,8 @@ from enaml.layout.api import hbox, vbox, spacer
 
 from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
+import MeasFilters
+
 enamldef DigitalHomodyneForm(GroupBox):
 	attr myFilter
 	title := myFilter.name
@@ -38,12 +40,12 @@ enamldef DigitalHomodyneForm(GroupBox):
 			maximum = 2
 			value := myFilter.channel
 
+#Stack view with one of many possible view conditionally displayed
 enamldef FilterStackView(StackItem):
 	id: fsk
 	attr myFilter
 	Conditional:
-		#isinstance(myFilter, DigitalHomodyne) shoudl work but doesn't return true
-		condition = myFilter.__class__.__name__ == 'DigitalHomodyne'
+		condition = isinstance(myFilter, MeasFilters.DigitalHomodyne) 
 		DigitalHomodyneForm:
 			myFilter := fsk.myFilter
 

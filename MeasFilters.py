@@ -41,6 +41,9 @@ class MeasFilterLibrary(HasTraits):
 
 if __name__ == "__main__":
 
+	#Work around annoying problem with multiple class definitions 
+	from MeasFilters import DigitalHomodyne, MeasFilterLibrary
+
 	testFilter1 = DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
 	testFilter2 = DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
 
