@@ -16,7 +16,6 @@ class DictManager(HasTraits):
 	listItems = List
 	stackItems = List
 	itemDict = Instance(TraitDictObject)
-	dictName = Str
 
 	def __init__(self, **kwargs):
 		super(DictManager, self).__init__(**kwargs)
@@ -34,11 +33,11 @@ class DictManager(HasTraits):
 		self.itemDict[new] = self.itemDict.pop(old)
 
 	def update_lists(self, obj, name, new):
+		#We do this to also catch name changes where the item name is different to new.removed.keys()
 		if new.removed:
 			#List current dictionary names
 			goodNames = self.itemDict.keys()
 			#Find all items in list that are no longer there
-			#We do this to also catch name changes where the item name is different to new.removed.keys()
 			for ct, item in enumerate(reversed(self.listItems)):
 				if item.text not in goodNames:
 					del self.listItems[-(ct+1)]
@@ -89,6 +88,7 @@ enamldef AddDialog(Window):
 	attr itemDict
 	attr newClassList
 	attr objText
+	attr kwargs
 	title = 'Add a new {}...'.format(objText)
 	modality = 'window_modal'
 	Container:
@@ -106,7 +106,7 @@ enamldef AddDialog(Window):
 		PushButton: okButton:
 			text = 'OK'
 			clicked ::
-				itemDict.update({'NewFilter':newClassList[modelChoice.index](name=newName.text)})
+				itemDict.update({newName.text:newClassList[modelChoice.index](name=newName.text, **kwargs)})
 				close()
 		PushButton: cancelButton:
 			text = 'Cancel'

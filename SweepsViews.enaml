@@ -1,8 +1,12 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-	PushButton, Splitter, SplitItem, ListControl, ListItem, Stack, StackItem
+	PushButton, ListControl, ListItem, Stack, StackItem
 from enaml.stdlib.fields import FloatField
-from enaml.core.api import Looper, Include
+from enaml.core.api import Conditional
 from enaml.layout.api import hbox, vbox, spacer
+
+from EnamlHelpers import DictManagerView, DictManager, AddDialog
+
+from Sweeps import PointsSweep
 
 enamldef PointsSweepForm(GroupBox):
 	attr sweep
@@ -22,52 +26,33 @@ enamldef PointsSweepForm(GroupBox):
 		FloatField:
 			value := sweep.step
 		ComboBox:
-			index << possibleInstrs.index(sweep.instr) if possibleInstrs else 0
+			index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
 			index :: sweep.instr = possibleInstrs[index]
 			items << [instr.name for instr in possibleInstrs]
 
-enamldef PointsSweepWindow(Window):
-	id: pointSweepTest
-	attr sweep
-	attr possibleInstrs
-	title = sweep.name
-	Container:
-		PointsSweepForm:
-			sweep := pointSweepTest.sweep
-			possibleInstrs = pointSweepTest.possibleInstrs
 
+#Stack view with one of many possible view conditionally displayed
+enamldef SweepStackView(StackItem):
+	id: sweepskv
+	attr mySweep
+	attr possibleInstrs
+	Conditional:
+		condition = isinstance(mySweep, PointsSweep)
+		PointsSweepForm:
+			sweep := sweepskv.mySweep
+			possibleInstrs = sweepskv.possibleInstrs
 
 enamldef SweepManager(Container):
 	id: sweepManager
-	attr sweeps : list = []
-	attr possibleInstrs
-	constraints = [
-		hbox(sweepList, sweepStack),
-		sweepList.width <= 300]
-	ListControl: sweepList:
-		resist_width = 'weak'
-		row_changed :: 
-			sweepStack.index = event.new
-		Looper:
-			iterable << sweeps
-			ListItem:
-				text := loop_item.name
-				editable = True
-				checkable = True
-				checked := True
-	Stack: sweepStack:
-			Looper:
-				iterable << sweepManager.sweeps
-				StackItem:
-					PointsSweepForm:
-						sweep := loop_item
-						possibleInstrs = sweepManager.possibleInstrs
+	attr sweepLib
+	DictManagerView:
+		myDict = sweepLib.sweepDict
+		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
+			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
 
 enamldef SweepManagerWindow(Window):
 	id: sweepManagerTest
-	attr sweeps : list = []
-	attr possibleInstrs
+	attr sweepLib
 	title = 'Sweep Manager'
 	SweepManager:
-		sweeps := sweepManagerTest.sweeps
-		possibleInstrs = sweepManagerTest.possibleInstrs
+		sweepLib := sweepManagerTest.sweepLib
