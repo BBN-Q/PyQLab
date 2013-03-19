@@ -1,8 +1,8 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-	PushButton, ListControl, ListItem, Stack, StackItem
+	PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
 from enaml.stdlib.fields import FloatField
-from enaml.core.api import Conditional
-from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Conditional, Looper
+from enaml.layout.api import hbox, vbox, spacer, align
 
 from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
@@ -42,13 +42,40 @@ enamldef SweepStackView(StackItem):
 			sweep := sweepskv.mySweep
 			possibleInstrs = sweepskv.possibleInstrs
 
+def update_sweep_order(sweepList, objs):
+	sweepOrder = []
+	for obj in objs:
+		comboBoxIdx = obj[0].children[1].index
+		if comboBoxIdx>-1:
+			sweepOrder.append(sweepList[comboBoxIdx])
+	return sweepOrder
+
 enamldef SweepManager(Container):
 	id: sweepManager
 	attr sweepLib
+	attr sweepOrderObjs = None
 	DictManagerView:
 		myDict = sweepLib.sweepDict
 		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
 			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
+	GroupBox:
+		title = 'Sweep Order'
+		Form:
+			Label:
+				text = "Number of Sweeps"
+			SpinBox:
+				id: numSweepsBox
+				minimum = 1
+				maximum = 3
+			Looper: sweepLooper:
+				iterable << range(numSweepsBox.value)
+				Form:
+					Label:
+						text = 'Sweep {}:'.format(loop_index+1)
+					ComboBox:
+						items << sweepManager.sweepLib.sweepList
+						index :: 
+							sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
 
 enamldef SweepManagerWindow(Window):
 	id: sweepManagerTest
@@ -56,3 +83,4 @@ enamldef SweepManagerWindow(Window):
 	title = 'Sweep Manager'
 	SweepManager:
 		sweepLib := sweepManagerTest.sweepLib
+

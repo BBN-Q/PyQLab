@@ -17,7 +17,7 @@ class Sweep(HasTraits):
 	label = Str
 	numSteps = Int
 	enabled = Bool(True)
-	possibleInstrs = Instance(TraitListObject)
+	possibleInstrs = Instance(TraitListObject, transient=True)
 
 	@abc.abstractmethod
 	def step(self, index):
@@ -55,8 +55,9 @@ class SegmentNum(PointsSweep):
 class SweepLibrary(HasTraits):
 	sweepDict = Dict(Str, Sweep)
 	sweepList = Property(List, depends_on='sweepDict')
-	newSweepClasses = List([Power, Frequency])
-	possibleInstrs = List(Instrument)
+	sweepOrder = List(Str, transient=True)
+	newSweepClasses = List([Power, Frequency], transient=True)
+	possibleInstrs = List(Instrument, transient=True)
 
 	@cached_property
 	def _get_sweepList(self):

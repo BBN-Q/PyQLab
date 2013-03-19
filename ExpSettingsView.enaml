@@ -35,8 +35,7 @@ enamldef ExpSettingsView(MainWindow):
 				title = "Sweeps"
 				closable = False
 				SweepManager:
-					sweeps := expSettings.sweeps
-					possibleInstrs := expSettings.instruments.instrDict.values()
+					sweepLib := expSettings.sweeps
 		GroupBox:
 			title = 'Quick Picker'
 			Label:

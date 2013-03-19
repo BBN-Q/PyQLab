@@ -4,8 +4,10 @@ from traits.api import HasTraits
 
 from instruments.InstrumentManager import InstrumentLibrary
 from instruments.Instrument import Instrument
-from Sweeps import Sweep
+from Sweeps import Sweep, SweepLibrary
 from MeasFilters import MeasFilterLibrary
+
+from collections import OrderedDict
 
 class QLabEncoder(json.JSONEncoder):
 	"""
@@ -19,6 +21,9 @@ class QLabEncoder(json.JSONEncoder):
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
 			if isinstance(obj, MeasFilterLibrary):
 				tmpDict = {name:filt for name,filt in obj.filterDict.items() if (not filterEnabled or filt.enabled)}
+			#For the sweep library we need to pull out the sweep order
+			if isinstance(obj, SweepLibrary):
+				tmpDict = OrderedDict([(sweep, obj.sweepDict[sweep]) for sweep in obj.sweepOrder])
 			#For sweeps we need to return instrument name and stop there
 			elif isinstance(obj, Sweep):
 				tmpDict = obj.__getstate__()
