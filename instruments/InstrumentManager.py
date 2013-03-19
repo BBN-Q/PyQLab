@@ -9,28 +9,23 @@ from AWGs import AWGList, AWG
 class InstrumentLibrary(HasTraits):
 	#All the instruments are stored as a dictionary keyed of the instrument name
 	instrDict = Dict(Str, Instrument)
+	libFile = Str('InstrumentLibrary.json', transient=True)
 
-	#For the view we keep separate lists by type
-	#These could be cached properties but then I can't write back to them from the view
-	sources = List(MicrowaveSource)
-	AWGs = List(AWG)
+	def write_to_file(self):
+		#Move import here to avoid circular import
+		import JSONHelpers
+		with open(self.libFile,'w') as FID:
+			json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
 
-	@on_trait_change('instrDict[]')
-	def update_lists(self):
-		self.sources = filter(lambda instr: isinstance(instr, MicrowaveSource), self.instrDict.values())
-		self.AWGs = filter(lambda instr: isinstance(instr, AWG), self.instrDict.values())
-
-	def add_instrument(self, newInstr):
-		self.instrDict[newInstr.name] = newInstr
-
-	def remove_instrument(self, deadInstrName):
-		del self.instrDict[deadInstrName]
+	def load_from_file(self):
+		pass
 
 
 if __name__ == '__main__':
 
 	from MicrowaveSources import AgilentN51853A
 	from AWGs import APS
+	from InstrumentManager import InstrumentLibrary
 	instruments = {}
 	instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
 	instruments['Agilent2'] = AgilentN51853A(name='Agilent2')

@@ -23,6 +23,7 @@ class QLabEncoder(json.JSONEncoder):
 				tmpDict = {name:filt for name,filt in obj.filterDict.items() if (not filterEnabled or filt.enabled)}
 			#For the sweep library we need to pull out the sweep order
 			if isinstance(obj, SweepLibrary):
+				
 				tmpDict = OrderedDict([(sweep, obj.sweepDict[sweep]) for sweep in obj.sweepOrder])
 			#For sweeps we need to return instrument name and stop there
 			elif isinstance(obj, Sweep):

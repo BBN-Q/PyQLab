@@ -2,104 +2,31 @@ from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, Li
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
-import MicrowaveSources
-from MicrowaveSourcesView import MicrowaveSourceForm, AddSourceDialog
-from AWGView import AWGForm
+import MicrowaveSources, AWGs
 
-from traits.api import List
-
-#Enaml doesn't support lambda's in notification operators so we need to make one up here to pass to callbacks
-def get_add_instr_callback(add_instr_func):
-	def add_instr_callback(newInstr):
-		add_instr_func(newInstr)
-	return add_instr_callback
-
-enamldef SourcesView(Container):
-	id: sourceView
-	attr sources : list 
-	attr add_instr_func
-	attr remove_instr_func
-	padding = 5
-	constraints = [hbox(vbox(sourceList, hbox(addSourceButton, deleteSourceButton, spacer)), sourceStack, spacer)]
-	ListControl: sourceList:
-		row_changed :: 
-			sourceStack.index = event.new
-		Looper: 
-			iterable << sources
-			ListItem:
-				text := loop_item.name
-				editable = True
-				checkable = True
-				checked := loop_item.enabled
-
-	Stack: sourceStack:
-		Looper:
-			iterable << sources
-			StackItem:
-				MicrowaveSourceForm:
-					uwSource := loop_item
-
-	PushButton: addSourceButton:
-		text = 'Add'
-		clicked ::
-			AddSourceDialog(root_object(), callback=get_add_instr_callback(sourceView.add_instr_func))
-	PushButton: deleteSourceButton:
-		text = 'Delete'
-		clicked ::
-			remove_instr_func(sources[sourceStack.index].name)
-
-enamldef AWGsView(Container):
-	attr AWGs : list 
-	attr add_instr_func
-	attr remove_instr_func
-	constraints = [hbox(vbox(awgList, hbox(addAWGButton, deleteAWGButton, spacer)), awgStack)]
-	ListControl: awgList:
-		row_changed :: 
-			awgStack.index = event.new
-		Looper:
-			iterable << AWGs
-			ListItem:
-				text := loop_item.name
-				editable = True
-				checkable = True
-				checked := loop_item.enabled
-	Stack: awgStack:
-		Looper:
-			iterable << AWGs
-			StackItem:
-				AWGForm:
-					awg=loop_item
-
-	PushButton: addAWGButton:
-		text = 'Add'
-		clicked ::
-			AddSourceDialog(root_object(), callback = get_add_instr_callback(add_instr_func))
-	PushButton: deleteAWGButton:
-		text = 'Delete'
-		clicked ::
-			remove_instr_func(AWGs[awgStack.index].name)
-
-
+from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
 	Notebook:
 		tab_style = 'preferences'
 		Page:
-			title = 'Sources'
+			title = 'uwSources'
 			closable = False
-			SourcesView:
-				sources << instrLib.sources
-				add_instr_func = instrLib.add_instrument
-				remove_instr_func = instrLib.remove_instrument
+			DictManagerView:
+				myDict = instrLib.instrDict
+				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
+				addDialog = lambda root, itemDict : \
+			AddDialog(root, itemDict=itemDict, newClassList=MicrowaveSources.MicrowaveSourceList, objText='uwSource')
 
 		Page:
 			title = "AWG's"
 			closable = False
-			AWGsView:
-				AWGs << instrLib.AWGs
-				add_instr_func = instrLib.add_instrument
-				remove_instr_func = instrLib.remove_instrument
+			DictManagerView:
+				myDict = instrLib.instrDict
+				displayFilter = lambda x : isinstance(x, AWGs.AWG)
+				addDialog = lambda root, itemDict : \
+			AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
 
 enamldef InstrumentManagerWindow(Window):
 	id: instrLibWin

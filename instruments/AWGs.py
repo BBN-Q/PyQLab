@@ -27,11 +27,17 @@ class AWG(Instrument):
 		for ct in range(self.numChannels):
 			self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
 
+	def get_stack_view(self):
+		with enaml.imports():
+			from AWGViews import AWGStackView
+		return AWGStackView(myAWG=self)
+
+
 class APS(AWG):
-	address = Str('', desc='Address of unit as serial number')
 	numChannels = 4
 
 class Tek5014(AWG):
+	numChannels = 4
 	pass
 
 AWGList = [APS, Tek5014]
@@ -39,7 +45,7 @@ AWGList = [APS, Tek5014]
 if __name__ == "__main__":
 
 	with enaml.imports():
-		from AWGView import AWGView
+		from AWGViews import AWGView
 	
 	awg = APS(name='BBNAPS1')
 	session = show_simple_view(AWGView(awg=awg))

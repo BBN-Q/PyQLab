@@ -17,6 +17,11 @@ enamldef ExpSettingsView(MainWindow):
 			text = 'Save'
 			tool_tip << 'Save to {}'.format(curFileName)
 			triggered :: expSettings.write_to_file()
+		Action:
+			text = 'Debug'
+			tool_tip << 'Start debugger console'
+			triggered :: import pdb; pdb.set_trace()
+
 	Container:
 		padding = 5
 		Notebook:

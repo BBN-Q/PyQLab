@@ -8,6 +8,7 @@ class Instrument(HasTraits):
 	"""
 	name = Str
 	enabled = Bool(True, desc='Whether the unit is used/enabled.')
+	address = Str('', desc='Address of instrument')
 
 	def set_settings(self, settings):
 		for key,value in settings.items():

@@ -15,6 +15,12 @@ class MicrowaveSource(Instrument):
     pulseModSource = Enum('Internal', 'External', desc='Source of pulse modulation')
 
 
+    def get_stack_view(self):
+        with enaml.imports():
+            from MicrowaveSourcesViews import MicrowaveSourceStackView
+        return MicrowaveSourceStackView(mySource=self)
+
+
 class AgilentN51853A(MicrowaveSource):
     pass
 
