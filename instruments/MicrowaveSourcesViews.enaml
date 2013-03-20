@@ -1,0 +1,65 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, PushButton, StackItem
+from enaml.stdlib.fields import FloatField
+from enaml.layout.api import hbox, vbox, spacer
+
+from MicrowaveSources import MicrowaveSourceList
+
+enamldef MicrowaveSourceForm(GroupBox):
+	attr uwSource
+	title := uwSource.name
+	padding = 5
+	Form:
+		padding = 2
+		Label: 
+			text = 'Address'
+		Field: 
+			text := uwSource.address
+			tool_tip = uwSource.trait('address').desc
+		Label:
+			text = 'Power'
+		FloatField:
+			maximum = 25
+			value := uwSource.power
+			tool_tip = uwSource.trait('power').desc
+		Label:
+			text = 'Frequency'
+		FloatField:
+			maximum = 20
+			minimum = 0
+			value := uwSource.frequency
+			tool_tip = uwSource.trait('frequency').desc
+		Label:
+			text = 'ALC'
+		CheckBox:
+			checked := uwSource.alc
+			enabled << not modOn.checked
+			tool_tip = uwSource.trait('alc').desc
+		Label: 
+			text = "Modulation"
+		CheckBox: modOn:
+			checked := uwSource.modulate
+			tool_tip = uwSource.trait('modulate').desc
+		Label:
+			text = "Modulation Source"
+		ComboBox:
+			index <<  ['Internal','External'].index(uwSource.pulseModSource)
+			index :: uwSource.pulseModSource = ['Internal','External'][index]
+			items << list(uwSource.trait('pulseModSource').handler.values)
+			tool_tip = uwSource.trait('pulseModSource').desc
+
+enamldef MicrowaveSourceView(Window):
+	id: main
+	attr uwSource
+	title = uwSource.name
+	Container:
+		MicrowaveSourceForm:
+			uwSource := main.uwSource
+
+#Stack view 
+enamldef MicrowaveSourceStackView(StackItem):
+	id: uwSourceskv
+	attr mySource
+	MicrowaveSourceForm:
+		uwSource := mySource
+
+		

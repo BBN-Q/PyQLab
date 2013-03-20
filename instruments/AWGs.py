@@ -2,7 +2,7 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Instance, Str, Int, Float, Range, Bool, Enum
+from traits.api import HasTraits, List, Instance, Str, Int, Float, Range, Bool, Enum, File
 
 from Instrument import Instrument
 
@@ -21,6 +21,7 @@ class AWG(Instrument):
 	samplingRate = Float(1200, desc='Sampling rate in MHz')
 	numChannels = Int
 	channels = List(AWGChannel)
+	seqFile = File(desc='Path to sequence file.')
 
 	def __init__(self, **traits):
 		super(AWG, self).__init__(**traits)
