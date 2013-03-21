@@ -4,6 +4,8 @@ from enaml.layout.api import hbox, vbox, spacer
 
 from MicrowaveSources import MicrowaveSourceList
 
+from EnamlHelpers import EnumComboBox
+
 enamldef MicrowaveSourceForm(GroupBox):
 	attr uwSource
 	title := uwSource.name
@@ -41,11 +43,9 @@ enamldef MicrowaveSourceForm(GroupBox):
 			tool_tip = uwSource.trait('modulate').desc
 		Label:
 			text = "Modulation Source"
-		ComboBox:
-			index <<  ['Internal','External'].index(uwSource.pulseModSource)
-			index :: uwSource.pulseModSource = ['Internal','External'][index]
-			items << list(uwSource.trait('pulseModSource').handler.values)
-			tool_tip = uwSource.trait('pulseModSource').desc
+		EnumComboBox:
+			myObj := uwSource
+			traitName = 'pulseModSource'
 
 enamldef MicrowaveSourceView(Window):
 	id: main

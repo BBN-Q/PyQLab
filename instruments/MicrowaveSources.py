@@ -34,6 +34,7 @@ class LabBrick(MicrowaveSource):
 MicrowaveSourceList = [AgilentN51853A, HS9000, LabBrick]
 
 if __name__ == "__main__":
+    from MicrowaveSources import AgilentN51853A
     uwSource = AgilentN51853A(name='Agilent1')
     with enaml.imports():
         from MicrowaveSourcesView import MicrowaveSourceView
