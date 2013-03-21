@@ -110,7 +110,14 @@ enamldef AddDialog(Window):
 			clicked ::
 				close()
 
-
+enamldef EnumComboBox(ComboBox):
+	attr myObj
+	attr traitName
+	attr itemList = list(myObj.trait(traitName).handler.values)
+	items = itemList
+	index << itemList.index(getattr(myObj, traitName))
+	index :: setattr(myObj, traitName, itemList[index])
+	tool_tip = myObj.trait(traitName).desc
 
 
 
