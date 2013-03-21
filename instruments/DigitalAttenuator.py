@@ -35,7 +35,7 @@ class DigitalAttenuator(object):
         
     def connect(self, port):
         #Connect at a faster baudrate?  115200 seems to flake out.
-        self.socket = serial.Serial(port, timeout=1)
+        self.socket = serial.Serial(port, timeout=0.1, baudrate=115200)
         #Have to sleep here or else the socket flakes out if we send commands too quicly
         time.sleep(2)
         
@@ -65,19 +65,21 @@ class DigitalAttenuator(object):
 
     def query(self, queryStr):
         self.write(queryStr)
+        #Seems to need a pause on faster systems
+        time.sleep(0.01)
         return self.read()
         
         
     def getAttenuation(self, channel):
         assert (channel>=1) and (channel<=self.maxChannels), 'Oops the Digital Attenuator has only {0} channels.'.format(self.maxChannels)
-        return float(self.query('GET {0}'.format(int(channel)))[0])
+        return float(self.query('GET {0} '.format(int(channel)))[0])
     
     def setAttenuation(self, channel, attenuation):
         assert (channel>=1) and (channel<=self.maxChannels), 'Oops the Digital Attenuator has only {0} channels.'.format(self.maxChannels)
         assert (attenuation <= self.maxAttenuation) and (attenuation >= self.minAttenuation)
-        self.write('SET {0} {1:.1f}'.format(int(channel), attenuation))
+        self.write('SET {0} {1:.1f} '.format(int(channel), attenuation))
         #Clear the confirmation line (maybe should error check it?)
-        self.read()
+        print(self.read())
         
 
 #Create a view to a single spiner box
@@ -112,7 +114,7 @@ class DAWholeBoardView(QtGui.QWidget):
     
 if __name__ == '__main__':
     print('Got here')
-    da = DigitalAttenuator('COM6')
+    da = DigitalAttenuator('COM4')
     
     app = QtGui.QApplication(sys.argv)
     tmpFont = QtGui.QFont()
