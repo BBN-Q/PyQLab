@@ -1,0 +1,130 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, \
+ ComboBox, PushButton, ToolBar, Action, FlowArea, FlowItem
+from enaml.stdlib.fields import FloatField, IntField, Field
+from enaml.layout.api import hbox, vbox, spacer
+
+from EnamlHelpers import EnumComboBox
+
+from enaml.validation.api import Validator
+from traits.api import Int
+
+class RecordLengthValidator(Validator):
+	lengthMult = Int(64)
+	"""
+	Validator for records which much be a mulitple of 64 (Alazar) or 16 (Acquiris)
+	"""
+	def validate(self, text, component):
+		try: 
+			check = int(text)%self.lengthMult
+		except ValueError:
+			return text, False
+		if check == 0:
+			return text, True
+		else:
+			return text, False
+
+enamldef AlazarView(Container):
+	attr myAlazar
+	FlowArea:
+		direction = 'top_to_bottom'
+		FlowItem: horizBox:
+			GroupBox: 
+				title = 'Horizontal'
+				Form:
+					Label:
+						text = 'Acquisition Mode:'
+					EnumComboBox:
+						myObj := myAlazar
+						traitName = 'acquireMode'
+					Label:
+						text = 'Trigger Delay:'
+					FloatField:
+						value := myAlazar.delay
+						tool_tip = myAlazar.trait('delay').desc
+					Label:
+						text = 'Sampling Rate (M):'
+					IntField:
+						minimum = 0
+						maximum = 1200
+						value <<  myAlazar.samplingRate/1000000
+						value :: myAlazar.samplingRate = value*1e6
+						tool_tip = myAlazar.trait('samplingRate').desc
+		FlowItem: vertBox:
+			GroupBox: 
+				title = 'Vertical'
+				Form:
+					Label:
+						text = 'Scale:'
+					FloatField:
+						value := myAlazar.verticalScale
+						tool_tip = myAlazar.trait('verticalScale').desc
+					Label:
+						text = 'Offset:'
+					FloatField:
+						value := myAlazar.verticalOffset
+						tool_tip = myAlazar.trait('verticalOffset').desc
+					Label:
+						text = 'Coupling:'
+					EnumComboBox:
+						myObj := myAlazar
+						traitName = 'verticalCoupling'
+		FlowItem: avgBox:
+			GroupBox: 
+				title = 'Averager'
+				Form:
+					Label:
+						text = 'Samples'
+					IntField:
+						validator = RecordLengthValidator(lengthMult=64)
+						value := myAlazar.recordLength
+						tool_tip = myAlazar.trait('recordLength').desc
+					Label: 
+						text = 'Segments'
+					IntField:
+						value := myAlazar.nbrSegments
+						tool_tip = myAlazar.trait('nbrSegments').desc
+					Label:
+						text = 'Waveforms'
+					IntField:
+						value := myAlazar.nbrWaveforms
+						tool_tip = myAlazar.trait('nbrWaveforms').desc
+					Label:
+						text = 'Round Robins:'
+					IntField:
+						value := myAlazar.nbrRoundRobins
+						tool_tip = myAlazar.trait('nbrRoundRobins').desc
+		FlowItem: triggerBox:
+			GroupBox: 
+				title = 'Trigger'
+				Form:
+					Label:
+						text = 'Level:'
+					FloatField:
+						value := myAlazar.triggerLevel
+						tool_tip = myAlazar.trait('triggerLevel').desc
+					Label:
+						text = 'Source:'
+					EnumComboBox:
+						myObj := myAlazar
+						traitName = 'triggerSource'
+					Label:
+						text = 'Coupling:'
+					EnumComboBox:
+						myObj := myAlazar
+						traitName = 'triggerCoupling'
+					Label:
+						text = 'Slope:'
+					EnumComboBox:
+						myObj := myAlazar
+						traitName = 'triggerSlope'
+
+enamldef TestAlazarWindow(Window):
+	id: tester
+	attr myAlazar
+	title = 'Test Alazar Window'
+	AlazarView:
+		myAlazar := tester.myAlazar
+	# PushButton:
+	# 	text = 'Debug'
+	# 	tool_tip << 'Start debugger console'
+	# 	clicked :: import pdb; pdb.set_trace()
