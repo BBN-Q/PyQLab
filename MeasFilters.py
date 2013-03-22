@@ -10,11 +10,6 @@ class MeasFilter(HasTraits):
 	channel = Int(1)
 	enabled = Bool(True)
 
-	def get_stack_view(self):
-		with enaml.imports():
-			from MeasFiltersViews import FilterStackView
-		return FilterStackView(myFilter=self)
-
 class DigitalHomodyne(MeasFilter):
 	boxCarStart = Int(0, desc='The start index of the integration window in pts.')
 	boxCarStop = Int(0, desc='The stop index of the integration window in pts.')

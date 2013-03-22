@@ -40,26 +40,22 @@ enamldef DigitalHomodyneForm(GroupBox):
 			maximum = 2
 			value := myFilter.channel
 
-#Stack view with one of many possible view conditionally displayed
-enamldef FilterStackView(StackItem):
-	id: fsk
-	attr myFilter
-	Conditional:
-		condition = isinstance(myFilter, MeasFilters.DigitalHomodyne) 
-		DigitalHomodyneForm:
-			myFilter := fsk.myFilter
-
 enamldef MeasFilterWindow(Window):
 	id: filterTest
 	attr myFilter
 	DigitalHomodyneForm:
 		myFilter := filterTest.myFilter
 
+#Map filters to views
+filterViewMap = {None:Container, MeasFilters.DigitalHomodyne:DigitalHomodyneForm}
+
 enamldef MeasFilterManager(Container):
 	id: measFilterManager
 	attr filterLib
 	DictManagerView:
 		myDict = filterLib.filterDict
+		modelName = 'myFilter'
+		viewMap = filterViewMap
 		addDialog = lambda root, filterDict=filterLib.filterDict, filterList=filterLib.filterList : \
 			AddDialog(root, itemDict=filterDict, newClassList=filterList, objText='Filter')
 

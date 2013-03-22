@@ -6,11 +6,10 @@ from enaml.layout.api import hbox, vbox, spacer, align
 
 from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
-from Sweeps import PointsSweep
+import Sweeps
 
 enamldef PointsSweepForm(GroupBox):
 	attr sweep
-	attr possibleInstrs
 	title = '{} ({})'.format(sweep.name, sweep.label)
 	Form:
 		Label:
@@ -26,21 +25,12 @@ enamldef PointsSweepForm(GroupBox):
 		FloatField:
 			value := sweep.step
 		ComboBox:
-			index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
-			index :: sweep.instr = possibleInstrs[index]
-			items << [instr.name for instr in possibleInstrs]
+			index << sweep.possibleInstrs.index(sweep.instr) if (sweep.possibleInstrs and sweep.instr) else 0
+			index :: sweep.instr = sweep.possibleInstrs[index]
+			items << [instr.name for instr in sweep.possibleInstrs]
 
-
-#Stack view with one of many possible view conditionally displayed
-enamldef SweepStackView(StackItem):
-	id: sweepskv
-	attr mySweep
-	attr possibleInstrs
-	Conditional:
-		condition = isinstance(mySweep, PointsSweep)
-		PointsSweepForm:
-			sweep := sweepskv.mySweep
-			possibleInstrs = sweepskv.possibleInstrs
+#Map sweeps to view
+sweepViewMap = {Sweeps.PointsSweep:PointsSweepForm}
 
 def update_sweep_order(sweepList, objs):
 	sweepOrder = []
@@ -56,6 +46,8 @@ enamldef SweepManager(Container):
 	attr sweepOrderObjs = None
 	DictManagerView:
 		myDict = sweepLib.sweepDict
+		modelName = 'sweep'
+		viewMap = sweepViewMap
 		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
 			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
 	GroupBox:

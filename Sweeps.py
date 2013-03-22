@@ -23,11 +23,6 @@ class Sweep(HasTraits):
 	def step(self, index):
 		pass
 
-	def get_stack_view(self):
-		with enaml.imports():
-			from SweepsViews import SweepStackView
-		return SweepStackView(mySweep=self, possibleInstrs=self.possibleInstrs)
-
 class PointsSweep(Sweep):
 	"""
 	A class for sweeps with floating points with one instrument

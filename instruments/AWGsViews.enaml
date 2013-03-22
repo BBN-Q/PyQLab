@@ -4,6 +4,7 @@ from enaml.layout.api import hbox, vbox, spacer
 from enaml.stdlib.fields import FloatField
 from enaml.core.api import Looper, Include
 
+import AWGs
 
 enamldef ChannelView(GroupBox):
 	attr chan
@@ -78,8 +79,6 @@ enamldef AWGForm(GroupBox):
 				clicked ::
 					dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file', callback=get_seq_file_callback(awg), filters=['*.awg', '*.h5'])
 					dlg.open()
-
-
 	Container: channels:
 		constraints = [hbox(*inc.objects)]
 		Include: inc:
@@ -93,12 +92,9 @@ enamldef AWGView(Window):
 		AWGForm:
 			awg := main.awg
 
-#Stack view 
-enamldef AWGStackView(StackItem):
-	id: awgskv
-	attr myAWG
-	AWGForm:
-		awg := myAWG
+
+AWGViewMap = {None:Container, AWGs.AWG:AWGForm}
+
 
 
 

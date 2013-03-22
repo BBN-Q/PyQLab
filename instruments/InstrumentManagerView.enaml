@@ -6,6 +6,9 @@ import MicrowaveSources, AWGs
 
 from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
+from AWGsViews import AWGViewMap
+from MicrowaveSourcesViews import MicrowaveSourceViewMap
+
 enamldef InstrumentManagerView(Container):
 	attr instrLib
 	Notebook:
@@ -16,6 +19,8 @@ enamldef InstrumentManagerView(Container):
 			DictManagerView:
 				myDict = instrLib.instrDict
 				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
+				modelName = 'uwSource'
+				viewMap = MicrowaveSourceViewMap
 				addDialog = lambda root, itemDict : \
 			AddDialog(root, itemDict=itemDict, newClassList=MicrowaveSources.MicrowaveSourceList, objText='uwSource')
 
@@ -25,6 +30,8 @@ enamldef InstrumentManagerView(Container):
 			DictManagerView:
 				myDict = instrLib.instrDict
 				displayFilter = lambda x : isinstance(x, AWGs.AWG)
+				modelName = 'awg'
+				viewMap = AWGViewMap
 				addDialog = lambda root, itemDict : \
 			AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
 

@@ -28,12 +28,6 @@ class AWG(Instrument):
 		for ct in range(self.numChannels):
 			self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
 
-	def get_stack_view(self):
-		with enaml.imports():
-			from AWGViews import AWGStackView
-		return AWGStackView(myAWG=self)
-
-
 class APS(AWG):
 	numChannels = 4
 

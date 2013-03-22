@@ -2,7 +2,7 @@ from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, C
 from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 
-from MicrowaveSources import MicrowaveSourceList
+import MicrowaveSources
 
 from EnamlHelpers import EnumComboBox
 
@@ -55,11 +55,5 @@ enamldef MicrowaveSourceView(Window):
 		MicrowaveSourceForm:
 			uwSource := main.uwSource
 
-#Stack view 
-enamldef MicrowaveSourceStackView(StackItem):
-	id: uwSourceskv
-	attr mySource
-	MicrowaveSourceForm:
-		uwSource := mySource
-
+MicrowaveSourceViewMap = {None:Container, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
 		
