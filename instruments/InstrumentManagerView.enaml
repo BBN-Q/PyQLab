@@ -9,6 +9,10 @@ from EnamlHelpers import DictManagerView, DictManager, AddDialog
 from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
+from DigitizersViews import DigitizerViewMap
+
+otherViewMap = dict(DigitizerViewMap.items())
+
 enamldef InstrumentManagerView(Container):
 	attr instrLib
 	Notebook:
@@ -34,6 +38,16 @@ enamldef InstrumentManagerView(Container):
 				viewMap = AWGViewMap
 				addDialog = lambda root, itemDict : \
 			AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
+
+		Page:
+			title = "Other"
+			closable = False
+			DictManagerView:
+				myDict = instrLib.instrDict
+				displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
+				modelName = 'instr'
+				viewMap = otherViewMap
+				addDialog = lambda root, itemDict : None
 
 enamldef InstrumentManagerWindow(Window):
 	id: instrLibWin

@@ -30,5 +30,5 @@ if __name__ == "__main__":
 	with enaml.imports():
 		from DigitizersViews import TestAlazarWindow
 
-	session = show_simple_view(TestAlazarWindow(myAlazar=digitizer))
+	session = show_simple_view(TestAlazarWindow(instr=digitizer))
 	

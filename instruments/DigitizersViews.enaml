@@ -8,6 +8,8 @@ from EnamlHelpers import EnumComboBox
 from enaml.validation.api import Validator
 from traits.api import Int
 
+import Digitizers
+
 class RecordLengthValidator(Validator):
 	lengthMult = Int(64)
 	"""
@@ -24,7 +26,7 @@ class RecordLengthValidator(Validator):
 			return text, False
 
 enamldef AlazarView(Container):
-	attr myAlazar
+	attr instr
 	FlowArea:
 		direction = 'top_to_bottom'
 		FlowItem: horizBox:
@@ -34,21 +36,21 @@ enamldef AlazarView(Container):
 					Label:
 						text = 'Acquisition Mode:'
 					EnumComboBox:
-						myObj := myAlazar
+						myObj := instr
 						traitName = 'acquireMode'
 					Label:
 						text = 'Trigger Delay:'
 					FloatField:
-						value := myAlazar.delay
-						tool_tip = myAlazar.trait('delay').desc
+						value := instr.delay
+						tool_tip = instr.trait('delay').desc
 					Label:
 						text = 'Sampling Rate (M):'
 					IntField:
 						minimum = 0
 						maximum = 1200
-						value <<  myAlazar.samplingRate/1000000
-						value :: myAlazar.samplingRate = value*1e6
-						tool_tip = myAlazar.trait('samplingRate').desc
+						value <<  instr.samplingRate/1000000
+						value :: instr.samplingRate = value*1e6
+						tool_tip = instr.trait('samplingRate').desc
 		FlowItem: vertBox:
 			GroupBox: 
 				title = 'Vertical'
@@ -56,17 +58,17 @@ enamldef AlazarView(Container):
 					Label:
 						text = 'Scale:'
 					FloatField:
-						value := myAlazar.verticalScale
-						tool_tip = myAlazar.trait('verticalScale').desc
+						value := instr.verticalScale
+						tool_tip = instr.trait('verticalScale').desc
 					Label:
 						text = 'Offset:'
 					FloatField:
-						value := myAlazar.verticalOffset
-						tool_tip = myAlazar.trait('verticalOffset').desc
+						value := instr.verticalOffset
+						tool_tip = instr.trait('verticalOffset').desc
 					Label:
 						text = 'Coupling:'
 					EnumComboBox:
-						myObj := myAlazar
+						myObj := instr
 						traitName = 'verticalCoupling'
 		FlowItem: avgBox:
 			GroupBox: 
@@ -76,23 +78,23 @@ enamldef AlazarView(Container):
 						text = 'Samples'
 					IntField:
 						validator = RecordLengthValidator(lengthMult=64)
-						value := myAlazar.recordLength
-						tool_tip = myAlazar.trait('recordLength').desc
+						value := instr.recordLength
+						tool_tip = instr.trait('recordLength').desc
 					Label: 
 						text = 'Segments'
 					IntField:
-						value := myAlazar.nbrSegments
-						tool_tip = myAlazar.trait('nbrSegments').desc
+						value := instr.nbrSegments
+						tool_tip = instr.trait('nbrSegments').desc
 					Label:
 						text = 'Waveforms'
 					IntField:
-						value := myAlazar.nbrWaveforms
-						tool_tip = myAlazar.trait('nbrWaveforms').desc
+						value := instr.nbrWaveforms
+						tool_tip = instr.trait('nbrWaveforms').desc
 					Label:
 						text = 'Round Robins:'
 					IntField:
-						value := myAlazar.nbrRoundRobins
-						tool_tip = myAlazar.trait('nbrRoundRobins').desc
+						value := instr.nbrRoundRobins
+						tool_tip = instr.trait('nbrRoundRobins').desc
 		FlowItem: triggerBox:
 			GroupBox: 
 				title = 'Trigger'
@@ -100,31 +102,33 @@ enamldef AlazarView(Container):
 					Label:
 						text = 'Level:'
 					FloatField:
-						value := myAlazar.triggerLevel
-						tool_tip = myAlazar.trait('triggerLevel').desc
+						value := instr.triggerLevel
+						tool_tip = instr.trait('triggerLevel').desc
 					Label:
 						text = 'Source:'
 					EnumComboBox:
-						myObj := myAlazar
+						myObj := instr
 						traitName = 'triggerSource'
 					Label:
 						text = 'Coupling:'
 					EnumComboBox:
-						myObj := myAlazar
+						myObj := instr
 						traitName = 'triggerCoupling'
 					Label:
 						text = 'Slope:'
 					EnumComboBox:
-						myObj := myAlazar
+						myObj := instr
 						traitName = 'triggerSlope'
 
 enamldef TestAlazarWindow(Window):
 	id: tester
-	attr myAlazar
+	attr instr
 	title = 'Test Alazar Window'
 	AlazarView:
-		myAlazar := tester.myAlazar
+		instr := tester.instr
 	# PushButton:
 	# 	text = 'Debug'
 	# 	tool_tip << 'Start debugger console'
 	# 	clicked :: import pdb; pdb.set_trace()
+
+DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView}
