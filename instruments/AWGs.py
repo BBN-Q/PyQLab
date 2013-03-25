@@ -25,8 +25,9 @@ class AWG(Instrument):
 
 	def __init__(self, **traits):
 		super(AWG, self).__init__(**traits)
-		for ct in range(self.numChannels):
-			self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
+		if not self.channels:
+			for ct in range(self.numChannels):
+				self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
 
 class APS(AWG):
 	numChannels = 4
