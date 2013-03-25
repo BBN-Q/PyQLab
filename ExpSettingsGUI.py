@@ -29,13 +29,14 @@ class ExpSettings(HasTraits):
 
 
 if __name__ == '__main__':
-    instruments = {}
-    instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
-    instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
-    instruments['BBNAPS1'] = APS(name='BBNAPS1')
-    instruments['BBNAPS2'] = APS(name='BBNAPS2')
-    instruments['scope'] = AlazarATS9870(name='scope')
-    instrLib = InstrumentLibrary(instrDict=instruments)
+    # instruments = {}
+    # instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
+    # instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
+    # instruments['BBNAPS1'] = APS(name='BBNAPS1')
+    # instruments['BBNAPS2'] = APS(name='BBNAPS2')
+    # instruments['scope'] = AlazarATS9870(name='scope')
+    instrLib = InstrumentLibrary(libFile='InstrumentLibrary.json')
+    instrLib.load_from_library()
 
     sweepLib = Sweeps.SweepLibrary(libFile='SweepLibrary.json')
     sweepLib.load_from_library()

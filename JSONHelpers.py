@@ -1,4 +1,4 @@
-import json
+import json, sys
 
 from traits.api import HasTraits
 
@@ -24,7 +24,7 @@ class QLabEncoder(json.JSONEncoder):
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, Instrument):
 				tmpDict = obj.__getstate__()
-				#If it is and AWG convert channel list into dictionary
+				#If it is an AWG convert channel list into dictionary
 				channels = tmpDict.pop('channels', None)
 				if channels:
 					for ct,chan in enumerate(channels):
@@ -57,8 +57,15 @@ class QLabDecoder(json.JSONDecoder):
 			className = d.pop('__class__')
 			moduleName = d.pop('__module__')
 			#Re-encode the strings as ascii (this should go away in Python 3)
-			args = {k.encode('ascii'):v for k,v in d.items()}			
-			inst = getattr(__import__(moduleName), className)(**args)
+			__import__(moduleName)
+			args = {k.encode('ascii'):v for k,v in d.items()}
+			#For the APS units pull the channels back into a list
+			if className == 'APS':
+				channels = []
+				for ct in range(4):
+					channels.append(args.pop('chan_{}'.format(ct+1)))
+				args['channels'] = channels
+			inst = getattr(sys.modules[moduleName], className)(**args)
 
 			return inst
 		else:
