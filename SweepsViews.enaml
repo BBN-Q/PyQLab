@@ -27,10 +27,10 @@ enamldef PointsSweepForm(GroupBox):
 		ComboBox:
 			index << sweep.possibleInstrs.index(sweep.instr) if (sweep.possibleInstrs and sweep.instr) else 0
 			index :: sweep.instr = sweep.possibleInstrs[index]
-			items << [instr.name for instr in sweep.possibleInstrs]
+			items << sweep.possibleInstrs
 
 #Map sweeps to view
-sweepViewMap = {Sweeps.PointsSweep:PointsSweepForm}
+sweepViewMap = {None:Container(), Sweeps.PointsSweep:PointsSweepForm}
 
 def update_sweep_order(sweepList, objs):
 	sweepOrder = []

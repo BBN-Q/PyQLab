@@ -6,6 +6,7 @@ from enaml.stdlib.sessions import show_simple_view
 from instruments.InstrumentManager import InstrumentLibrary
 from instruments.MicrowaveSources import AgilentN51853A
 from instruments.AWGs import APS
+from instruments.Digitizers import AlazarATS9870
 import Sweeps
 import MeasFilters
 
@@ -24,7 +25,7 @@ class ExpSettings(HasTraits):
 
     def write_to_file(self):
         with open(self.curFileName,'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2)
+            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':
@@ -33,11 +34,11 @@ if __name__ == '__main__':
     instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
     instruments['BBNAPS1'] = APS(name='BBNAPS1')
     instruments['BBNAPS2'] = APS(name='BBNAPS2')
+    instruments['scope'] = AlazarATS9870(name='scope')
     instrLib = InstrumentLibrary(instrDict=instruments)
 
-    sweepLib = Sweeps.SweepLibrary(possibleInstrs=instrLib.instrDict.values())
-    sweepLib.sweepDict.update({'TestSweep1':Sweeps.Frequency(name='TestSweep1', start=5, stop=6, step=0.1, instr=instruments['Agilent1'], possibleInstrs=sweepLib.possibleInstrs)})
-    sweepLib.sweepDict.update({'TestSweep2':Sweeps.Power(name='TestSweep2', start=-20, stop=0, step=0.5, instr=instruments['Agilent2'], possibleInstrs=sweepLib.possibleInstrs)})
+    sweepLib = Sweeps.SweepLibrary(libFile='SweepLibrary.json')
+    sweepLib.load_from_library()
 
     testFilter1 = MeasFilters.DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
     testFilter2 = MeasFilters.DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6)
