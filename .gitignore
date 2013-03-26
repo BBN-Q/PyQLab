@@ -1,9 +1,5 @@
 *.pyc
-.project
-.pydevproject
-*.os
-*.so
-*.dll
 *.h5
 *.awg
 *.json
+__enamlcache__/
