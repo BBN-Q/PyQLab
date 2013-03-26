@@ -52,14 +52,14 @@ class ScripterEncoder(json.JSONEncoder):
 	"""
 	Helper for QLab to encode all the classes for the matlab experiment script.
 	"""
-	def default(self, obj, filterEnabled=True):
+	def default(self, obj):
 		if isinstance(obj, HasTraits):
 			#For the instrument library pull out enabled instruments from the dictionary
 			if isinstance(obj, instruments.InstrumentManager.InstrumentLibrary):
-				tmpDict = {name:instr for name,instr in obj.instrDict.items() if (not filterEnabled or instr.enabled)}
+				tmpDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
-			if isinstance(obj, MeasFilterLibrary):
-				tmpDict = {name:filt for name,filt in obj.filterDict.items() if (not filterEnabled or filt.enabled)}
+			elif isinstance(obj, MeasFilterLibrary):
+				tmpDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
 				tmpDict = obj.__getstate__()
