@@ -1,4 +1,4 @@
-from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, Action
+from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, Action, FileDialog
 from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
@@ -6,6 +6,13 @@ from enaml.core.api import Looper, Include
 from instruments.InstrumentManagerView import InstrumentManagerView
 from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
+
+def get_update_script_file_callback(expSettings):
+	def update_script_file_callback(dlg):
+		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
+			expSettings.curFileName = dlg.path
+	return update_script_file_callback
+
 
 enamldef ExpSettingsView(MainWindow):
 	id: main
@@ -17,6 +24,14 @@ enamldef ExpSettingsView(MainWindow):
 			text = 'Save'
 			tool_tip << 'Save to {}'.format(curFileName)
 			triggered :: expSettings.write_to_file()
+		Action:
+			text = 'Change File'
+			tool_tip = 'Update script file output location.'
+			triggered ::
+					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
+						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
+					dlg.open()
+
 		Action:
 			text = 'Debug'
 			tool_tip << 'Start debugger console'
