@@ -33,13 +33,13 @@ class MeasFilterLibrary(HasTraits):
 		import JSONHelpers
 		if self.libFile:
 			with open(self.libFile,'w') as FID:
-				json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
+				json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
 	def load_from_library(self):
 		import JSONHelpers
 		if self.libFile:
 			with open(self.libFile, 'r') as FID:
-				tmpLib = json.load(FID, cls=JSONHelpers.QLabDecoder)
+				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
 				self.filterDict = tmpLib.filterDict
 
 if __name__ == "__main__":

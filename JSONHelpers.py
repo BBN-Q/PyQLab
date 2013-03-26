@@ -8,7 +8,7 @@ from MeasFilters import MeasFilterLibrary
 
 from collections import OrderedDict
 
-class QLabEncoder(json.JSONEncoder):
+class LibraryEncoder(json.JSONEncoder):
 	"""
 	Helper for QLab to encode all the classes we use.
 	"""
@@ -27,12 +27,12 @@ class QLabEncoder(json.JSONEncoder):
 			return tmpDict
 
 		else:
-			return super(QLabEncoder, self).default(obj)
+			return super(LibraryEncoder, self).default(obj)
 
-class QLabDecoder(json.JSONDecoder):
+class LibraryDecoder(json.JSONDecoder):
 
 	def __init__(self, **kwargs):
-		super(QLabDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
+		super(LibraryDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
 
 	def dict_to_obj(self, d):
 		if '__class__' in d:
