@@ -29,8 +29,11 @@ enamldef PointsSweepForm(GroupBox):
 			index :: sweep.instr = sweep.possibleInstrs[index]
 			items << sweep.possibleInstrs
 
+enamldef EmptySweepForm(Container):
+	attr sweep
+
 #Map sweeps to view
-sweepViewMap = {None:Container(), Sweeps.PointsSweep:PointsSweepForm}
+sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm}
 
 def update_sweep_order(sweepList, objs):
 	sweepOrder = []

@@ -55,5 +55,8 @@ enamldef MicrowaveSourceView(Window):
 		MicrowaveSourceForm:
 			uwSource := main.uwSource
 
-MicrowaveSourceViewMap = {None:Container, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
+enamldef EmptySourceView(Container):
+	attr uwSource
+
+MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
 		

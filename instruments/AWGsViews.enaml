@@ -93,8 +93,10 @@ enamldef AWGView(Window):
 		AWGForm:
 			awg := main.awg
 
+enamldef EmptyAWGForm(Container):
+	attr awg
 
-AWGViewMap = {None:Container, AWGs.AWG:AWGForm}
+AWGViewMap = {type(None):EmptyAWGForm, AWGs.AWG:AWGForm}
 
 
 

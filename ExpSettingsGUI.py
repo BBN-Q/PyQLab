@@ -20,6 +20,7 @@ class ExpSettings(HasTraits):
     measurements = Instance(MeasFilters.MeasFilterLibrary)
     curFileName = Str('DefaultExpSettings.json', transient=True)
 
+
     def load_from_file(self, fileName):
         pass
 

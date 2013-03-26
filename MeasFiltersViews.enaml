@@ -46,8 +46,12 @@ enamldef MeasFilterWindow(Window):
 	DigitalHomodyneForm:
 		myFilter := filterTest.myFilter
 
+#Dummy empty view
+enamldef EmptyMeasFilterForm(Container):
+	attr myFilter
+
 #Map filters to views
-filterViewMap = {None:Container, MeasFilters.DigitalHomodyne:DigitalHomodyneForm}
+filterViewMap = {type(None):EmptyMeasFilterForm, MeasFilters.DigitalHomodyne:DigitalHomodyneForm}
 
 enamldef MeasFilterManager(Container):
 	id: measFilterManager

@@ -75,10 +75,11 @@ class SweepLibrary(HasTraits):
 		if self.libFile:
 			with open(self.libFile, 'r') as FID:
 				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
-				self.sweepDict = tmpLib.sweepDict
-				self.possibleInstrs = tmpLib.possibleInstrs
-				for sweep in self.sweepDict.values():
-					sweep.possibleInstrs = self.possibleInstrs
+				if isinstance(tmpLib, SweepLibrary):
+					self.sweepDict = tmpLib.sweepDict
+					self.possibleInstrs = tmpLib.possibleInstrs
+					for sweep in self.sweepDict.values():
+						sweep.possibleInstrs = self.possibleInstrs
 
 if __name__ == "__main__":
 	from instruments.MicrowaveSources import AgilentN51853A	

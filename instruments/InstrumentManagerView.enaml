@@ -11,7 +11,11 @@ from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
 from DigitizersViews import DigitizerViewMap
 
-otherViewMap = dict(DigitizerViewMap.items())
+enamldef EmptyInstrView(Container):
+	attr instr
+
+otherViewMap = {type(None):EmptyInstrView}
+otherViewMap.update(DigitizerViewMap.items())
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib

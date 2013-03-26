@@ -43,7 +43,8 @@ class DictManager(HasTraits):
 				if item.text not in goodNames:
 					del self.listItems[-(ct+1)]
 		for item in new.added.values():
-			self.listItems.append(MyListItem(myItem=item))
+			if self.displayFilter(item):
+				self.listItems.append(MyListItem(myItem=item))
 
 enamldef MyListItem(ListItem):
 	attr myItem
@@ -70,7 +71,8 @@ enamldef DictManagerView(Container):
 		hug_width = 'medium'
 		MappedView:
 			#Hacky thing to catch deletions 
-			model << dictManager.itemDict[myList.list_items[myList.current_row].text] if myList.current_row < len(myList.list_items) else None
+			model << dictManager.itemDict[myList.list_items[myList.current_row].text] \
+			 if (myList.current_row < len(myList.list_items) and len(myList.list_items) > 0) else None
 			modelkey = modelName
 			typemap = viewMap
 	PushButton: addButton:

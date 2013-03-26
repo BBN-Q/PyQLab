@@ -40,7 +40,8 @@ class MeasFilterLibrary(HasTraits):
 		if self.libFile:
 			with open(self.libFile, 'r') as FID:
 				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
-				self.filterDict = tmpLib.filterDict
+				if isinstance(tmpLib, MeasFilterLibrary):
+					self.filterDict = tmpLib.filterDict
 
 if __name__ == "__main__":
 
