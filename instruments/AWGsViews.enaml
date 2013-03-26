@@ -12,7 +12,7 @@ enamldef ChannelView(GroupBox):
 	title = chan.name
 	padding = 0
 	Form:
-		resist_width='weak'
+		hug_width='medium'
 		padding = 2
 		share_layout=True
 		Label: 
@@ -50,6 +50,7 @@ enamldef AWGForm(GroupBox):
 	title = awg.name
 	constraints = [vbox(hbox(formItems, spacer), channels)]
 	Form: formItems:
+		hug_width = 'medium'
 		Label: 
 			text = 'Address'
 		Field: 
@@ -80,7 +81,7 @@ enamldef AWGForm(GroupBox):
 					dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file', callback=get_seq_file_callback(awg), filters=['*.awg', '*.h5'])
 					dlg.open()
 	Container: channels:
-		constraints = [hbox(*inc.objects)]
+		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
 			objects << [ChannelView(chan=chan) for chan in awg.channels]
 

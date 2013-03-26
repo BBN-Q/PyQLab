@@ -67,6 +67,7 @@ enamldef DictManagerView(Container):
 		Include: listInc:
 			objects << [item for item in dictManager.listItems]
 	Container: mapViewCont:
+		hug_width = 'medium'
 		MappedView:
 			#Hacky thing to catch deletions 
 			model << dictManager.itemDict[myList.list_items[myList.current_row].text] if myList.current_row < len(myList.list_items) else None

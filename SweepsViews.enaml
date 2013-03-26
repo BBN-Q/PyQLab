@@ -44,21 +44,27 @@ enamldef SweepManager(Container):
 	id: sweepManager
 	attr sweepLib
 	attr sweepOrderObjs = None
-	DictManagerView:
+	constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
+	DictManagerView: sweepDictView:
 		myDict = sweepLib.sweepDict
 		modelName = 'sweep'
 		viewMap = sweepViewMap
 		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
 			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
-	GroupBox:
+	GroupBox: orderBox:
 		title = 'Sweep Order'
-		Form:
+		hug_width = 'medium'
+		constraints = [hbox(sweepNumForm, sweepOrderForm)]
+		Form: sweepNumForm:
+			hug_width = 'medium'
 			Label:
 				text = "Number of Sweeps"
 			SpinBox:
 				id: numSweepsBox
 				minimum = 1
 				maximum = 3
+		Form: sweepOrderForm:
+			hug_width = 'medium'
 			Looper: sweepLooper:
 				iterable << range(numSweepsBox.value)
 				Form:
