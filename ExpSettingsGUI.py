@@ -25,8 +25,7 @@ class ExpSettings(HasTraits):
 
     def write_to_file(self):
         with open(self.curFileName,'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
-
+            json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True)
 
 if __name__ == '__main__':
     # instruments = {}
@@ -41,9 +40,10 @@ if __name__ == '__main__':
     sweepLib = Sweeps.SweepLibrary(libFile='SweepLibrary.json')
     sweepLib.load_from_library()
 
-    testFilter1 = MeasFilters.DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
-    testFilter2 = MeasFilters.DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6)
-    filterLib = MeasFilters.MeasFilterLibrary(filterDict={'M1':testFilter1, 'M2':testFilter2})
+    # testFilter1 = MeasFilters.DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
+    # testFilter2 = MeasFilters.DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6)
+    filterLib = MeasFilters.MeasFilterLibrary(libFile='MeasFilterLibrary.json')
+    filterLib.load_from_library()
 
     from ExpSettingsGUI import ExpSettings
     expSettings= ExpSettings(instruments=instrLib, sweeps=sweepLib, measurements=filterLib)

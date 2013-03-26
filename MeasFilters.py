@@ -2,8 +2,10 @@
 Measurement filters
 """
 
-from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool
+from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, on_trait_change
 import enaml
+
+import json
 
 class MeasFilter(HasTraits):
 	name = Str
@@ -22,17 +24,23 @@ class Correlator(MeasFilter):
 
 class MeasFilterLibrary(HasTraits):
 	filterDict = Dict(Str, MeasFilter)
-	libFile = Str('MeasFilterLibrary.json', transient=True)
+	libFile = Str(transient=True)
 	filterList = List([DigitalHomodyne, Correlator], transient=True)
 
-	def write_to_file(self):
+	@on_trait_change('filterDict.anytrait')
+	def write_to_library(self):
 		#Move import here to avoid circular import
 		import JSONHelpers
-		with open(self.libFile,'w') as FID:
-			json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
+		if self.libFile:
+			with open(self.libFile,'w') as FID:
+				json.dump(self, FID, cls=JSONHelpers.QLabEncoder, indent=2, sort_keys=True)
 
-	def load_from_file(self):
-		pass
+	def load_from_library(self):
+		import JSONHelpers
+		if self.libFile:
+			with open(self.libFile, 'r') as FID:
+				tmpLib = json.load(FID, cls=JSONHelpers.QLabDecoder)
+				self.filterDict = tmpLib.filterDict
 
 if __name__ == "__main__":
 
@@ -42,9 +50,8 @@ if __name__ == "__main__":
 	testFilter1 = DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
 	testFilter2 = DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
 
-	testLib = MeasFilterLibrary()
+	testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json')
 	testLib.filterDict.update({'M1':testFilter1, 'M2':testFilter2})
-
 	from enaml.stdlib.sessions import show_simple_view
 	with enaml.imports():
 		from MeasFiltersViews import MeasFilterManagerWindow
