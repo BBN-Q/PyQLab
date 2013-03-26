@@ -60,6 +60,7 @@ enamldef DictManagerView(Container):
 	attr addDialog
 	attr modelName
 	attr viewMap
+	attr viewkwargs = {}
 	constraints = [
 		hbox(vbox(myList, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
 		myList.width <= 300]
@@ -75,6 +76,7 @@ enamldef DictManagerView(Container):
 			 if (myList.current_row < len(myList.list_items) and len(myList.list_items) > 0) else None
 			modelkey = modelName
 			typemap = viewMap
+			kwargs = viewkwargs
 	PushButton: addButton:
 		text = 'Add'
 		clicked ::

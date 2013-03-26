@@ -10,6 +10,7 @@ import Sweeps
 
 enamldef PointsSweepForm(GroupBox):
 	attr sweep
+	attr possibleInstrs
 	title = '{} ({})'.format(sweep.name, sweep.label)
 	Form:
 		Label:
@@ -25,9 +26,9 @@ enamldef PointsSweepForm(GroupBox):
 		FloatField:
 			value := sweep.step
 		ComboBox:
-			index << sweep.possibleInstrs.index(sweep.instr) if (sweep.possibleInstrs and sweep.instr) else 0
-			index :: sweep.instr = sweep.possibleInstrs[index]
-			items << sweep.possibleInstrs
+			index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+			index :: sweep.instr = possibleInstrs[index]
+			items << [item for item in possibleInstrs]
 
 enamldef EmptySweepForm(Container):
 	attr sweep
@@ -52,6 +53,7 @@ enamldef SweepManager(Container):
 		myDict = sweepLib.sweepDict
 		modelName = 'sweep'
 		viewMap = sweepViewMap
+		viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
 		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
 			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
 	GroupBox: orderBox:

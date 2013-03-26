@@ -18,7 +18,6 @@ class Sweep(HasTraits):
 	label = Str
 	numSteps = Int
 	enabled = Bool(True)
-	possibleInstrs = Instance(TraitListObject, transient=True)
 
 	@abc.abstractmethod
 	def step(self, index):
@@ -88,8 +87,8 @@ if __name__ == "__main__":
 
 	from Sweeps import Frequency, Power, SweepLibrary
 	# sweepLib = SweepLibrary(possibleInstrs=[testSource1.name, testSource2.name])
-	# sweepLib.sweepDict.update({'TestSweep1':Frequency(name='TestSweep1', start=5, stop=6, step=0.1, instr=testSource1.name, possibleInstrs=sweepLib.possibleInstrs)})
-	# sweepLib.sweepDict.update({'TestSweep2':Power(name='TestSweep2', start=-20, stop=0, step=0.5, instr=testSource2.name, possibleInstrs=sweepLib.possibleInstrs)})
+	# sweepLib.sweepDict.update({'TestSweep1':Frequency(name='TestSweep1', start=5, stop=6, step=0.1, instr=testSource1.name)
+	# sweepLib.sweepDict.update({'TestSweep2':Power(name='TestSweep2', start=-20, stop=0, step=0.5, instr=testSource2.name)
 	sweepLib = SweepLibrary(libFile='SweepLibrary.json')
 	sweepLib.load_from_library()
 
