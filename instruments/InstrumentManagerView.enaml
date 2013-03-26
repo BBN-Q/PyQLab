@@ -11,11 +11,15 @@ from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
 from DigitizersViews import DigitizerViewMap
 
+import Digitizers
+
 enamldef EmptyInstrView(Container):
 	attr instr
 
 otherViewMap = {type(None):EmptyInstrView}
 otherViewMap.update(DigitizerViewMap.items())
+
+newOtherInstrs = [Digitizers.AlazarATS9870]
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
@@ -41,7 +45,7 @@ enamldef InstrumentManagerView(Container):
 				modelName = 'awg'
 				viewMap = AWGViewMap
 				addDialog = lambda root, itemDict : \
-			AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
+					AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
 
 		Page:
 			title = "Other"
@@ -51,7 +55,8 @@ enamldef InstrumentManagerView(Container):
 				displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
 				modelName = 'instr'
 				viewMap = otherViewMap
-				addDialog = lambda root, itemDict : None
+				addDialog = lambda root, itemDict : \
+					AddDialog(root, itemDict=itemDict, newClassList=newOtherInstrs, objText='Instr')
 
 enamldef InstrumentManagerWindow(Window):
 	id: instrLibWin
