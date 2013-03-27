@@ -65,7 +65,7 @@ enamldef DictManagerView(Container):
 		hbox(vbox(myList, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
 		myList.width <= 300]
 	ListControl: myList:
-		resist_width = 'weak'
+		hug_width = 'medium'
 		Include: listInc:
 			objects << [item for item in dictManager.listItems]
 	Container: mapViewCont:

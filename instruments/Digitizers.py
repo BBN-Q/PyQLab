@@ -11,7 +11,7 @@ from enaml.stdlib.sessions import show_simple_view
 class AlazarATS9870(Instrument):
 	acquireMode = Enum('digitizer', 'averager', desc='Whether the card averages on-board or returns single-shot data')
 	delay = Float(0.0, desc='Delay from trigger')
-	samplingRate = Int(100000000, desc='Sampling rate in Hz')
+	samplingRate = Float(100000000, desc='Sampling rate in Hz')
 	verticalScale = Float(1.0, desc='Peak voltage (V)')
 	verticalOffset = Float(0.0, desc='Vertical offset (V)')
 	verticalCoupling = Enum('AC','DC', desc='AC/DC coupling')
