@@ -28,7 +28,7 @@ class InstrumentLibrary(HasTraits):
 			with open(self.libFile, 'r') as FID:
 				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
 				if isinstance(tmpLib, InstrumentLibrary):
-					self.instrDict = tmpLib.instrDict
+					self.instrDict.update(tmpLib.instrDict)
 
 if __name__ == '__main__':
 	from MicrowaveSources import AgilentN51853A

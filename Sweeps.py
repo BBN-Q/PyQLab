@@ -75,8 +75,10 @@ class SweepLibrary(HasTraits):
 			with open(self.libFile, 'r') as FID:
 				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
 				if isinstance(tmpLib, SweepLibrary):
-					self.sweepDict = tmpLib.sweepDict
-					self.possibleInstrs = tmpLib.possibleInstrs
+					self.sweepDict.update(tmpLib.sweepDict)
+					del self.possibleInstrs[:]
+					for instr in tmpLib.possibleInstrs:
+						self.possibleInstrs.append(tmpLib.possibleInstrs)
 					for sweep in self.sweepDict.values():
 						sweep.possibleInstrs = self.possibleInstrs
 
