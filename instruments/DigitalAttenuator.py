@@ -12,7 +12,7 @@ import serial
 
 import sys
 import time
-from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 
 #Model for the card
 class DigitalAttenuator(object):
