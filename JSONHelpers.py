@@ -14,17 +14,17 @@ class LibraryEncoder(json.JSONEncoder):
 	"""
 	def default(self, obj):
 		if isinstance(obj, HasTraits):
-			tmpDict = obj.__getstate__()
+			jsonDict = obj.__getstate__()
 
 			#Inject the class name for decoding
-			tmpDict['__class__'] = obj.__class__.__name__
-			tmpDict['__module__'] = obj.__class__.__module__
+			jsonDict['__class__'] = obj.__class__.__name__
+			jsonDict['__module__'] = obj.__class__.__module__
 
 			#Strip out __traits_version__
-			if '__traits_version__' in tmpDict:
-				del tmpDict['__traits_version__']
+			if '__traits_version__' in jsonDict:
+				del jsonDict['__traits_version__']
 
-			return tmpDict
+			return jsonDict
 
 		else:
 			return super(LibraryEncoder, self).default(obj)
@@ -56,28 +56,65 @@ class ScripterEncoder(json.JSONEncoder):
 		if isinstance(obj, HasTraits):
 			#For the instrument library pull out enabled instruments from the dictionary
 			if isinstance(obj, instruments.InstrumentManager.InstrumentLibrary):
-				tmpDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
+				jsonDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
 			elif isinstance(obj, MeasFilterLibrary):
-				tmpDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
+				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
-				tmpDict = obj.__getstate__()
+				jsonDict = obj.__getstate__()
 				#If it is an AWG convert channel list into dictionary
-				channels = tmpDict.pop('channels', None)
+				channels = jsonDict.pop('channels', None)
 				if channels:
 					for ct,chan in enumerate(channels):
-						tmpDict['chan_{}'.format(ct+1)] = chan 
-				tmpDict['deviceName'] = obj.__class__.__name__
+						jsonDict['chan_{}'.format(ct+1)] = chan 
+				jsonDict['deviceName'] = obj.__class__.__name__
 			else:
-				tmpDict = obj.__getstate__()
+				jsonDict = obj.__getstate__()
 
 			#Strip out __traits_version__
-			if '__traits_version__' in tmpDict:
-				del tmpDict['__traits_version__']
+			if '__traits_version__' in jsonDict:
+				del jsonDict['__traits_version__']
 
-			return tmpDict
+			return jsonDict
 
 		else:
 			return super(QLabEncoder, self).default(obj)	
 	
+
+class ChannelEncoder(json.JSONEncoder):
+    '''
+    Helper class to flatten the channel classes to a dictionary for json serialization.
+    We just keep the class name and the properties
+    '''
+    def default(self, obj):
+	    #For the pulse function just return the name
+	    if isinstance(obj, FunctionType):
+	        return obj.__name__
+	    else:
+	        jsonDict = {'__class__': obj.__class__.__name__}
+	        #Strip leading underscores off private properties
+	        newDict = { key.lstrip('_'):value for key,value in obj.__dict__.items()}
+	        jsonDict.update(newDict)
+	        return jsonDict
+
+class ChannelDecoder(json.JSONDecoder):
+    '''
+    Helper function to convert a json representation of a channel back into an object.
+    '''
+	def __init__(self, **kwargs):
+		super(ChannelDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
+
+	def dict_to_obj(self, jsonDict):
+	    #Extract the class name from the dictionary
+	    #If there is no class then assume top level dictionary
+	    if '__class__' not in jsonDict:
+	        return jsonDict
+	    else:
+	        className = jsonDict.pop('__class__')
+	        class_ = getattr(sys.modules[__name__], className)
+	        #Deal with shape functions
+	        if 'pulseParams' in jsonDict:
+	            if 'shapeFun' in jsonDict['pulseParams']:
+	                jsonDict['pulseParams']['shapeFun'] = getattr(PulseShapes, jsonDict['pulseParams']['shapeFun'])
+	        return class_(**jsonDict)

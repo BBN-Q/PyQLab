@@ -19,9 +19,10 @@ class AWG(Instrument):
 	triggerSource = Enum('Internal', 'External', desc='Source of trigger')
 	triggerInterval = Float(1e-4, desc='Internal trigger interval')
 	samplingRate = Float(1200, desc='Sampling rate in MHz')
-	numChannels = Int
+	numChannels = Int()
 	channels = List(AWGChannel)
 	seqFile = File(desc='Path to sequence file.')
+	delay = Float(0.0, desc='time shift to align multiple AWGs')
 
 	def __init__(self, **traits):
 		super(AWG, self).__init__(**traits)

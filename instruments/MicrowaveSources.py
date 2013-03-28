@@ -14,6 +14,12 @@ class MicrowaveSource(Instrument):
     pulseModulate = Bool(False, desc='Whether pulse modulation is on')
     pulseModSource = Enum('Internal', 'External', desc='Source of pulse modulation')
 
+    #For blanking the source we need to know the maximum rate and the delay
+    gateBuffer = Float(0.0)
+    gateMinWidth = Float(0.0)
+    gateDelay = Float(0.0)
+
+
 
 class AgilentN51853A(MicrowaveSource):
     pass
