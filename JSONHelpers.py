@@ -83,38 +83,38 @@ class ScripterEncoder(json.JSONEncoder):
 	
 
 class ChannelEncoder(json.JSONEncoder):
-    '''
-    Helper class to flatten the channel classes to a dictionary for json serialization.
-    We just keep the class name and the properties
-    '''
-    def default(self, obj):
-	    #For the pulse function just return the name
-	    if isinstance(obj, FunctionType):
-	        return obj.__name__
-	    else:
-	        jsonDict = {'__class__': obj.__class__.__name__}
-	        #Strip leading underscores off private properties
-	        newDict = { key.lstrip('_'):value for key,value in obj.__dict__.items()}
-	        jsonDict.update(newDict)
-	        return jsonDict
+	'''
+	Helper class to flatten the channel classes to a dictionary for json serialization.
+	We just keep the class name and the properties
+	'''
+	def default(self, obj):
+		#For the pulse function just return the name
+		if isinstance(obj, FunctionType):
+			return obj.__name__
+		else:
+			jsonDict = {'__class__': obj.__class__.__name__}
+			#Strip leading underscores off private properties
+			newDict = { key.lstrip('_'):value for key,value in obj.__dict__.items()}
+			jsonDict.update(newDict)
+			return jsonDict
 
 class ChannelDecoder(json.JSONDecoder):
-    '''
-    Helper function to convert a json representation of a channel back into an object.
-    '''
+	'''
+	Helper function to convert a json representation of a channel back into an object.
+	'''
 	def __init__(self, **kwargs):
 		super(ChannelDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
 
 	def dict_to_obj(self, jsonDict):
-	    #Extract the class name from the dictionary
-	    #If there is no class then assume top level dictionary
-	    if '__class__' not in jsonDict:
-	        return jsonDict
-	    else:
-	        className = jsonDict.pop('__class__')
-	        class_ = getattr(sys.modules[__name__], className)
-	        #Deal with shape functions
-	        if 'pulseParams' in jsonDict:
-	            if 'shapeFun' in jsonDict['pulseParams']:
-	                jsonDict['pulseParams']['shapeFun'] = getattr(PulseShapes, jsonDict['pulseParams']['shapeFun'])
-	        return class_(**jsonDict)
+		#Extract the class name from the dictionary
+		#If there is no class then assume top level dictionary
+		if '__class__' not in jsonDict:
+			return jsonDict
+		else:
+			className = jsonDict.pop('__class__')
+			class_ = getattr(sys.modules[__name__], className)
+			#Deal with shape functions
+			if 'pulseParams' in jsonDict:
+				if 'shapeFun' in jsonDict['pulseParams']:
+					jsonDict['pulseParams']['shapeFun'] = getattr(PulseShapes, jsonDict['pulseParams']['shapeFun'])
+			return class_(**jsonDict)

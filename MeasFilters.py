@@ -38,10 +38,13 @@ class MeasFilterLibrary(HasTraits):
 	def load_from_library(self):
 		import JSONHelpers
 		if self.libFile:
-			with open(self.libFile, 'r') as FID:
-				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
-				if isinstance(tmpLib, MeasFilterLibrary):
-					self.filterDict.update(tmpLib.filterDict)
+			try:
+				with open(self.libFile, 'r') as FID:
+					tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+					if isinstance(tmpLib, MeasFilterLibrary):
+						self.filterDict.update(tmpLib.filterDict)
+			except IOError:
+				print("No measurement library found.")
 
 if __name__ == "__main__":
 

@@ -25,10 +25,13 @@ class InstrumentLibrary(HasTraits):
 		#Move import here to avoid circular import
 		import JSONHelpers
 		if self.libFile:
-			with open(self.libFile, 'r') as FID:
-				tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
-				if isinstance(tmpLib, InstrumentLibrary):
-					self.instrDict.update(tmpLib.instrDict)
+			try:
+				with open(self.libFile, 'r') as FID:
+					tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+					if isinstance(tmpLib, InstrumentLibrary):
+						self.instrDict.update(tmpLib.instrDict)
+			except IOError:
+				print('No instrument library found')
 
 if __name__ == '__main__':
 	from MicrowaveSources import AgilentN51853A

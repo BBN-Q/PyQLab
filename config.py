@@ -17,6 +17,9 @@ if PyQLabCfgFile:
 	#pull out the variables 
 	AWGDir = PyQLabCfg['AWGDir']
 	channelParamsFile = PyQLabCfg['ChannelParamsFile']
+	instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
+	sweepLibFile = PyQLabCfg['SweepLibraryFile']
+	measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
 
 else:
 	raise NameError("Unable to find the PyQLab configuration environment variable")
