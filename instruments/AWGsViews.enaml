@@ -48,9 +48,13 @@ enamldef AWGForm(GroupBox):
 	attr awg
 	padding = 5
 	title = awg.name
-	constraints = [vbox(hbox(formItems, spacer), channels)]
-	Form: formItems:
+	constraints = [vbox(hbox(formItems1, formItems2, spacer), channels)]
+	Form: formItems1:
 		hug_width = 'medium'
+		Label:
+			text = 'Master'
+		CheckBox:
+			checked := awg.isMaster
 		Label: 
 			text = 'Address'
 		Field: 
@@ -69,17 +73,18 @@ enamldef AWGForm(GroupBox):
 			index >> ['Internal','External'][index]
 			items << list(awg.trait('triggerSource').handler.values)
 			tool_tip = awg.trait('triggerSource').desc
-		Label: 
-			text = 'Sequence File'
-		Container:
-			constraints = [hbox(*widgets)]
-			Field:
-				text := awg.seqFile
-			PushButton:
-				text = '...'
-				clicked ::
-					dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file', callback=get_seq_file_callback(awg), filters=['*.awg', '*.h5'])
-					dlg.open()
+	Form: formItems2:
+		Label:
+			text = 'Sequence Reload'
+		CheckBox:
+			checked := awg.seqForce 
+		Field:
+			text := awg.seqFile
+		PushButton:
+			text = '...'
+			clicked ::
+				dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file', callback=get_seq_file_callback(awg), filters=['*.awg', '*.h5'])
+				dlg.open()
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
