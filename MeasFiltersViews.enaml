@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-	PushButton, SpinBox, StackItem
+	CheckBox, PushButton, SpinBox, StackItem
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional
 from enaml.layout.api import hbox, vbox, spacer
@@ -12,6 +12,7 @@ import MeasFilters
 enamldef DigitalHomodyneForm(GroupBox):
 	attr myFilter
 	title := myFilter.name
+	hug_width = 'medium'
 	Form:
 		Label:
 			text = 'Box Car Start'
@@ -39,6 +40,10 @@ enamldef DigitalHomodyneForm(GroupBox):
 			minimum = 1
 			maximum = 2
 			value := myFilter.channel
+		Label: 
+			text = "Plot scope"
+		CheckBox:
+			checked := myFilter.plotScope
 
 enamldef MeasFilterWindow(Window):
 	id: filterTest

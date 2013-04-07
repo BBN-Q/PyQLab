@@ -11,6 +11,7 @@ class MeasFilter(HasTraits):
 	name = Str
 	channel = Int(1)
 	enabled = Bool(True)
+	plotScope = Bool(False, desc='Whether to show the raw data scope.')
 
 class DigitalHomodyne(MeasFilter):
 	boxCarStart = Int(0, desc='The start index of the integration window in pts.')
