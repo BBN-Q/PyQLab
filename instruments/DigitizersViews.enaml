@@ -84,6 +84,11 @@ enamldef AlazarView(Container):
 					EnumComboBox:
 						myObj := instr
 						traitName = 'verticalCoupling'
+					Label:
+						text = 'Bandwidth:'
+					EnumComboBox:
+						myObj := instr
+						traitName = 'bandwidth'
 		FlowItem: avgBox:
 			GroupBox: 
 				title = 'Averager'

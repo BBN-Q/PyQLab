@@ -60,6 +60,9 @@ class ScripterEncoder(json.JSONEncoder):
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
 			elif isinstance(obj, MeasFilterLibrary):
 				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
+			#For the scope we nest the averager, vertical, horizontal settings
+			elif isinstance(obj, instruments.Digitizers.AlazarATS9870):
+				jsonDict = obj.get_scripter_dict()
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
 				jsonDict = obj.__getstate__()
