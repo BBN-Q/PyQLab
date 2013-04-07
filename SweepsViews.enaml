@@ -32,6 +32,7 @@ enamldef PointsSweepForm(GroupBox):
 
 enamldef EmptySweepForm(Container):
 	attr sweep
+	attr possibleInstrs
 
 #Map sweeps to view
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm}
