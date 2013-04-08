@@ -39,6 +39,11 @@ class PointsSweep(Sweep):
 		else:
 			return None
 
+	@on_trait_change('[start, stop, step]')
+	def update_numPoints(self):
+		if self.step:
+			self.numSteps = len(self.points)
+
 class Power(PointsSweep):
 	label = 'Power'
 	instr = Str
