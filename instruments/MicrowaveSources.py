@@ -21,7 +21,7 @@ class MicrowaveSource(Instrument):
 
 
 
-class AgilentN51853A(MicrowaveSource):
+class AgilentN5183A(MicrowaveSource):
     pass
 
 class HS9000(MicrowaveSource):
@@ -31,11 +31,11 @@ class LabBrick(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN51853A, HS9000, LabBrick]
+MicrowaveSourceList = [AgilentN5183A, HS9000, LabBrick]
 
 if __name__ == "__main__":
-    from MicrowaveSources import AgilentN51853A
-    uwSource = AgilentN51853A(name='Agilent1')
+    from MicrowaveSources import AgilentN5183A
+    uwSource = AgilentN5183A(name='Agilent1')
     with enaml.imports():
         from MicrowaveSourcesView import MicrowaveSourceView
 

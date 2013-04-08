@@ -85,9 +85,9 @@ class SweepLibrary(HasTraits):
 				print('No sweep library found.')
 
 if __name__ == "__main__":
-	from instruments.MicrowaveSources import AgilentN51853A	
-	testSource1 = AgilentN51853A(name='TestSource1')
-	testSource2 = AgilentN51853A(name='TestSource2')
+	from instruments.MicrowaveSources import AgilentN5183A	
+	testSource1 = AgilentN5183A(name='TestSource1')
+	testSource2 = AgilentN5183A(name='TestSource2')
 
 	from Sweeps import Frequency, Power, SweepLibrary
 	# sweepLib = SweepLibrary(possibleInstrs=[testSource1.name, testSource2.name])

@@ -34,13 +34,13 @@ class InstrumentLibrary(HasTraits):
 				print('No instrument library found')
 
 if __name__ == '__main__':
-	from MicrowaveSources import AgilentN51853A
+	from MicrowaveSources import AgilentN5183A
 	from AWGs import APS
 	from Digitizers import AlazarATS9870
 	from InstrumentManager import InstrumentLibrary
 	instruments = {}
-	instruments['Agilent1'] = AgilentN51853A(name='Agilent1')
-	instruments['Agilent2'] = AgilentN51853A(name='Agilent2')
+	instruments['Agilent1'] = AgilentN5183A(name='Agilent1')
+	instruments['Agilent2'] = AgilentN5183A(name='Agilent2')
 	instruments['BBNAPS1'] = APS(name='BBNAPS1')
 	instruments['BBNAPS2'] = APS(name='BBNAPS2')
 	instruments['scope'] = AlazarATS9870(name='scope')
