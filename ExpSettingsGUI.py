@@ -1,12 +1,8 @@
-from traits.api import HasTraits, List, Instance, Str, on_trait_change
+from traits.api import HasTraits, Instance, Str, on_trait_change
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
-
 from instruments.InstrumentManager import InstrumentLibrary
-from instruments.MicrowaveSources import AgilentN51853A
-from instruments.AWGs import APS
-from instruments.Digitizers import AlazarATS9870
 import Sweeps
 import MeasFilters
 
