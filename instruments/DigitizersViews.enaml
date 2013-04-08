@@ -30,7 +30,7 @@ class SampleRateValidator(Validator):
 	Validate the Alazar decimation ratio. Rate is achieved by dividing 1GS clock and the divider must be 1,2,4 or 10x
 	"""
 	def validate(self, text, component):
-		#arbitrarily 5 decimal places is good enough
+		#arbitrarily, 5 decimal places is good enough
 		divider = round(1e3/float(text),5)
 		if divider in [1, 2, 4] + [10*x for x in range(1, 1001)]:
 			return text, True
@@ -62,7 +62,7 @@ enamldef AlazarView(Container):
 						minimum = 0
 						maximum = 1200
 						validator = SampleRateValidator()
-						value <<  instr.samplingRate/1000000
+						value <<  instr.samplingRate/1e6
 						value :: instr.samplingRate = value*1e6
 						tool_tip = instr.trait('samplingRate').desc
 		FlowItem: vertBox:
