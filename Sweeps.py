@@ -48,13 +48,14 @@ class Frequency(PointsSweep):
 	instr = Str
 
 class SegmentNum(PointsSweep):
+	label = 'SegmentNum'
 	pass
 
 class SweepLibrary(HasTraits):
 	sweepDict = Dict(Str, Sweep)
 	sweepList = Property(List, depends_on='sweepDict')
 	sweepOrder = List(Str, transient=True)
-	newSweepClasses = List([Power, Frequency], transient=True)
+	newSweepClasses = List([Power, Frequency, SegmentNum], transient=True)
 	possibleInstrs = List(Str)
 	libFile = Str(transient=True)
 
@@ -79,9 +80,7 @@ class SweepLibrary(HasTraits):
 						self.sweepDict.update(tmpLib.sweepDict)
 						del self.possibleInstrs[:]
 						for instr in tmpLib.possibleInstrs:
-							self.possibleInstrs.append(tmpLib.possibleInstrs)
-						for sweep in self.sweepDict.values():
-							sweep.possibleInstrs = self.possibleInstrs
+							self.possibleInstrs.append(instr)
 			except IOError:
 				print('No sweep library found.')
 

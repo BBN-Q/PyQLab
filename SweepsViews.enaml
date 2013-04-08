@@ -56,7 +56,7 @@ enamldef SweepManager(Container):
 		viewMap = sweepViewMap
 		viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
 		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
-			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep', kwargs={'possibleInstrs':sweepLib.possibleInstrs})
+			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep')
 	GroupBox: orderBox:
 		title = 'Sweep Order'
 		hug_width = 'medium'
