@@ -27,11 +27,11 @@ class AgilentN5183A(MicrowaveSource):
 class HS9000(MicrowaveSource):
     pass
 
-class LabBrick(MicrowaveSource):
+class Labbrick(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HS9000, LabBrick]
+MicrowaveSourceList = [AgilentN5183A, HS9000, Labbrick]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
