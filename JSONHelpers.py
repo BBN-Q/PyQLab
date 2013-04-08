@@ -64,6 +64,9 @@ class ScripterEncoder(json.JSONEncoder):
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
 			elif isinstance(obj, MeasFilterLibrary):
 				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
+			#For the sweep library we return a list of sweeps in order
+			elif isinstance(obj, SweepLibrary):
+				return [obj.sweepDict[k] for k in obj.sweepOrder]
 			#For the scope we nest the averager, vertical, horizontal settings
 			elif isinstance(obj, instruments.Digitizers.AlazarATS9870):
 				jsonDict = obj.get_scripter_dict()
