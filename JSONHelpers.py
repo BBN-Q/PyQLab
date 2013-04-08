@@ -41,6 +41,11 @@ class LibraryDecoder(json.JSONDecoder):
 			moduleName = d.pop('__module__')
 			#Re-encode the strings as ascii (this should go away in Python 3)
 			__import__(moduleName)
+
+			#For points sweeps pop the stop
+			if moduleName == 'Sweeps':
+				d.pop('stop', None)
+
 			args = {k.encode('ascii'):v for k,v in d.items()}
 			inst = getattr(sys.modules[moduleName], className)(**args)
 

@@ -29,8 +29,16 @@ class PointsSweep(Sweep):
 	"""
 	start = Float
 	step = Float
+	stop = Property(depends_on=['numPoints', 'start', 'step'])
 	numPoints = Int
 	points = Property(depends_on=['start', 'step', 'numPoints'])
+
+	#if either the number of points or the stop is updated then update the other
+	def _set_stop(self, stop):
+		self.numPoints = np.arange(self.start, stop, self.step).size+1 if self.step else 0
+
+	def _get_stop(self):
+		return self.start + (self.numPoints-1)*self.step
 
 	@cached_property
 	def _get_points(self):
