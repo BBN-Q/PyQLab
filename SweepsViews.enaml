@@ -1,6 +1,6 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
 	PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
-from enaml.stdlib.fields import FloatField
+from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
@@ -22,13 +22,13 @@ enamldef PointsSweepForm(GroupBox):
 		FloatField:
 			value := sweep.start
 		Label:
-			text = 'Stop'
-		FloatField:
-			value := sweep.stop
-		Label:
 			text = 'Step'
 		FloatField:
 			value := sweep.step
+		Label:
+			text = 'Num. Points'
+		IntField:
+			value := sweep.numPoints
 		ComboBox:
 			index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
 			index :: sweep.instr = possibleInstrs[index]
@@ -48,13 +48,13 @@ enamldef SegmentNumForm(GroupBox):
 		FloatField:
 			value := sweep.start
 		Label:
-			text = 'Stop'
-		FloatField:
-			value := sweep.stop
-		Label:
 			text = 'Step'
 		FloatField:
 			value := sweep.step
+		Label:
+			text = 'Num. Points'
+		IntField:
+			value := sweep.numPoints
 
 enamldef EmptySweepForm(Container):
 	attr sweep

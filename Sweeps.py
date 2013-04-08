@@ -28,8 +28,8 @@ class PointsSweep(Sweep):
 	A class for sweeps with floating points with one instrument
 	"""
 	start = Float
-	stop = Float
 	step = Float
+	numPoints = Int
 	points = Property(depends_on=['start', 'stop', 'step'])
 
 	@cached_property
