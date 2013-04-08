@@ -9,6 +9,7 @@ class MicrowaveSource(Instrument):
     address = Str('', desc='Address of unit as GPIB or I.P.')
     power = Float(0.0, desc='Output power in dBm')
     frequency = Float(5.0, desc='Frequency in GHz')
+    output = Bool(False, desc='Whether the output is on.')
     modulate = Bool(False, desc='Whether output is modulated')
     alc = Bool(False, desc='Whether automatic level control is on')
     pulseModulate = Bool(False, desc='Whether pulse modulation is on')

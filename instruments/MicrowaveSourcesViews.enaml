@@ -31,6 +31,11 @@ enamldef MicrowaveSourceForm(GroupBox):
 			value := uwSource.frequency
 			tool_tip = uwSource.trait('frequency').desc
 		Label:
+			text = 'Output'
+		CheckBox:
+			checked := uwSource.output
+			tool_tip = uwSource.trait('output').desc
+		Label:
 			text = 'ALC'
 		CheckBox:
 			checked := uwSource.alc
