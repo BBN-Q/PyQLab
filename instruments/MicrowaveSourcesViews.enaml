@@ -8,7 +8,7 @@ from EnamlHelpers import EnumComboBox
 
 enamldef MicrowaveSourceForm(GroupBox):
 	attr uwSource
-	title := uwSource.name
+	title := '{} ({})'.format(uwSource.name, uwSource.__class__.__name__)
 	padding = 5
 	Form:
 		padding = 2

@@ -47,7 +47,7 @@ def get_seq_file_callback(awg):
 enamldef AWGForm(GroupBox):
 	attr awg
 	padding = 5
-	title = awg.name
+	title = '{} ({})'.format(awg.name, awg.__class__.__name__)
 	constraints = [vbox(hbox(formItems1, formItems2, spacer), channels)]
 	Form: formItems1:
 		hug_width = 'medium'
