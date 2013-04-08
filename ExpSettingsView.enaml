@@ -31,6 +31,10 @@ enamldef ExpSettingsView(MainWindow):
 					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
 						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
 					dlg.open()
+		Action:
+			text = 'CW Mode'
+			checkable = True
+			checked := expSettings.CWMode
 
 		Action:
 			text = 'Debug'

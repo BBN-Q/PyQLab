@@ -52,6 +52,10 @@ class ScripterEncoder(json.JSONEncoder):
 	"""
 	Helper for QLab to encode all the classes for the matlab experiment script.
 	"""
+	def __init__(self, CWMode=False, **kwargs):
+		super(ScripterEncoder, self).__init__(**kwargs)
+		self.CWMode = CWMode
+
 	def default(self, obj):
 		if isinstance(obj, HasTraits):
 			#For the instrument library pull out enabled instruments from the dictionary
@@ -66,12 +70,16 @@ class ScripterEncoder(json.JSONEncoder):
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
 				jsonDict = obj.__getstate__()
+				jsonDict['deviceName'] = obj.__class__.__name__
 				#If it is an AWG convert channel list into dictionary
 				channels = jsonDict.pop('channels', None)
 				if channels:
 					for ct,chan in enumerate(channels):
-						jsonDict['chan_{}'.format(ct+1)] = chan 
-				jsonDict['deviceName'] = obj.__class__.__name__
+						jsonDict['chan_{}'.format(ct+1)] = chan
+				#If in CWMode, add the run method to AWGs
+				if self.CWMode:
+					if isinstance(obj, instruments.AWGs.AWG):
+						jsonDict['run'] = '{}'
 			else:
 				jsonDict = obj.__getstate__()
 

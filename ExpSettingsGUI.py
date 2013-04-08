@@ -1,4 +1,4 @@
-from traits.api import HasTraits, Instance, Str, on_trait_change
+from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
@@ -16,6 +16,7 @@ class ExpSettings(HasTraits):
     sweeps = Instance(Sweeps.SweepLibrary)
     instruments = Instance(InstrumentLibrary)
     measurements = Instance(MeasFilters.MeasFilterLibrary)
+    CWMode = Bool(False)
     curFileName = Str('DefaultExpSettings.json', transient=True)
 
     def __init__(self, **kwargs):
@@ -34,7 +35,7 @@ class ExpSettings(HasTraits):
 
     def write_to_file(self):
         with open(self.curFileName,'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True)
+            json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
 if __name__ == '__main__':
     instrLib = InstrumentLibrary(libFile=config.instrumentLibFile)
