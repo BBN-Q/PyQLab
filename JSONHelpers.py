@@ -83,6 +83,10 @@ class ScripterEncoder(json.JSONEncoder):
 				if self.CWMode:
 					if isinstance(obj, instruments.AWGs.AWG):
 						jsonDict['run'] = '{}'
+			#Inject the sweep type for sweeps
+			elif isinstance(obj, Sweep):
+				jsonDict = obj.__getstate__()
+				jsonDict['type'] = obj.__class__.__name__
 			else:
 				jsonDict = obj.__getstate__()
 
