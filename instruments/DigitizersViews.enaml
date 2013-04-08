@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, \
- ComboBox, PushButton, ToolBar, Action, FlowArea, FlowItem
+ ComboBox, PushButton, ToolBar, Action, FlowArea, FlowItem, ScrollArea
 from enaml.stdlib.fields import FloatField, IntField, Field
 from enaml.layout.api import hbox, vbox, spacer
 
@@ -38,11 +38,12 @@ class SampleRateValidator(Validator):
 			return text, False
 
 
-enamldef AlazarView(Container):
+enamldef AlazarView(GroupBox):
 	attr instr
-	FlowArea:
-		direction = 'top_to_bottom'
-		FlowItem: horizBox:
+	title = '{} ({})'.format(instr.name, instr.__class__.__name__)
+	ScrollArea:
+		Container:
+			hug_width = 'medium'
 			GroupBox: 
 				title = 'Horizontal'
 				Form:
@@ -65,7 +66,6 @@ enamldef AlazarView(Container):
 						value <<  instr.samplingRate/1e6
 						value :: instr.samplingRate = value*1e6
 						tool_tip = instr.trait('samplingRate').desc
-		FlowItem: vertBox:
 			GroupBox: 
 				title = 'Vertical'
 				Form:
@@ -89,7 +89,6 @@ enamldef AlazarView(Container):
 					EnumComboBox:
 						myObj := instr
 						traitName = 'bandwidth'
-		FlowItem: avgBox:
 			GroupBox: 
 				title = 'Averager'
 				Form:
@@ -114,7 +113,6 @@ enamldef AlazarView(Container):
 					IntField:
 						value := instr.nbrRoundRobins
 						tool_tip = instr.trait('nbrRoundRobins').desc
-		FlowItem: triggerBox:
 			GroupBox: 
 				title = 'Trigger'
 				Form:
