@@ -30,19 +30,15 @@ class PointsSweep(Sweep):
 	start = Float
 	step = Float
 	numPoints = Int
-	points = Property(depends_on=['start', 'stop', 'step'])
+	points = Property(depends_on=['start', 'step', 'numPoints'])
 
 	@cached_property
 	def _get_points(self):
 		if self.step:
-			return np.arange(self.start, self.stop, self.step)
+			return np.arange(self.start, self.start+self.numPoints*self.step, self.step)
 		else:
 			return None
 
-	@on_trait_change('[start, stop, step]')
-	def update_numPoints(self):
-		if self.step:
-			self.numSteps = len(self.points)
 
 class Power(PointsSweep):
 	label = 'Power'
