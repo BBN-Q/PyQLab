@@ -44,18 +44,18 @@ enamldef MicrowaveSourceForm(GroupBox):
 		Label: 
 			text = 'Modulation'
 		CheckBox: modOn:
-			checked := uwSource.modulate
-			tool_tip = uwSource.trait('modulate').desc
+			checked := uwSource.mod
+			tool_tip = uwSource.trait('mod').desc
 		Label:
 			text = 'Pulse Modulate'
 		CheckBox:
-			checked := uwSource.pulseModulate
-			tool_tip = uwSource.trait('pulseModulate').desc
+			checked := uwSource.pulse
+			tool_tip = uwSource.trait('pulse').desc
 		Label:
-			text = 'Modulation Source'
+			text = 'Pulse Source'
 		EnumComboBox:
 			myObj := uwSource
-			traitName = 'pulseModSource'
+			traitName = 'pulseSource'
 
 enamldef MicrowaveSourceView(Window):
 	id: main
