@@ -10,10 +10,10 @@ class MicrowaveSource(Instrument):
     power = Float(0.0, desc='Output power in dBm')
     frequency = Float(5.0, desc='Frequency in GHz')
     output = Bool(False, desc='Whether the output is on.')
-    modulate = Bool(False, desc='Whether output is modulated')
+    mod = Bool(False, desc='Whether output is modulated')
     alc = Bool(False, desc='Whether automatic level control is on')
-    pulseModulate = Bool(False, desc='Whether pulse modulation is on')
-    pulseModSource = Enum('Internal', 'External', desc='Source of pulse modulation')
+    pulse = Bool(False, desc='Whether pulse modulation is on')
+    pulseSource = Enum('Internal', 'External', desc='Source of pulse modulation')
 
     #For blanking the source we need to know the maximum rate and the delay
     gateBuffer = Float(0.0)
