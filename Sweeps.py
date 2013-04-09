@@ -2,7 +2,7 @@
 Various sweeps for scanning experiment parameters
 """
 
-from traits.api import HasTraits, Str, Float, Int, Bool, Dict, List, \
+from traits.api import HasTraits, Str, Float, Int, Bool, Dict, List, Enum, \
 	Instance, Property, Array, cached_property, TraitListObject, on_trait_change
 import enaml
 
@@ -47,7 +47,6 @@ class PointsSweep(Sweep):
 		else:
 			return None
 
-
 class Power(PointsSweep):
 	label = 'Power'
 	instr = Str
@@ -60,11 +59,17 @@ class SegmentNum(PointsSweep):
 	label = 'SegmentNum'
 	pass
 
+class AWGChannel(PointsSweep):
+	label = 'AWGChannel'
+	channel = Enum('1','2','3','4','1&2','3&4', desc='Which channel or pair to sweep')
+	mode = Enum('Amp.', 'Offset', desc='Sweeping amplitude or offset')
+	instr = Str
+
 class SweepLibrary(HasTraits):
 	sweepDict = Dict(Str, Sweep)
 	sweepList = Property(List, depends_on='sweepDict')
 	sweepOrder = List(Str, transient=True)
-	newSweepClasses = List([Power, Frequency, SegmentNum], transient=True)
+	newSweepClasses = List([Power, Frequency, SegmentNum, AWGChannel], transient=True)
 	possibleInstrs = List(Str)
 	libFile = Str(transient=True)
 

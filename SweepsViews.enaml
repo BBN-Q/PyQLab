@@ -1,124 +1,174 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-	PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
+    PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog
+from EnamlHelpers import DictManagerView, DictManager, AddDialog, EnumComboBox
 
 import Sweeps
 
+from instruments.AWGs import AWG
+
 enamldef PointsSweepForm(GroupBox):
-	attr sweep
-	attr possibleInstrs
-	title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
-	Form:
-		Label:
-			text = 'Label'
-		Field:
-			text := sweep.label
-		Label:
-			text = 'Start'
-		FloatField:
-			value := sweep.start
-		Label:
-			text = 'Stop'
-		FloatField:
-			value := sweep.stop
-		Label:
-			text = 'Step'
-		FloatField:
-			value := sweep.step
-		Label:
-			text = 'Num. Points'
-		IntField:
-			value := sweep.numPoints
-		ComboBox:
-			index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
-			index :: sweep.instr = possibleInstrs[index]
-			items << [item for item in possibleInstrs]
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label: 
+            text = 'Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            index :: sweep.instr = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
 
 enamldef SegmentNumForm(GroupBox):
-	attr sweep
-	attr possibleInstrs
-	title := '{} ({})'.format(sweep.name, sweep.label)
-	Form:
-		Label:
-			text = 'Label'
-		Field:
-			text := sweep.label
-		Label:
-			text = 'Start'
-		FloatField:
-			value := sweep.start
-		Label:
-			text = 'Stop'
-		FloatField:
-			value := sweep.stop
-		Label:
-			text = 'Step'
-		FloatField:
-			value := sweep.step
-		Label:
-			text = 'Num. Points'
-		IntField:
-			value := sweep.numPoints
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.label)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+
+enamldef AWGChannelForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.label)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label:
+            text = 'Channel'
+        EnumComboBox:
+            myObj := sweep
+            traitName = 'channel'
+        Label:
+            text = 'Mode'
+        EnumComboBox:
+            myObj := sweep
+            traitName = 'mode'
+        Label:
+            text = 'AWG'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            index :: sweep.instr = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+
+            # index << [item for item in possibleInstrs if isinstance(item, AWG)].index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            # index :: sweep.instr = [item for item in possibleInstrs if isinstance(item, AWG)][index]
+            # items << [item for item in possibleInstrs if isinstance(item, AWG)]
 
 enamldef EmptySweepForm(Container):
-	attr sweep
-	attr possibleInstrs
+    attr sweep
+    attr possibleInstrs
 
 #Map sweeps to view
-sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, Sweeps.SegmentNum:SegmentNumForm}
+sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm}
 
 def update_sweep_order(sweepList, objs):
-	sweepOrder = []
-	for obj in objs:
-		comboBoxIdx = obj[0].children[1].index
-		if comboBoxIdx>-1:
-			sweepOrder.append(sweepList[comboBoxIdx])
-	return sweepOrder
+    sweepOrder = []
+    for obj in objs:
+        comboBoxIdx = obj[0].children[1].index
+        if comboBoxIdx>-1:
+            sweepOrder.append(sweepList[comboBoxIdx])
+    return sweepOrder
 
 enamldef SweepManager(Container):
-	id: sweepManager
-	attr sweepLib
-	attr sweepOrderObjs = None
-	constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
-	DictManagerView: sweepDictView:
-		myDict = sweepLib.sweepDict
-		modelName = 'sweep'
-		viewMap = sweepViewMap
-		viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
-		addDialog = lambda root, itemDict, sweepLib=sweepLib : \
-			AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep')
-	GroupBox: orderBox:
-		title = 'Sweep Order'
-		hug_width = 'medium'
-		constraints = [hbox(sweepNumForm, sweepOrderForm)]
-		Form: sweepNumForm:
-			hug_width = 'medium'
-			Label:
-				text = "Number of Sweeps"
-			SpinBox:
-				id: numSweepsBox
-				minimum = 1
-				maximum = 3
-		Form: sweepOrderForm:
-			hug_width = 'medium'
-			Looper: sweepLooper:
-				iterable << range(numSweepsBox.value)
-				Form:
-					Label:
-						text = 'Sweep {}:'.format(loop_index+1)
-					ComboBox:
-						items << sweepManager.sweepLib.sweepList
-						index :: 
-							sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
+    id: sweepManager
+    attr sweepLib
+    attr sweepOrderObjs = None
+    constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
+    DictManagerView: sweepDictView:
+        myDict = sweepLib.sweepDict
+        modelName = 'sweep'
+        viewMap = sweepViewMap
+        viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
+        addDialog = lambda root, itemDict, sweepLib=sweepLib : \
+            AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep')
+    GroupBox: orderBox:
+        title = 'Sweep Order'
+        hug_width = 'medium'
+        constraints = [hbox(sweepNumForm, sweepOrderForm)]
+        Form: sweepNumForm:
+            hug_width = 'medium'
+            Label:
+                text = "Number of Sweeps"
+            SpinBox:
+                id: numSweepsBox
+                minimum = 1
+                maximum = 3
+        Form: sweepOrderForm:
+            hug_width = 'medium'
+            Looper: sweepLooper:
+                iterable << range(numSweepsBox.value)
+                Form:
+                    Label:
+                        text = 'Sweep {}:'.format(loop_index+1)
+                    ComboBox:
+                        items << sweepManager.sweepLib.sweepList
+                        index :: 
+                            sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
 
 enamldef SweepManagerWindow(Window):
-	id: sweepManagerTest
-	attr sweepLib
-	title = 'Sweep Manager'
-	SweepManager:
-		sweepLib := sweepManagerTest.sweepLib
+    id: sweepManagerTest
+    attr sweepLib
+    title = 'Sweep Manager'
+    SweepManager:
+        sweepLib := sweepManagerTest.sweepLib
 
