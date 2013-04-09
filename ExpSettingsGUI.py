@@ -39,7 +39,6 @@ class ExpSettings(HasTraits):
 
 if __name__ == '__main__':
     instrLib = InstrumentLibrary(libFile=config.instrumentLibFile)
-    instrLib.load_from_library()
 
     sweepLib = Sweeps.SweepLibrary(libFile=config.sweepLibFile)
     sweepLib.load_from_library()
