@@ -6,15 +6,26 @@ import instruments
 from Sweeps import Sweep, SweepLibrary
 from MeasFilters import MeasFilterLibrary
 
-from collections import OrderedDict
+from types import FunctionType
 
 class LibraryEncoder(json.JSONEncoder):
 	"""
 	Helper for QLab to encode all the classes we use.
 	"""
 	def default(self, obj):
-		if isinstance(obj, HasTraits):
+		#For the pulse functions in channels just return the name
+		if isinstance(obj, FunctionType):
+			return obj.__name__
+		elif isinstance(obj, HasTraits):
 			jsonDict = obj.__getstate__()
+
+			#For channels' linked AWG or generator just return the name
+			from QGL.Channels import PhysicalChannel
+			if isinstance(obj, PhysicalChannel):
+				awg = jsonDict.pop('AWG')
+				jsonDict['AWG'] = awg.name
+				source = jsonDict.pop('generator')
+				jsonDict['generator'] = source.name
 
 			#Inject the class name for decoding
 			jsonDict['__class__'] = obj.__class__.__name__
@@ -34,24 +45,56 @@ class LibraryDecoder(json.JSONDecoder):
 	def __init__(self, **kwargs):
 		super(LibraryDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
 
-	def dict_to_obj(self, d):
-		if '__class__' in d:
+	def dict_to_obj(self, jsonDict):
+		if '__class__' in jsonDict:
 			#Pop the class and module
-			className = d.pop('__class__')
-			moduleName = d.pop('__module__')
-			#Re-encode the strings as ascii (this should go away in Python 3)
+			className = jsonDict.pop('__class__')
+			moduleName = jsonDict.pop('__module__')
 			__import__(moduleName)
+
+			#Re-encode the strings as ascii (this should go away in Python 3)
+			args = {k.encode('ascii'):v for k,v in jsonDict.items()}
 
 			#For points sweeps pop the stop
 			if moduleName == 'Sweeps':
-				d.pop('stop', None)
+				jsonDict.pop('stop', None)
 
-			args = {k.encode('ascii'):v for k,v in d.items()}
 			inst = getattr(sys.modules[moduleName], className)(**args)
 
 			return inst
 		else:
-			return d
+			return jsonDict
+
+class ChannelDecoder(json.JSONDecoder):
+
+	def __init__(self, instrLib=None, **kwargs):
+		super(ChannelDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
+		self.instrLib = instrLib
+
+	def dict_to_obj(self, jsonDict):
+		if '__class__' in jsonDict:
+			#Pop the class and module
+			className = jsonDict.pop('__class__')
+			moduleName = jsonDict.pop('__module__')
+			__import__(moduleName)
+
+			#Re-encode the strings as ascii (this should go away in Python 3)
+			args = {k.encode('ascii'):v for k,v in jsonDict.items()}
+
+			#Instantiate the instruments associated with channels
+			awg = args.pop('AWG', None)
+			if awg:
+				args['AWG'] = self.instrLib[awg]
+			generator = args.pop('generator', None)
+			if generator:
+				args[generator] = self.instrLib[generator]
+
+			inst = getattr(sys.modules[moduleName], className)(**args)
+
+			return inst
+		else:
+			return jsonDict
+
 
 class ScripterEncoder(json.JSONEncoder):
 	"""
@@ -96,48 +139,10 @@ class ScripterEncoder(json.JSONEncoder):
 				jsonDict = obj.__getstate__()
 
 			#Strip out __traits_version__
-			if '__traits_version__' in jsonDict:
-				del jsonDict['__traits_version__']
+			jsonDict.pop('__traits_version__', None)
 
 			return jsonDict
 
 		else:
 			return super(QLabEncoder, self).default(obj)	
 	
-
-class ChannelEncoder(json.JSONEncoder):
-	'''
-	Helper class to flatten the channel classes to a dictionary for json serialization.
-	We just keep the class name and the properties
-	'''
-	def default(self, obj):
-		#For the pulse function just return the name
-		if isinstance(obj, FunctionType):
-			return obj.__name__
-		else:
-			jsonDict = {'__class__': obj.__class__.__name__}
-			#Strip leading underscores off private properties
-			newDict = { key.lstrip('_'):value for key,value in obj.__dict__.items()}
-			jsonDict.update(newDict)
-			return jsonDict
-
-class ChannelDecoder(json.JSONDecoder):
-	'''
-	Helper function to convert a json representation of a channel back into an object.
-	'''
-	def __init__(self, **kwargs):
-		super(ChannelDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
-
-	def dict_to_obj(self, jsonDict):
-		#Extract the class name from the dictionary
-		#If there is no class then assume top level dictionary
-		if '__class__' not in jsonDict:
-			return jsonDict
-		else:
-			className = jsonDict.pop('__class__')
-			class_ = getattr(sys.modules[__name__], className)
-			#Deal with shape functions
-			if 'pulseParams' in jsonDict:
-				if 'shapeFun' in jsonDict['pulseParams']:
-					jsonDict['pulseParams']['shapeFun'] = getattr(PulseShapes, jsonDict['pulseParams']['shapeFun'])
-			return class_(**jsonDict)
