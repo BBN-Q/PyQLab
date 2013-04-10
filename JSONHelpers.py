@@ -20,12 +20,16 @@ class LibraryEncoder(json.JSONEncoder):
 			jsonDict = obj.__getstate__()
 
 			#For channels' linked AWG or generator just return the name
-			from QGL.Channels import PhysicalChannel
+			from QGL.Channels import PhysicalChannel, LogicalChannel
 			if isinstance(obj, PhysicalChannel):
 				awg = jsonDict.pop('AWG')
 				jsonDict['AWG'] = awg.name
 				source = jsonDict.pop('generator')
 				jsonDict['generator'] = source.name
+
+			if isinstance(obj, LogicalChannel):
+				physChan = jsonDict.pop('physChan')
+				jsonDict['physChan'] = physChan.name
 
 			#Inject the class name for decoding
 			jsonDict['__class__'] = obj.__class__.__name__
@@ -93,7 +97,8 @@ class ChannelDecoder(json.JSONDecoder):
 
 			return inst
 		else:
-			return jsonDict
+			#Re-encode the strings as ascii (this should go away in Python 3)
+			return {k.encode('ascii'):v for k,v in jsonDict.items()}
 
 
 class ScripterEncoder(json.JSONEncoder):
