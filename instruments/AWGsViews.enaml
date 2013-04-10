@@ -4,6 +4,8 @@ from enaml.layout.api import hbox, vbox, spacer
 from enaml.stdlib.fields import FloatField
 from enaml.core.api import Looper, Include
 
+from EnamlHelpers import EnumComboBox
+
 import AWGs
 
 enamldef ChannelView(GroupBox):
@@ -68,11 +70,10 @@ enamldef AWGForm(GroupBox):
 			tool_tip = awg.trait('triggerInterval').desc
 		Label:
 			text = "Trigger Source"
-		ComboBox:
-			index <<  ['Internal','External'].index(awg.triggerSource)
-			index >> ['Internal','External'][index]
-			items << list(awg.trait('triggerSource').handler.values)
-			tool_tip = awg.trait('triggerSource').desc
+		EnumComboBox:
+			myObj := awg
+			traitName = 'triggerSource'
+
 	Form: formItems2:
 		Label:
 			text = 'Sequence Reload'
