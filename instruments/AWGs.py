@@ -19,7 +19,7 @@ class AWG(Instrument):
 	isMaster = Bool(False, desc='Whether this AWG is master')
 	triggerSource = Enum('Internal', 'External', desc='Source of trigger')
 	triggerInterval = Float(1e-4, desc='Internal trigger interval')
-	samplingRate = Float(1200, desc='Sampling rate in MHz')
+	samplingRate = Float(1200000000, desc='Sampling rate in Hz')
 	numChannels = Int()
 	channels = List(AWGChannel)
 	seqFile = File(desc='Path to sequence file.')
