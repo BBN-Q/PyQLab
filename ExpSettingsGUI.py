@@ -2,12 +2,12 @@ from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
+import QGL
 from instruments.InstrumentManager import InstrumentLibrary
 import Sweeps
 import MeasFilters
 
 import json
-import JSONHelpers
 
 import config
 
@@ -31,14 +31,16 @@ class ExpSettings(HasTraits):
                 self.sweeps.possibleInstrs.append(key)
 
     def load_from_file(self, fileName):
+        import JSONHelpers
         pass
 
     def write_to_file(self):
+        import JSONHelpers
         with open(self.curFileName,'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
 if __name__ == '__main__':
-    instrLib = InstrumentLibrary(libFile=config.instrumentLibFile)
+    import Libraries
 
     sweepLib = Sweeps.SweepLibrary(libFile=config.sweepLibFile)
     sweepLib.load_from_library()
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     filterLib.load_from_library()
 
     from ExpSettingsGUI import ExpSettings
-    expSettings= ExpSettings(sweeps=sweepLib, instruments=instrLib, measurements=filterLib)
+    expSettings= ExpSettings(sweeps=sweepLib, instruments=Libraries.instrumentLib, measurements=filterLib)
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView

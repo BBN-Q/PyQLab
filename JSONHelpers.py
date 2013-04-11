@@ -6,6 +6,7 @@ import instruments
 from Sweeps import Sweep, SweepLibrary
 from MeasFilters import MeasFilterLibrary
 
+from QGL.Channels import PhysicalChannel, LogicalChannel
 from types import FunctionType
 
 class LibraryEncoder(json.JSONEncoder):
@@ -20,12 +21,12 @@ class LibraryEncoder(json.JSONEncoder):
 			jsonDict = obj.__getstate__()
 
 			#For channels' linked AWG or generator just return the name
-			from QGL.Channels import PhysicalChannel, LogicalChannel
 			if isinstance(obj, PhysicalChannel):
 				awg = jsonDict.pop('AWG')
 				jsonDict['AWG'] = awg.name
-				source = jsonDict.pop('generator')
-				jsonDict['generator'] = source.name
+				source = jsonDict.pop('generator', None)
+				if source:
+					jsonDict['generator'] = source.name
 
 			if isinstance(obj, LogicalChannel):
 				physChan = jsonDict.pop('physChan')
@@ -57,13 +58,13 @@ class LibraryDecoder(json.JSONDecoder):
 			__import__(moduleName)
 
 			#Re-encode the strings as ascii (this should go away in Python 3)
-			args = {k.encode('ascii'):v for k,v in jsonDict.items()}
+			jsonDict = {k.encode('ascii'):v for k,v in jsonDict.items()}
 
 			#For points sweeps pop the stop
 			if moduleName == 'Sweeps':
 				jsonDict.pop('stop', None)
 
-			inst = getattr(sys.modules[moduleName], className)(**args)
+			inst = getattr(sys.modules[moduleName], className)(**jsonDict)
 
 			return inst
 		else:
@@ -71,11 +72,12 @@ class LibraryDecoder(json.JSONDecoder):
 
 class ChannelDecoder(json.JSONDecoder):
 
-	def __init__(self, instrLib=None, **kwargs):
+	def __init__(self, **kwargs):
 		super(ChannelDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
-		self.instrLib = instrLib
 
 	def dict_to_obj(self, jsonDict):
+		import QGL.PulseShapes
+		from Libraries import instrumentLib
 		if '__class__' in jsonDict:
 			#Pop the class and module
 			className = jsonDict.pop('__class__')
@@ -83,23 +85,26 @@ class ChannelDecoder(json.JSONDecoder):
 			__import__(moduleName)
 
 			#Re-encode the strings as ascii (this should go away in Python 3)
-			args = {k.encode('ascii'):v for k,v in jsonDict.items()}
+			jsonDict = {k.encode('ascii'):v for k,v in jsonDict.items()}
 
 			#Instantiate the instruments associated with channels
-			awg = args.pop('AWG', None)
+			awg = jsonDict.pop('AWG', None)
 			if awg:
-				args['AWG'] = self.instrLib[awg]
-			generator = args.pop('generator', None)
+				jsonDict['AWG'] = instrumentLib[awg]
+			generator = jsonDict.pop('generator', None)
 			if generator:
-				args[generator] = self.instrLib[generator]
+				jsonDict[generator] = instrumentLib[generator]
 
-			inst = getattr(sys.modules[moduleName], className)(**args)
+			inst = getattr(sys.modules[moduleName], className)(**jsonDict)
 
 			return inst
 		else:
 			#Re-encode the strings as ascii (this should go away in Python 3)
-			return {k.encode('ascii'):v for k,v in jsonDict.items()}
-
+			jsonDict = {k.encode('ascii'):v for k,v in jsonDict.items()}
+			shapeFun = jsonDict.pop('shapeFun',None)
+			if shapeFun:
+				jsonDict['shapeFun'] = getattr(QGL.PulseShapes, shapeFun)
+			return jsonDict
 
 class ScripterEncoder(json.JSONEncoder):
 	"""

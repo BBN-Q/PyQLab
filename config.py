@@ -16,7 +16,7 @@ if PyQLabCfgFile:
 
 	#pull out the variables 
 	AWGDir = PyQLabCfg['AWGDir']
-	channelParamsFile = PyQLabCfg['ChannelParamsFile']
+	channelLibFile = PyQLabCfg['ChannelLibraryFile']
 	instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
 	sweepLibFile = PyQLabCfg['SweepLibraryFile']
 	measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
