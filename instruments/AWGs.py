@@ -40,7 +40,7 @@ class Tek5014(AWG):
     numChannels = 4
 
 class Tek7000(AWG):
-    numChannels = 4
+    numChannels = 2
 
 AWGList = [APS, Tek5014]
 
@@ -57,8 +57,10 @@ def get_empty_channel_set(AWG):
     """
     Helper function to get the set of empty channels when compiling to hardware.
     """
-    if isinstance(AWG, Tek5014) or isinstance(AWG, Tek7000):
+    if isinstance(AWG, Tek5014):
         return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}, 'ch3m1':{}, 'ch3m2':{} , 'ch4m1':{}, 'ch4m2':{}}
+    elif isinstance(AWG, Tek7000):
+        return {'ch12':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}}
     elif isinstance(AWG, APS):
         return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch2m1':{}, 'ch3m1':{}, 'ch4m1':{}}
     else:
