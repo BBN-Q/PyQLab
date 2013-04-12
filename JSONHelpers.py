@@ -6,7 +6,7 @@ import instruments
 from Sweeps import Sweep, SweepLibrary
 from MeasFilters import MeasFilterLibrary
 
-from QGL.Channels import PhysicalChannel, LogicalChannel
+from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
 from types import FunctionType
 
 class LibraryEncoder(json.JSONEncoder):
@@ -31,6 +31,9 @@ class LibraryEncoder(json.JSONEncoder):
 			if isinstance(obj, LogicalChannel):
 				physChan = jsonDict.pop('physChan')
 				jsonDict['physChan'] = physChan.name
+			if isinstance(obj, PhysicalQuadratureChannel):
+				gateChan = jsonDict.pop('gateChan')
+				jsonDict['gateChan'] = gateChan.name 
 
 			#Inject the class name for decoding
 			jsonDict['__class__'] = obj.__class__.__name__
@@ -93,7 +96,7 @@ class ChannelDecoder(json.JSONDecoder):
 				jsonDict['AWG'] = instrumentLib[awg]
 			generator = jsonDict.pop('generator', None)
 			if generator:
-				jsonDict[generator] = instrumentLib[generator]
+				jsonDict['generator'] = instrumentLib[generator]
 
 			inst = getattr(sys.modules[moduleName], className)(**jsonDict)
 
