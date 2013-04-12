@@ -7,6 +7,7 @@ from enaml.core.api import Looper, Include
 from EnamlHelpers import EnumComboBox
 
 import AWGs
+import config
 
 enamldef ChannelView(GroupBox):
 	attr chan
@@ -84,7 +85,9 @@ enamldef AWGForm(GroupBox):
 		PushButton:
 			text = '...'
 			clicked ::
-				dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file', callback=get_seq_file_callback(awg), filters=['*.awg', '*.h5'])
+				dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file',
+				 callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'], 
+				 path=config.AWGDir)
 				dlg.open()
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
