@@ -26,8 +26,18 @@ class InstrumentLibrary(HasTraits):
         #Move import here to avoid circular import
         import JSONHelpers
         if self.libFile:
-            with open(self.libFile,'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+            try:
+                with open(self.libFile,'w') as FID:
+                    json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+            except IOError:
+                print('Failed to write to instrument library.')
+            else:
+                pass
+                # print('Something went horribly wrong: writing empty instrument library.')
+                # #If things go wrong, dump an empty dictionary so the file isn't corrupted
+                # with open(self.libFile,'w') as FID:
+                #     json.dump({}, FID)
+                # import pdb; pdb.set_trace()
 
     def load_from_library(self):
         #Move import here to avoid circular import
@@ -40,6 +50,8 @@ class InstrumentLibrary(HasTraits):
                         self.instrDict.update(tmpLib.instrDict)
             except IOError:
                 print('No instrument library found')
+            except ValueError:
+                print('Failed to load instrument library')
 
 if __name__ == '__main__':
     from MicrowaveSources import AgilentN5183A

@@ -16,9 +16,9 @@ class MicrowaveSource(Instrument):
     pulseSource = Enum('Internal', 'External', desc='Source of pulse modulation')
 
     #For blanking the source we need to know the maximum rate and the delay
-    gateBuffer = Float(0.0)
-    gateMinWidth = Float(0.0)
-    gateDelay = Float(0.0)
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
 
 
 
