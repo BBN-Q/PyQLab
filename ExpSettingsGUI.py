@@ -2,7 +2,6 @@ from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
 import enaml
 from enaml.stdlib.sessions import show_simple_view
 
-import QGL
 from instruments.InstrumentManager import InstrumentLibrary
 import Sweeps
 import MeasFilters
