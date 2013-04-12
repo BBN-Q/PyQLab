@@ -67,7 +67,6 @@ if __name__ == '__main__':
     instrLib = InstrumentLibrary(instrDict=instruments, libFile='InstrumentLibrary.json')
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
-
     show_simple_view(InstrumentManagerWindow(instrLib=instrLib))
 
 

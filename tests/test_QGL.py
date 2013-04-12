@@ -8,8 +8,9 @@ from QGL import *
 class SingleQubit(unittest.TestCase):
     def setUp(self):
         # this should read:
-        # self.q1 = QubitFactory('q1')
-        self.q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        # self.q1 = QubitFactory('q1')]
+        params = {'piAmp':1.0, 'pi2Amp':0.5, 'length':30e-9}
+        self.q1 = Qubit('q1', pulseParams = params)
 
     def test_Ramsey(self):
         '''
@@ -21,18 +22,19 @@ class SingleQubit(unittest.TestCase):
         return ramsey
     
     def test_compile(self):
-        seq = self.test_Ramsey()
-        LL, wfLib = Compiler.compile_sequences(seq)
+        seqs = self.test_Ramsey()
+        LL, wfLib = Compiler.compile_sequences([Compiler.normalize(s) for s in seqs])
         assert(len(LL[self.q1]) == 11)
         assert(len(LL[self.q1][0]) == 2)
         assert( all([len(miniLL) == 3 for miniLL in LL[self.q1][1:]]) )
-        assert(len(wfLib[self.q1]) == 12) # 10 non-zero delays + X90 + TAZ
+        assert(len(wfLib[self.q1]) == 2) # just X90 + TAZ
 
 class MultiQubit(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit('q1', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        params = {'piAmp':1.0, 'pi2Amp':0.5, 'length':30e-9}
+        self.q1 = Qubit('q1', pulseParams = params)
         # goal is to make this just: q1 = Qubit('q1')
-        self.q2 = Qubit('q2', piAmp=1.0, pi2Amp=0.5, pulseLength=30e-9)
+        self.q2 = Qubit('q2', pulseParams = params)
 
     def test_Operators(self):
         q1 = self.q1
@@ -44,7 +46,7 @@ class MultiQubit(unittest.TestCase):
     
     def test_compile(self):
         seq = self.test_Operators()
-        LL, wfLib = Compiler.compile_sequences(seq)
+        LL, wfLib = Compiler.compile_sequences(Compiler.normalize(seq))
         assert(len(LL[self.q1]) == 1)
         assert(len(LL[self.q1][0]) == 5)
         assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
@@ -53,7 +55,7 @@ class MultiQubit(unittest.TestCase):
     def test_align(self):
         q1 = self.q1
         q2 = self.q2
-        seq = [align(X90(q1)*Xtheta(q2, amp=0.5, pulseLength=100e-9), 'right'), Y90(q1)*Y90(q2)]
+        seq = [align(X90(q1)*Xtheta(q2, amp=0.5, length=100e-9), 'right'), Y90(q1)*Y90(q2)]
         show(seq)
 
 
