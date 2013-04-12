@@ -45,7 +45,7 @@ enamldef PointsSweepForm(GroupBox):
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
