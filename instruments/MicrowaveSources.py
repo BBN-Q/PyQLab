@@ -20,8 +20,6 @@ class MicrowaveSource(Instrument):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
-
-
 class AgilentN5183A(MicrowaveSource):
     pass
 
@@ -29,6 +27,7 @@ class HS9000(MicrowaveSource):
     pass
 
 class Labbrick(MicrowaveSource):
+    refSource = Enum('Internal' , 'External', desc='Source of 10MHz ref.')
     pass
 
 #List of possible sources for other views

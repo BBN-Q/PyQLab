@@ -1,6 +1,8 @@
-from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, PushButton, StackItem
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
+								PushButton, StackItem
 from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Conditional
 
 import MicrowaveSources
 
@@ -56,6 +58,13 @@ enamldef MicrowaveSourceForm(GroupBox):
 		EnumComboBox:
 			myObj := uwSource
 			traitName = 'pulseSource'
+		Conditional:
+			condition = hasattr(uwSource, 'refSource')
+			Label:
+				text = 'Ref. Source'
+			EnumComboBox:
+				myObj := uwSource
+				traitName = 'refSource'
 
 enamldef MicrowaveSourceView(Window):
 	id: main
