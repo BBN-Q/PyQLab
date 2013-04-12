@@ -1,4 +1,5 @@
-from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem, Stack, StackItem, PushButton
+from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem,\
+							 Stack, StackItem, PushButton, GroupBox, Form, Label, Field
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
@@ -10,16 +11,28 @@ from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
 from DigitizersViews import DigitizerViewMap
-
 import Digitizers
+
+import Analysers
 
 enamldef EmptyInstrView(Container):
 	attr instr
 
-otherViewMap = {type(None):EmptyInstrView}
+#For standard instruments just display the name and address field
+enamldef DefaultInstrView(GroupBox):
+	hug_width = 'medium'
+	attr instr
+	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	Form:
+		Label:
+			text = 'Address'
+		Field:
+			text := instr.address
+
+otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView}
 otherViewMap.update(DigitizerViewMap.items())
 
-newOtherInstrs = [Digitizers.AlazarATS9870]
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000]
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
