@@ -41,14 +41,8 @@ class ExpSettings(HasTraits):
 if __name__ == '__main__':
     import Libraries
 
-    sweepLib = Sweeps.SweepLibrary(libFile=config.sweepLibFile)
-    sweepLib.load_from_library()
-
-    filterLib = MeasFilters.MeasFilterLibrary(libFile=config.measurementLibFile)
-    filterLib.load_from_library()
-
     from ExpSettingsGUI import ExpSettings
-    expSettings= ExpSettings(sweeps=sweepLib, instruments=Libraries.instrumentLib, measurements=filterLib)
+    expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib, measurements=Libraries.measLib)
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
