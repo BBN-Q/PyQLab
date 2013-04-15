@@ -153,6 +153,7 @@ enamldef SweepManager(Container):
                 id: numSweepsBox
                 minimum = 1
                 maximum = 3
+                value = len(sweepManager.sweepLib.sweepOrder) if len(sweepManager.sweepLib.sweepOrder) > 0 else 1
         Form: sweepOrderForm:
             hug_width = 'medium'
             Looper: sweepLooper:
@@ -162,6 +163,7 @@ enamldef SweepManager(Container):
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
                         items << sweepManager.sweepLib.sweepList
+                        index << sweepManager.sweepLib.sweepList.index(sweepManager.sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepManager.sweepLib.sweepOrder) else -1
                         index :: 
                             sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
 
