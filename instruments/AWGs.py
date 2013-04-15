@@ -42,7 +42,7 @@ class Tek5014(AWG):
 class Tek7000(AWG):
     numChannels = 2
 
-AWGList = [APS, Tek5014]
+AWGList = [APS, Tek5014, Tek7000]
 
 if __name__ == "__main__":
 
