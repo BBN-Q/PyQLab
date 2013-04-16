@@ -28,7 +28,7 @@ enamldef DigitalHomodyneForm(GroupBox):
 			text = 'I.F. Freq (M)'
 		FloatField:
 			value << myFilter.IFfreq/1e6
-			value :: myFilter.IFfreq*1e6
+			value :: myFilter.IFfreq = value*1e6
 			tool_tip = myFilter.trait('IFfreq').desc
 		Label:
 			text = 'Sampling Rate (M)'
