@@ -2,7 +2,7 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Instance, Str, Int, Float, Range, Bool, Enum, File
+from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File
 
 from Instrument import Instrument
 

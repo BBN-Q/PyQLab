@@ -8,8 +8,6 @@ import MeasFilters
 
 import json
 
-import config
-
 class ExpSettings(HasTraits):
 
     sweeps = Instance(Sweeps.SweepLibrary)
