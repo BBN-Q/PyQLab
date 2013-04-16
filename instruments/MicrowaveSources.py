@@ -25,15 +25,20 @@ class AgilentN5183A(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
-class HS9000(MicrowaveSource):
-    pass
+class HolzworthHS9000(MicrowaveSource):
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
 
 class Labbrick(MicrowaveSource):
     refSource = Enum('Internal' , 'External', desc='Source of 10MHz ref.')
-    pass
+
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HS9000, Labbrick]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
