@@ -9,6 +9,8 @@ from EnamlHelpers import DictManagerView, DictManager, AddDialog
 
 import MeasFilters
 
+from numpy import pi
+
 enamldef DigitalHomodyneForm(GroupBox):
 	attr myFilter
 	title := myFilter.name
@@ -36,6 +38,11 @@ enamldef DigitalHomodyneForm(GroupBox):
 			value << myFilter.samplingRate/1e6
 			value :: myFilter.samplingRate = value*1e6
 			tool_tip = myFilter.trait('samplingRate').desc
+		Label:
+			text = "Phase (deg.)"
+		FloatField:
+			value << (180/pi)*myFilter.phase
+			value :: myFilter.phase = (pi/180)*value
 		Label:
 			text = "Source Channel"
 		SpinBox:

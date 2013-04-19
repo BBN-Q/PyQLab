@@ -18,6 +18,7 @@ class DigitalHomodyne(MeasFilter):
     boxCarStop = Int(0, desc='The stop index of the integration window in pts.')
     IFfreq = Float(10e6, desc='The I.F. frequency for digital demodulation.')
     samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
+    phase = Float(0.0, desc='Phase rotation to apply in rad.')
 
 
 class Correlator(MeasFilter):
