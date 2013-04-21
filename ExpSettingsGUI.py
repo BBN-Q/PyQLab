@@ -45,6 +45,7 @@ class ExpSettings(HasTraits):
                 quickPicks = json.load(FID)
         except IOError:
             print('No quick pick file found.')
+            return
         
         quickPick = quickPicks[name]
 
