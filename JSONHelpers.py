@@ -158,5 +158,5 @@ class ScripterEncoder(json.JSONEncoder):
 			return jsonDict
 
 		else:
-			return super(QLabEncoder, self).default(obj)	
+			return super(ScripterEncoder, self).default(obj)	
 	
