@@ -1,6 +1,4 @@
 from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change
-import enaml
-from enaml.stdlib.sessions import show_simple_view
 
 import json
 
@@ -54,20 +52,13 @@ class InstrumentLibrary(HasTraits):
                 print('Failed to load instrument library')
 
 if __name__ == '__main__':
-    from MicrowaveSources import AgilentN5183A
-    from AWGs import APS
-    from Digitizers import AlazarATS9870
-    from InstrumentManager import InstrumentLibrary
-    instruments = {}
-    instruments['Agilent1'] = AgilentN5183A(name='Agilent1')
-    instruments['Agilent2'] = AgilentN5183A(name='Agilent2')
-    instruments['BBNAPS1'] = APS(name='BBNAPS1')
-    instruments['BBNAPS2'] = APS(name='BBNAPS2')
-    instruments['scope'] = AlazarATS9870(name='scope')
-    instrLib = InstrumentLibrary(instrDict=instruments, libFile='InstrumentLibrary.json')
+    import enaml
+    from enaml.stdlib.sessions import show_simple_view
+
+    from Libraries import instrumentLib
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
-    show_simple_view(InstrumentManagerWindow(instrLib=instrLib))
+    show_simple_view(InstrumentManagerWindow(instrLib=instrumentLib))
 
 
 
