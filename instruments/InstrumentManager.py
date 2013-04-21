@@ -11,6 +11,9 @@ class InstrumentLibrary(HasTraits):
     instrDict = Dict(Str, Instrument)
     libFile = Str(transient=True)
 
+    #Some helpers to pull out certain types of instruments
+    AWGs = Property(List, depends_on='instrDict')
+
     def __init__(self, **kwargs):
         super(InstrumentLibrary, self).__init__(**kwargs)
         self.load_from_library()
@@ -50,6 +53,10 @@ class InstrumentLibrary(HasTraits):
                 print('No instrument library found')
             except ValueError:
                 print('Failed to load instrument library')
+
+    #Getter for AWG list
+    def _get_AWGs(self):
+        return [instr for instr in self.instrDict.values() if isinstance(instr, AWG)]
 
 if __name__ == '__main__':
     import enaml

@@ -2,7 +2,7 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File
+from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Constant
 
 from Instrument import Instrument
 
@@ -35,12 +35,15 @@ class AWG(Instrument):
 class APS(AWG):
     numChannels = 4
     miniLLRepeat = Int(0, desc='How many times to repeat each miniLL')
+    seqFileExt = Constant('.h5')
 
 class Tek5014(AWG):
     numChannels = 4
+    seqFileExt = Constant('.awg')
 
 class Tek7000(AWG):
     numChannels = 2
+    seqFileExt = Constant('.awg')
 
 AWGList = [APS, Tek5014, Tek7000]
 

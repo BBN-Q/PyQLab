@@ -7,13 +7,15 @@ import Sweeps
 import MeasFilters
 import QGL.Channels
 import json
+import os
+import config
 
 class ExpSettings(HasTraits):
 
     sweeps = Instance(Sweeps.SweepLibrary)
     instruments = Instance(InstrumentLibrary)
     measurements = Instance(MeasFilters.MeasFilterLibrary)
-    channels = Instance(QGL.Channels.ChannelLibrary)
+    channels = Instance(QGL.Channels.ChannelLibrary, transient=True)
     CWMode = Bool(False)
     curFileName = Str('DefaultExpSettings.json', transient=True)
 
@@ -36,6 +38,35 @@ class ExpSettings(HasTraits):
         import JSONHelpers
         with open(self.curFileName,'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
+
+    def apply_quickpick(self, name):
+        try:
+            with open(config.quickpickFile, 'r') as FID:
+                quickPicks = json.load(FID)
+        except IOError:
+            print('No quick pick file found.')
+        
+        quickPick = quickPicks[name]
+
+        #Apply sequence name
+        if 'seqFile' in quickPick and 'seqDir' in quickPick:
+            for awg in self.instruments.AWGs:
+                awg.seqFile = os.path.join(config.AWGDir, quickPick['seqDir'],
+                                 '{}-{}{}'.format(quickPick['seqFile'], awg.name, awg.seqFileExt))
+
+        #Apply sweep info
+        if 'sweeps' in quickPick:
+            for sweep in quickPick['sweeps']:
+                if sweep in self.sweeps.sweepDict:
+                    for k,v in quickPick['sweeps'][sweep].items():
+                        setattr(self.sweeps.sweepDict[sweep], k, v)
+        if 'sweepOrder' in quickPick:
+            self.sweeps.sweepOrder = quickPick['sweepOrder']
+
+        #Setup the digitizer number of segments
+        if 'nbrSegments' in quickPick:
+            self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
+
 
 if __name__ == '__main__':
     import Libraries

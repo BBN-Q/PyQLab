@@ -20,6 +20,7 @@ if PyQLabCfgFile:
 	instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
 	sweepLibFile = PyQLabCfg['SweepLibraryFile']
 	measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
+	quickpickFile = PyQLabCfg['QuickPickFile'] if 'QuickPickFile' in PyQLabCfg else None
 
 else:
 	raise NameError("Unable to find the PyQLab configuration environment variable")
