@@ -1,4 +1,5 @@
-from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, Action, FileDialog
+from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, \
+					 Action, FileDialog, ComboBox, PushButton
 from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
@@ -7,6 +8,18 @@ from QGL.ChannelsViews import ChannelLibraryView
 from instruments.InstrumentManagerView import InstrumentManagerView
 from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
+
+
+#See what's in the quick pick file to enumerate it
+import config, json
+try:
+    with open(config.quickpickFile, 'r') as FID:
+        quickPicks = json.load(FID)
+        quickpickList = quickPicks.keys()
+except IOError:
+    print('No quick pick file found.')
+    quickpickList = []
+
 
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
@@ -69,5 +82,12 @@ enamldef ExpSettingsView(MainWindow):
 					sweepLib := expSettings.sweeps
 		GroupBox:
 			title = 'Quick Picker'
-			Label:
-				text = "Experiment quick picker...."
+			constraints = [hbox(quickpickCombo, quickpickApply, spacer.flex())]
+			ComboBox: quickpickCombo:
+				items << quickpickList
+				hug_width = 'medium'
+			PushButton: quickpickApply:
+				text = 'Apply'
+				clicked ::
+					expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
+				hug_width = 'medium'
