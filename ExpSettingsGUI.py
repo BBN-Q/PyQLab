@@ -5,7 +5,7 @@ from enaml.stdlib.sessions import show_simple_view
 from instruments.InstrumentManager import InstrumentLibrary
 import Sweeps
 import MeasFilters
-
+import QGL.Channels
 import json
 
 class ExpSettings(HasTraits):
@@ -13,6 +13,7 @@ class ExpSettings(HasTraits):
     sweeps = Instance(Sweeps.SweepLibrary)
     instruments = Instance(InstrumentLibrary)
     measurements = Instance(MeasFilters.MeasFilterLibrary)
+    channels = Instance(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
     curFileName = Str('DefaultExpSettings.json', transient=True)
 
@@ -40,7 +41,8 @@ if __name__ == '__main__':
     import Libraries
 
     from ExpSettingsGUI import ExpSettings
-    expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib, measurements=Libraries.measLib)
+    expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
+                     measurements=Libraries.measLib,  channels = Libraries.channelLib)
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
