@@ -37,8 +37,14 @@ class Labbrick(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
+class HP8673B(MicrowaveSource):
+    pass
+
+class HP8340B(MicrowaveSource):
+    pass
+
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, HP8673B, HP8340B]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
