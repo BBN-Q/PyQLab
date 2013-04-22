@@ -84,6 +84,10 @@ class SweepLibrary(HasTraits):
         super(SweepLibrary, self).__init__(**kwargs)
         self.load_from_library()
 
+    #Overload [] to allow direct pulling of channel info
+    def __getitem__(self, chanName):
+        return self.channelDict[chanName]
+
     @cached_property
     def _get_sweepList(self):
         return [sweep.name for sweep in self.sweepDict.values() if sweep.enabled]
