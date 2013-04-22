@@ -23,17 +23,20 @@ class LibraryEncoder(json.JSONEncoder):
 			#For channels' linked AWG or generator just return the name
 			if isinstance(obj, PhysicalChannel):
 				awg = jsonDict.pop('AWG')
-				jsonDict['AWG'] = awg.name
+				if awg:
+					jsonDict['AWG'] = awg.name
 				source = jsonDict.pop('generator', None)
 				if source:
 					jsonDict['generator'] = source.name
 
 			if isinstance(obj, LogicalChannel):
 				physChan = jsonDict.pop('physChan')
-				jsonDict['physChan'] = physChan.name
+				if physChan:
+					jsonDict['physChan'] = physChan.name
 			if isinstance(obj, PhysicalQuadratureChannel):
 				gateChan = jsonDict.pop('gateChan')
-				jsonDict['gateChan'] = gateChan.name 
+				if gateChan:
+					jsonDict['gateChan'] = gateChan.name 
 
 			#Inject the class name for decoding
 			jsonDict['__class__'] = obj.__class__.__name__
