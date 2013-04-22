@@ -1,0 +1,43 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
+								PushButton, StackItem
+from enaml.stdlib.fields import FloatField
+from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Conditional
+
+import DCSources
+
+from EnamlHelpers import EnumComboBox, EnumFloatComboBox
+
+enamldef YokoGS200Form(GroupBox):
+	attr instr
+	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	padding = 5
+	Form:
+		padding = 2
+		Label: 
+			text = 'Address'
+		Field: 
+			text := instr.address
+			tool_tip = instr.trait('address').desc
+		Label:
+			text = 'Mode'
+		EnumComboBox:
+			myObj := instr
+			traitName = 'mode'
+		Label:
+			text = 'Range'
+		EnumFloatComboBox:
+			myObj := instr
+			traitName = 'outputRange'
+		Label:
+			text = 'Output'
+		CheckBox:
+			checked := instr.output
+			tool_tip = instr.trait('output').desc
+		Label:
+			text = 'Value'
+		FloatField:
+			value := instr.value
+			tool_tip = instr.trait('value').desc
+
+DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form}

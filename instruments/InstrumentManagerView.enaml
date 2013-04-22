@@ -13,6 +13,9 @@ from MicrowaveSourcesViews import MicrowaveSourceViewMap
 from DigitizersViews import DigitizerViewMap
 import Digitizers
 
+from DCSourcesViews import DCSourcesViewMap
+import DCSources
+
 import Analysers
 
 enamldef EmptyInstrView(Container):
@@ -29,10 +32,11 @@ enamldef DefaultInstrView(GroupBox):
 		Field:
 			text := instr.address
 
-otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView}
+otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.BBNSpecAnalyser:DefaultInstrView}
 otherViewMap.update(DigitizerViewMap.items())
+otherViewMap.update(DCSourcesViewMap.items())
 
-newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000]
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.BBNSpecAnalyser, DCSources.YokoGS200]
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib

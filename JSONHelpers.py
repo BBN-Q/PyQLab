@@ -36,7 +36,10 @@ class LibraryEncoder(json.JSONEncoder):
 			if isinstance(obj, PhysicalQuadratureChannel):
 				gateChan = jsonDict.pop('gateChan')
 				if gateChan:
-					jsonDict['gateChan'] = gateChan.name 
+					jsonDict['gateChan'] = gateChan.name
+			if isinstance(obj, instruments.DCSources.YokoGS200):
+				outputRange = jsonDict.pop('outputRange')
+				jsonDict['range'] = outputRange
 
 			#Inject the class name for decoding
 			jsonDict['__class__'] = obj.__class__.__name__
@@ -69,6 +72,9 @@ class LibraryDecoder(json.JSONDecoder):
 			#For points sweeps pop the stop
 			if moduleName == 'Sweeps':
 				jsonDict.pop('stop', None)
+
+			if moduleName == 'YokoGS200':
+				jsonDict['outputRange'] = jsonDict.pop('range')
 
 			inst = getattr(sys.modules[moduleName], className)(**jsonDict)
 

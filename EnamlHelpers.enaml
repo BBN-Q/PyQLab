@@ -129,5 +129,12 @@ enamldef EnumComboBox(ComboBox):
 	index :: setattr(myObj, traitName, itemList[index])
 	tool_tip = myObj.trait(traitName).desc
 
-
+enamldef EnumFloatComboBox(ComboBox):
+	attr myObj
+	attr traitName
+	attr itemList = [str(item) for item in myObj.trait(traitName).handler.values]
+	items = itemList
+	index << itemList.index(str(getattr(myObj, traitName)))
+	index :: setattr(myObj, traitName, float(itemList[index]))
+	tool_tip = myObj.trait(traitName).desc
 
