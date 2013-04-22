@@ -6,11 +6,15 @@ Contents:
 * Instrument settings GUIs
 
 ##Dependencies
+### General
 * Python 2.7
 * Numpy/Scipy
 * Matplotlib
 * PySide
 * h5py
+
+### ExpSettings GUI
+* enaml - Until updated upstream use Colm's fork (`pip install git+git://github.com/caryan/enaml.git@list_control_rows`)
 
 ##Setup instructions
 
