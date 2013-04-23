@@ -149,6 +149,8 @@ class ScripterEncoder(json.JSONEncoder):
 
 			#Strip out __traits_version__
 			jsonDict.pop('__traits_version__', None)
+			jsonDict.pop('name', None)
+			jsonDict.pop('enabled', None)
 
 			return jsonDict
 
