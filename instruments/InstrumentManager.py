@@ -3,8 +3,8 @@ from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on
 import json
 
 from Instrument import Instrument
-from MicrowaveSources import MicrowaveSourceList, MicrowaveSource
-from AWGs import AWGList, AWG
+import MicrowaveSources
+import AWGs
 
 class InstrumentLibrary(HasTraits):
     #All the instruments are stored as a dictionary keyed of the instrument name
@@ -12,7 +12,8 @@ class InstrumentLibrary(HasTraits):
     libFile = Str(transient=True)
 
     #Some helpers to pull out certain types of instruments
-    AWGs = Property(List, depends_on='instrDict')
+    AWGs = Property(List, depends_on='instrDict[]')
+    sources = Property(List, depends_on='instrDict[]')
 
     def __init__(self, **kwargs):
         super(InstrumentLibrary, self).__init__(**kwargs)
@@ -56,7 +57,11 @@ class InstrumentLibrary(HasTraits):
 
     #Getter for AWG list
     def _get_AWGs(self):
-        return [instr for instr in self.instrDict.values() if isinstance(instr, AWG)]
+        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, AWGs.AWG)], key = lambda instr : instr.name)
+
+    #Getter for microwave source list
+    def _get_sources(self):
+        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, MicrowaveSources.MicrowaveSource)], key = lambda instr : instr.name)
 
 if __name__ == '__main__':
     import enaml

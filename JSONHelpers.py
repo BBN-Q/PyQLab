@@ -3,6 +3,7 @@ import json, sys
 from traits.api import HasTraits
 
 import instruments
+import instruments.DCSources
 from Sweeps import Sweep, SweepLibrary
 from MeasFilters import MeasFilterLibrary
 
