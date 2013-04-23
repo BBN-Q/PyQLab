@@ -13,3 +13,18 @@ class Instrument(HasTraits):
 	def set_settings(self, settings):
 		for key,value in settings.items():
 			setattr(self, key, value)
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = self.__getstate__()
+		if matlabCompatible:
+			jsonDict['deviceName'] = self.__class__.__name__
+			jsonDict.pop('enabled', None)
+			jsonDict.pop('name', None)
+		else:
+			jsonDict['__class__'] = self.__class__.__name__
+			jsonDict['__module__'] = self.__class__.__module__
+		return jsonDict
+
+	def update_from_jsondict(self, jsonDict):
+		for name,value in jsonDict.items():
+			setattr(self, name, value)

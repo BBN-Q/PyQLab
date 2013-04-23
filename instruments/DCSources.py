@@ -9,3 +9,13 @@ class DCSource(Instrument):
 
 class YokoGS200(DCSource):
 	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1, 10, 30, desc='Output range')
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = super(YokoGS200, self).json_encode(matlabCompatible)
+		if matlabCompatible:
+			jsonDict['range'] = jsonDict.pop('outputRange')
+		return jsonDict
+
+	def update_from_jsondict(self, jsonDict):
+		jsonDict['outputRange'] = jsonDict.pop('range')
+		super(YokoGS200, self).update_from_jsondict(jsonDict)

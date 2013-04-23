@@ -11,8 +11,9 @@ import config
 
 enamldef ChannelView(GroupBox):
 	attr chan
+	attr number
 	share_layout=True
-	title = chan.name
+	title = 'ch {}'.format(number)
 	padding = 0
 	Form:
 		hug_width='medium'
@@ -92,7 +93,7 @@ enamldef AWGForm(GroupBox):
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
-			objects << [ChannelView(chan=chan) for chan in awg.channels]
+			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(awg.channels)]
 
 enamldef AWGView(Window):
 	id: main

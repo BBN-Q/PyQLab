@@ -27,16 +27,21 @@ class AlazarATS9870(Instrument):
 	nbrWaveforms = Int(1, desc='Number of times each segment is repeated')
 	nbrRoundRobins = Int(1, desc='Number of times entire memory is looped')
 
-	def get_scripter_dict(self):
-		"For the Matlab experiment manager we seperately nest averager, horizontal, vertical settings"
-		jsonDict = {}
-		jsonDict['horizontal'] = {'delayTime':self.delay, 'samplingRate':self.samplingRate}
-		jsonDict['vertical'] = {k:getattr(self,k) for k in ['verticalScale', 'verticalOffset', 'verticalCoupling', 'bandwidth']}
-		jsonDict['trigger'] = {k:getattr(self,k) for k in ['triggerLevel', 'triggerSource', 'triggerCoupling', 'triggerSlope']}
-		jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
-		#Add the other necessities
-		jsonDict['acquireMode'] = self.acquireMode
-		jsonDict['clockType'] = self.clockType
+	def json_encode(self, matlabCompatible=False):
+		if matlabCompatible:
+			"For the Matlab experiment manager we seperately nest averager, horizontal, vertical settings"
+			jsonDict = {}
+			jsonDict['address'] = self.address
+			jsonDict['deviceName'] = 'AlazarATS9870'
+			jsonDict['horizontal'] = {'delayTime':self.delay, 'samplingRate':self.samplingRate}
+			jsonDict['vertical'] = {k:getattr(self,k) for k in ['verticalScale', 'verticalOffset', 'verticalCoupling', 'bandwidth']}
+			jsonDict['trigger'] = {k:getattr(self,k) for k in ['triggerLevel', 'triggerSource', 'triggerCoupling', 'triggerSlope']}
+			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+			#Add the other necessities
+			jsonDict['acquireMode'] = self.acquireMode
+			jsonDict['clockType'] = self.clockType
+		else:
+			jsonDict = super(AlazarATS9870, self).json_encode(matlabCompatible)
 
 		return jsonDict
 

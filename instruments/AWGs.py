@@ -2,7 +2,7 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Constant
+from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Constant, Str
 
 from Instrument import Instrument
 
@@ -30,7 +30,15 @@ class AWG(Instrument):
         super(AWG, self).__init__(**traits)
         if not self.channels:
             for ct in range(self.numChannels):
-                self.channels.append(AWGChannel(name='Chan. {}'.format(ct+1)))
+                self.channels.append(AWGChannel())
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = super(AWG, self).json_encode(matlabCompatible)
+        if matlabCompatible:
+            channels = jsonDict.pop('channels', None)
+            for ct,chan in enumerate(channels):
+                jsonDict['chan_{}'.format(ct+1)] = chan
+        return jsonDict
 
 class APS(AWG):
     numChannels = 4

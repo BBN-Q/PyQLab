@@ -18,7 +18,13 @@ class LibraryEncoder(json.JSONEncoder):
 		if isinstance(obj, FunctionType):
 			return obj.__name__
 		elif isinstance(obj, HasTraits):
-			jsonDict = obj.__getstate__()
+			if isinstance(obj, instruments.Instrument.Instrument):
+				jsonDict = obj.json_encode(matlabCompatible=False)
+			else:
+				jsonDict = obj.__getstate__()
+				#Inject the class name for decoding
+				jsonDict['__class__'] = obj.__class__.__name__
+				jsonDict['__module__'] = obj.__class__.__module__
 
 			#For channels' linked AWG or generator just return the name
 			if isinstance(obj, PhysicalChannel):
@@ -37,13 +43,6 @@ class LibraryEncoder(json.JSONEncoder):
 				gateChan = jsonDict.pop('gateChan')
 				if gateChan:
 					jsonDict['gateChan'] = gateChan.name
-			if isinstance(obj, instruments.DCSources.YokoGS200):
-				outputRange = jsonDict.pop('outputRange')
-				jsonDict['range'] = outputRange
-
-			#Inject the class name for decoding
-			jsonDict['__class__'] = obj.__class__.__name__
-			jsonDict['__module__'] = obj.__class__.__module__
 
 			#Strip out __traits_version__
 			if '__traits_version__' in jsonDict:
@@ -69,14 +68,11 @@ class LibraryDecoder(json.JSONDecoder):
 			#Re-encode the strings as ascii (this should go away in Python 3)
 			jsonDict = {k.encode('ascii'):v for k,v in jsonDict.items()}
 
-			#For points sweeps pop the stop
-			if moduleName == 'Sweeps':
-				jsonDict.pop('stop', None)
-
-			if moduleName == 'YokoGS200':
-				jsonDict['outputRange'] = jsonDict.pop('range')
-
-			inst = getattr(sys.modules[moduleName], className)(**jsonDict)
+			inst = getattr(sys.modules[moduleName], className)()
+			if hasattr(inst, 'update_from_jsondict'):
+				inst.update_from_jsondict(jsonDict)
+			else:
+				inst = getattr(sys.modules[moduleName], className)(**jsonDict)
 
 			return inst
 		else:
@@ -138,22 +134,12 @@ class ScripterEncoder(json.JSONEncoder):
 			elif isinstance(obj, SweepLibrary):
 				jsonDict = {name:sweep for name,sweep in obj.sweepDict.items() if sweep.enabled}
 				jsonDict['sweepOrder'] = obj.sweepOrder
-			#For the scope we nest the averager, vertical, horizontal settings
-			elif isinstance(obj, instruments.Digitizers.AlazarATS9870):
-				jsonDict = obj.get_scripter_dict()
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
-				jsonDict = obj.__getstate__()
-				jsonDict['deviceName'] = obj.__class__.__name__
-				#If it is an AWG convert channel list into dictionary
-				channels = jsonDict.pop('channels', None)
-				if channels:
-					for ct,chan in enumerate(channels):
-						jsonDict['chan_{}'.format(ct+1)] = chan
+				jsonDict = obj.json_encode(matlabCompatible=True)
 				#If in CWMode, add the run method to AWGs
-				if self.CWMode:
-					if isinstance(obj, instruments.AWGs.AWG):
-						jsonDict['run'] = '{}'
+				if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
+					jsonDict['run'] = '{}'
 			#Inject the sweep type for sweeps
 			elif isinstance(obj, Sweep):
 				jsonDict = obj.__getstate__()
