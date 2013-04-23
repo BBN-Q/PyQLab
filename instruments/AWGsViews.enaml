@@ -23,7 +23,7 @@ enamldef ChannelView(GroupBox):
 			text = 'Amp.'
 		FloatField:
 			constraints = [width == 50]
-			maximum = 1.0
+			maximum = 4.0
 			minimum = 0.0
 			value := chan.amplitude
 			tool_tip = chan.trait('amplitude').desc

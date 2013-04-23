@@ -11,7 +11,7 @@ from enaml.stdlib.sessions import show_simple_view
 
 
 class AWGChannel(HasTraits):
-    amplitude = Range(value=1.0, low=0.0, high=1.0, desc="Scaling applied to channel amplitude")
+    amplitude = Range(value=1.0, low=0.0, high=4.0, desc="Scaling applied to channel amplitude")
     offset = Range(value=0.0, low=-1.0, high=1.0, desc='D.C. offset applied to channel')
     enabled = Bool(True, desc='Whether the channel output is enabled.')
 
