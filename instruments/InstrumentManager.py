@@ -1,10 +1,11 @@
-from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change
+from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change, Any
 
 import json
 
 from Instrument import Instrument
-from MicrowaveSources import MicrowaveSourceList, MicrowaveSource
-from AWGs import AWGList, AWG
+import MicrowaveSources
+import AWGs
+import FileWatcher
 
 class InstrumentLibrary(HasTraits):
     #All the instruments are stored as a dictionary keyed of the instrument name
@@ -12,11 +13,16 @@ class InstrumentLibrary(HasTraits):
     libFile = Str(transient=True)
 
     #Some helpers to pull out certain types of instruments
-    AWGs = Property(List, depends_on='instrDict')
+    AWGs = Property(List, depends_on='instrDict[]')
+    sources = Property(List, depends_on='instrDict[]')
+
+    fileWatcher = Any(None, transient=True)
 
     def __init__(self, **kwargs):
         super(InstrumentLibrary, self).__init__(**kwargs)
         self.load_from_library()
+        if self.libFile:
+            self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
     #Overload [] to allow direct pulling of channel info
     def __getitem__(self, instrName):
@@ -27,18 +33,13 @@ class InstrumentLibrary(HasTraits):
         #Move import here to avoid circular import
         import JSONHelpers
         if self.libFile:
-            try:
-                with open(self.libFile,'w') as FID:
-                    json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
-            except IOError:
-                print('Failed to write to instrument library.')
-            else:
-                pass
-                # print('Something went horribly wrong: writing empty instrument library.')
-                # #If things go wrong, dump an empty dictionary so the file isn't corrupted
-                # with open(self.libFile,'w') as FID:
-                #     json.dump({}, FID)
-                # import pdb; pdb.set_trace()
+            #Pause the file watcher to stop cicular updating insanity
+            if self.fileWatcher:
+                self.fileWatcher.pause()
+            with open(self.libFile,'w') as FID:
+                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+            if self.fileWatcher:
+                self.fileWatcher.resume()
 
     def load_from_library(self):
         #Move import here to avoid circular import
@@ -54,9 +55,30 @@ class InstrumentLibrary(HasTraits):
             except ValueError:
                 print('Failed to load instrument library')
 
+    def update_from_file(self):
+        """
+        Only update relevant parameters
+        Helps avoid stale references by replacing whole channel objects as in load_from_library
+        and the overhead of recreating everything.
+        """
+        if self.libFile:
+            with open(self.libFile, 'r') as FID:
+                allParams = json.load(FID)['instrDict']
+                for instrName, instrParams in allParams.items():
+                    if instrName in self.instrDict:
+                        #Update AWG offsets'
+                        if isinstance(self.instrDict[instrName], AWGs.AWG):
+                            for ct in range(self.instrDict[instrName].numChannels):
+                                self.instrDict[instrName].channels[ct].offset = instrParams['channels'][ct]['offset']
+
+
     #Getter for AWG list
     def _get_AWGs(self):
-        return [instr for instr in self.instrDict.values() if isinstance(instr, AWG)]
+        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, AWGs.AWG)], key = lambda instr : instr.name)
+
+    #Getter for microwave source list
+    def _get_sources(self):
+        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, MicrowaveSources.MicrowaveSource)], key = lambda instr : instr.name)
 
 if __name__ == '__main__':
     import enaml

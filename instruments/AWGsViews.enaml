@@ -10,10 +10,11 @@ import AWGs
 import config
 
 enamldef ChannelView(GroupBox):
+	id: myChanView
 	attr chan
 	attr number
 	share_layout=True
-	title = 'ch {}'.format(number)
+	title = 'Ch. {}'.format(number)
 	padding = 0
 	Form:
 		hug_width='medium'
@@ -25,21 +26,21 @@ enamldef ChannelView(GroupBox):
 			constraints = [width == 50]
 			maximum = 4.0
 			minimum = 0.0
-			value := chan.amplitude
-			tool_tip = chan.trait('amplitude').desc
+			value := myChanView.chan.amplitude
+			tool_tip = myChanView.chan.trait('amplitude').desc
 		Label: 
 			text = 'Offset'
 		FloatField:
 			constraints = [width == 50]
 			maximum = 1.0
 			minimum = -1.0
-			value := chan.offset
-			tool_tip = chan.trait('offset').desc
+			value := myChanView.chan.offset
+			tool_tip = myChanView.chan.trait('offset').desc
 		Label:
 			text = 'Enabled'
 		CheckBox:
-			checked := chan.enabled
-			tool_tip = chan.trait('enabled').desc
+			checked := myChanView.chan.enabled
+			tool_tip = myChanView.chan.trait('enabled').desc
 
 
 def get_seq_file_callback(awg):
