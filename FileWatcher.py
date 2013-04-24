@@ -30,6 +30,6 @@ class LibraryFileWatcher(object):
         self.observer.stop()
 
     def resume(self):
-        self.observer = Observer(timeout=0.001)
+        self.observer = Observer()
         self.watch = self.observer.schedule(self.eventHandler, path=os.path.dirname(self.filePath))
         self.observer.start()
