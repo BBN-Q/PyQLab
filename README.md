@@ -12,6 +12,7 @@ Contents:
 * Matplotlib
 * PySide
 * h5py
+* watchdog 
 
 ### ExpSettings GUI
 * enaml - Until updated upstream use Colm's fork (`pip install git+git://github.com/caryan/enaml.git@list_control_rows`)
