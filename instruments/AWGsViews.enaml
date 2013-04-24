@@ -1,8 +1,8 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
 			StackItem, FileDialog, PushButton
 from enaml.layout.api import hbox, vbox, spacer
-from enaml.stdlib.fields import FloatField
-from enaml.core.api import Looper, Include
+from enaml.stdlib.fields import FloatField, IntField
+from enaml.core.api import Looper, Include, Conditional
 
 from EnamlHelpers import EnumComboBox
 
@@ -91,6 +91,18 @@ enamldef AWGForm(GroupBox):
 				 callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'], 
 				 path=config.AWGDir)
 				dlg.open()
+		Conditional:
+			condition = isinstance(awg, AWGs.APS)
+			Label:
+				text = 'Mini LL Repeat'
+			IntField:
+				value := awg.miniLLRepeat
+				tool_tip = awg.trait('miniLLRepeat').desc
+		Label:
+			text = 'Delay'
+		FloatField:
+			value := awg.delay
+			tool_tip = awg.trait('delay').desc
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
