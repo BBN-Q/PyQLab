@@ -63,7 +63,11 @@ class InstrumentLibrary(HasTraits):
         """
         if self.libFile:
             with open(self.libFile, 'r') as FID:
-                allParams = json.load(FID)['instrDict']
+                try:
+                    allParams = json.load(FID)['instrDict']
+                except ValueError:
+                    print('Failed to update instrument library from file.  Probably just half-written.')
+                    return
                 for instrName, instrParams in allParams.items():
                     if instrName in self.instrDict:
                         #Update AWG offsets'
