@@ -17,5 +17,4 @@ class YokoGS200(DCSource):
 		return jsonDict
 
 	def update_from_jsondict(self, jsonDict):
-		jsonDict['outputRange'] = jsonDict.pop('range')
 		super(YokoGS200, self).update_from_jsondict(jsonDict)
