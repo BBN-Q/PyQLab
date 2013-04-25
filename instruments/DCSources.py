@@ -15,6 +15,3 @@ class YokoGS200(DCSource):
 		if matlabCompatible:
 			jsonDict['range'] = jsonDict.pop('outputRange')
 		return jsonDict
-
-	def update_from_jsondict(self, jsonDict):
-		super(YokoGS200, self).update_from_jsondict(jsonDict)

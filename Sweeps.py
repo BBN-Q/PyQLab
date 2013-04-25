@@ -73,11 +73,16 @@ class AWGSequence(Sweep):
     label = 'AWGSequence'
     sequenceFile = Str('', desc='Base string for the sequence files')
 
+class Attenuation(PointsSweep):
+    label = 'Attenuation (dB)'
+    channel = Enum(1, 2, 3, desc='Which channel to sweep')
+    instr = Str
+
 class SweepLibrary(HasTraits):
     sweepDict = Dict(Str, Sweep)
     sweepList = Property(List, depends_on='sweepDict.anytrait')
     sweepOrder = List(Str)
-    newSweepClasses = List([Power, Frequency, SegmentNum, AWGChannel, AWGSequence], transient=True)
+    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence], transient=True)
     possibleInstrs = List(Str)
     libFile = Str(transient=True)
 
