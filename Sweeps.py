@@ -18,6 +18,7 @@ class Sweep(HasTraits):
     label = Str
     numSteps = Int
     enabled = Bool(True)
+    order = Int(-1)
 
     @abc.abstractmethod
     def step(self, index):
@@ -74,7 +75,7 @@ class AWGSequence(Sweep):
 
 class SweepLibrary(HasTraits):
     sweepDict = Dict(Str, Sweep)
-    sweepList = Property(List, depends_on='sweepDict')
+    sweepList = Property(List, depends_on='sweepDict.anytrait')
     sweepOrder = List(Str)
     newSweepClasses = List([Power, Frequency, SegmentNum, AWGChannel, AWGSequence], transient=True)
     possibleInstrs = List(Str)

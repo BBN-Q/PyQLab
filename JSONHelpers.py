@@ -133,8 +133,12 @@ class ScripterEncoder(json.JSONEncoder):
 				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
 			#For the sweep library we return a list of sweeps in order
 			elif isinstance(obj, SweepLibrary):
-				jsonDict = {name:sweep for name,sweep in obj.sweepDict.items() if sweep.enabled}
-				jsonDict['sweepOrder'] = obj.sweepOrder
+				# reset all 'order' fields to -1, then re-label
+				for sweep in obj.sweepDict.values():
+					sweep.order = -1
+				for ct, sweep in enumerate(obj.sweepOrder):
+					obj.sweepDict[sweep].order = ct+1
+				jsonDict = {name:sweep for name,sweep in obj.sweepDict.items() if name in obj.sweepOrder}
 			#For instruments we need to add the Matlab deviceDriver name
 			elif isinstance(obj, instruments.Instrument.Instrument):
 				jsonDict = obj.json_encode(matlabCompatible=True)
@@ -145,13 +149,13 @@ class ScripterEncoder(json.JSONEncoder):
 			elif isinstance(obj, Sweep):
 				jsonDict = obj.__getstate__()
 				jsonDict['type'] = obj.__class__.__name__
+				jsonDict.pop('enabled', None)
 			else:
 				jsonDict = obj.__getstate__()
 
 			#Strip out __traits_version__
 			jsonDict.pop('__traits_version__', None)
 			jsonDict.pop('name', None)
-			# jsonDict.pop('enabled', None)
 
 			return jsonDict
 

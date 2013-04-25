@@ -186,6 +186,7 @@ enamldef SweepManager(Container):
             Looper: sweepLooper:
                 iterable << range(numSweepsBox.value)
                 Form:
+                    initialized :: sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
                     Label:
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
