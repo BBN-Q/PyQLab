@@ -42,6 +42,43 @@ enamldef PointsSweepForm(GroupBox):
             index :: sweep.instr = possibleInstrs[index]
             items << [item for item in possibleInstrs]
 
+enamldef AttenuationSweepForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label: 
+            text = 'Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            index :: sweep.instr = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+        Label:
+            text = 'Channel'
+        ComboBox:
+            items = ['1','2','3']
+            index :: sweep.channel = index + 1
+
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
@@ -146,7 +183,7 @@ enamldef EmptySweepForm(Container):
 #Map sweeps to view
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, 
                     Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm,
-                    Sweeps.AWGSequence:AWGSequenceForm}
+                    Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm}
 
 def update_sweep_order(sweepList, objs):
     sweepOrder = []
