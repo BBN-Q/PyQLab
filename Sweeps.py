@@ -58,7 +58,10 @@ class Frequency(PointsSweep):
 
 class SegmentNum(PointsSweep):
     label = 'SegmentNum'
-    pass
+    
+class Repeat(Sweep):
+    label = 'Repeat'
+    numRepeats = Int(1, desc='How many times to loop.')
 
 class AWGChannel(PointsSweep):
     label = 'AWGChannel'
@@ -82,7 +85,7 @@ class SweepLibrary(HasTraits):
     sweepDict = Dict(Str, Sweep)
     sweepList = Property(List, depends_on='sweepDict.anytrait')
     sweepOrder = List(Str)
-    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence], transient=True)
+    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, Repeat], transient=True)
     possibleInstrs = List(Str)
     libFile = Str(transient=True)
 

@@ -176,6 +176,20 @@ enamldef AWGSequenceForm(GroupBox):
             value << int(sweep.step)
             value >> sweep.step        
 
+enamldef RepeatForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.label)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Num. Reps.'
+        IntField:
+            value := sweep.numRepeats
+
 enamldef EmptySweepForm(Container):
     attr sweep
     attr possibleInstrs
@@ -183,7 +197,7 @@ enamldef EmptySweepForm(Container):
 #Map sweeps to view
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, 
                     Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm,
-                    Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm}
+                    Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm, Sweeps.Repeat:RepeatForm}
 
 def update_sweep_order(sweepList, objs):
     sweepOrder = []
