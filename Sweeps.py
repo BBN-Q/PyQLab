@@ -16,7 +16,6 @@ import json
 class Sweep(HasTraits):
     name = Str
     label = Str
-    numSteps = Int
     enabled = Bool(True)
     order = Int(-1)
 
@@ -26,27 +25,34 @@ class Sweep(HasTraits):
 
 class PointsSweep(Sweep):
     """
-    A class for sweeps with floating points with one instrument
+    A class for sweeps with floating points with one instrument.
+
+    'step' and 'numPoints' both depend on the internal numPoints_ variable to break the dependency cycle
     """
     start = Float
-    step = Float
-    stop = Property(depends_on=['start', 'step', 'numPoints'])
-    numPoints = Int
-    points = Property(depends_on=['start', 'step', 'numPoints'])
+    step = Property(depends_on=['numPoints_'])
+    stop = Float
+    numPoints = Property(depends_on=['step'])
+    numPoints_ = Int
 
-    #if either the number of points or the stop is updated then update the other
-    def _set_stop(self, stop):
-        self.numPoints = np.arange(self.start, stop-2*np.finfo(float).eps, self.step).size+1 if self.step else 0
+    def _set_step(self, step):
+        self.numPoints_ = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
 
-    def _get_stop(self):
-        return self.start + (self.numPoints-1)*self.step
+    def _get_step(self):
+        return (self.stop - self.start)/max(1, self.numPoints_-1)
 
-    @cached_property
-    def _get_points(self):
-        if self.step:
-            return np.arange(self.start, self.start+self.numPoints*self.step, self.step)
-        else:
-            return None
+    def _set_numPoints(self, numPoints):
+        self.numPoints_ = numPoints
+
+    def _get_numPoints(self):
+        return self.numPoints_
+
+    @on_trait_change('[start, stop]')
+    def update_step(self):
+        # update the step to keep numPoints fixed
+        newStep = self.step
+        self.numPoints_ = -1
+        self.step = newStep
 
 class Power(PointsSweep):
     label = 'Power'
