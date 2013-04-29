@@ -52,8 +52,8 @@ class ExpSettings(HasTraits):
         #Apply sequence name
         if 'seqFile' in quickPick and 'seqDir' in quickPick:
             for awg in self.instruments.AWGs:
-                awg.seqFile = os.path.join(config.AWGDir, quickPick['seqDir'],
-                                 '{}-{}{}'.format(quickPick['seqFile'], awg.name, awg.seqFileExt))
+                awg.seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
+                                 '{}-{}{}'.format(quickPick['seqFile'], awg.name, awg.seqFileExt)))
 
         #Apply sweep info
         if 'sweeps' in quickPick:
