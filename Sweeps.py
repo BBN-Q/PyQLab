@@ -99,9 +99,9 @@ class SweepLibrary(HasTraits):
         super(SweepLibrary, self).__init__(**kwargs)
         self.load_from_library()
 
-    #Overload [] to allow direct pulling of channel info
-    def __getitem__(self, chanName):
-        return self.channelDict[chanName]
+    #Overload [] to allow direct pulling of sweep info
+    def __getitem__(self, sweepName):
+        return self.sweepDict[sweepName]
 
     @cached_property
     def _get_sweepList(self):
