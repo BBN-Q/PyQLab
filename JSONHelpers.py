@@ -5,8 +5,7 @@ from traits.api import HasTraits
 import instruments
 import instruments.DCSources
 from Sweeps import Sweep, SweepLibrary
-from MeasFilters import MeasFilterLibrary
-
+import MeasFilters
 from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
 from types import FunctionType
 
@@ -20,7 +19,9 @@ class LibraryEncoder(json.JSONEncoder):
 			return obj.__name__
 		elif isinstance(obj, HasTraits):
 			if isinstance(obj, instruments.Instrument.Instrument):
-				jsonDict = obj.json_encode(matlabCompatible=False)
+				jsonDict = obj.json_encode()
+			elif isinstance(obj, MeasFilters.MeasFilter):
+				jsonDict = obj.json_encode()
 			else:
 				jsonDict = obj.__getstate__()
 				#Inject the class name for decoding
@@ -46,8 +47,7 @@ class LibraryEncoder(json.JSONEncoder):
 					jsonDict['gateChan'] = gateChan.name
 
 			#Strip out __traits_version__
-			if '__traits_version__' in jsonDict:
-				del jsonDict['__traits_version__']
+			jsonDict.pop('__traits_version__', None)
 
 			return jsonDict
 
@@ -129,7 +129,7 @@ class ScripterEncoder(json.JSONEncoder):
 			if isinstance(obj, instruments.InstrumentManager.InstrumentLibrary):
 				jsonDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
 			#For the measurment library just pull-out enabled measurements from the filter dictionary
-			elif isinstance(obj, MeasFilterLibrary):
+			elif isinstance(obj, MeasFilters.MeasFilterLibrary):
 				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
 			#For the sweep library we return a list of sweeps in order
 			elif isinstance(obj, SweepLibrary):
@@ -139,12 +139,15 @@ class ScripterEncoder(json.JSONEncoder):
 				for ct, sweep in enumerate(obj.sweepOrder):
 					obj.sweepDict[sweep].order = ct+1
 				jsonDict = {name:sweep for name,sweep in obj.sweepDict.items() if name in obj.sweepOrder}
-			#For instruments we need to add the Matlab deviceDriver name
+			#For instruments call the encoder
 			elif isinstance(obj, instruments.Instrument.Instrument):
 				jsonDict = obj.json_encode(matlabCompatible=True)
 				#If in CWMode, add the run method to AWGs
 				if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
 					jsonDict['run'] = '{}'
+			#Same thing for filters
+			elif isinstance(obj, MeasFilters.MeasFilter):
+				jsonDict = obj.json_encode(matlabCompatible=True)
 			#Inject the sweep type for sweeps
 			elif isinstance(obj, Sweep):
 				jsonDict = obj.__getstate__()
