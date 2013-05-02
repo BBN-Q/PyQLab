@@ -50,6 +50,11 @@ enamldef DigitalHomodyneForm(GroupBox):
             minimum = 1
             maximum = 2
             value := myFilter.channel
+        Label:
+            text = 'Affine File Path'
+        Field:
+            text := myFilter.affineFilePath
+            tool_tip = myFilter.trait('affineFilePath').desc
         Label: 
             text = "Plot scope"
         CheckBox:
@@ -95,6 +100,7 @@ enamldef MeasFilterWindow(Window):
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
     attr myFilter
+    attr filterLib
 
 #Map filters to views
 filterViewMap = {type(None):EmptyMeasFilterForm, MeasFilters.DigitalHomodyne:DigitalHomodyneForm,

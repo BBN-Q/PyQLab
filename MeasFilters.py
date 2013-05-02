@@ -30,6 +30,7 @@ class DigitalHomodyne(MeasFilter):
     IFfreq = Float(10e6, desc='The I.F. frequency for digital demodulation.')
     samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
     phase = Float(0.0, desc='Phase rotation to apply in rad.')
+    affineFilePath = Str('', desc='Path to a .mat file containing "centers" and "angles" vectors.')
 
 class Correlator(MeasFilter):
     filters = Either(List(MeasFilter), List(Str))
