@@ -2,7 +2,7 @@
 Measurement filters
 """
 
-from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, on_trait_change, Either
+from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, Enum, on_trait_change, Either
 import enaml
 
 import json
@@ -12,6 +12,7 @@ class MeasFilter(HasTraits):
     channel = Int(1)
     enabled = Bool(True)
     plotScope = Bool(False, desc='Whether to show the raw data scope.')
+    plotMode = Enum('amp/phase', 'real/imag', 'quad', desc='Filtered data scope mode.')
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()

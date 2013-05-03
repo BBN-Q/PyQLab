@@ -5,7 +5,7 @@ from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
 
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog
+from EnamlHelpers import DictManagerView, DictManager, AddDialog, EnumComboBox
 
 import MeasFilters
 
@@ -59,6 +59,11 @@ enamldef DigitalHomodyneForm(GroupBox):
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            myObj := myFilter
+            traitName = 'plotMode'
 
 def update_filter_list(correlatorFilter, filterLib, objs):
     del correlatorFilter.filters[:]
