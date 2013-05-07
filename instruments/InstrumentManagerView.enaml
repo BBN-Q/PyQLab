@@ -35,12 +35,12 @@ enamldef DefaultInstrView(GroupBox):
 		Field:
 			text := instr.address
 
-otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.BBNSpecAnalyser:DefaultInstrView}
+otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.SpectrumAnalyzer:DefaultInstrView}
 otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
 
-newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.BBNSpecAnalyser, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib

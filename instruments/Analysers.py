@@ -8,5 +8,6 @@ from Instrument import Instrument
 class HP71000(Instrument):
 	pass
 
-class BBNSpecAnalyser(Instrument):
+class SpectrumAnalyzer(Instrument):
+	# BBN spectrum analyzer
 	pass
