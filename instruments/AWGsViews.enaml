@@ -107,7 +107,7 @@ enamldef AWGForm(GroupBox):
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
-			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(myAWGForm.sawg.channels)]
+			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(myAWGForm.awg.channels)]
 
 enamldef AWGView(Window):
 	id: main
