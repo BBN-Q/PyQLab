@@ -50,6 +50,7 @@ def get_seq_file_callback(awg):
 	return seq_file_callback
 
 enamldef AWGForm(GroupBox):
+	id: myAWGForm
 	attr awg
 	padding = 5
 	title = '{} ({})'.format(awg.name, awg.__class__.__name__)
@@ -59,31 +60,31 @@ enamldef AWGForm(GroupBox):
 		Label:
 			text = 'Master'
 		CheckBox:
-			checked := awg.isMaster
+			checked := myAWGForm.awg.isMaster
 		Label: 
 			text = 'Address'
 		Field: 
-			text := awg.address
+			text := myAWGForm.awg.address
 		Label:
 			text = 'Trigger Interval'
 		FloatField:
 			maximum = 15
 			minimum = 10e-9
-			value := awg.triggerInterval
-			tool_tip = awg.trait('triggerInterval').desc
+			value := myAWGForm.awg.triggerInterval
+			tool_tip = myAWGForm.awg.trait('triggerInterval').desc
 		Label:
 			text = "Trigger Source"
 		EnumComboBox:
-			myObj := awg
+			myObj := myAWGForm.awg
 			traitName = 'triggerSource'
 
 	Form: formItems2:
 		Label:
 			text = 'Sequence Reload'
 		CheckBox:
-			checked := awg.seqForce 
+			checked := myAWGForm.awg.seqForce 
 		Field:
-			text := awg.seqFile
+			text := myAWGForm.awg.seqFile
 		PushButton:
 			text = '...'
 			clicked ::
@@ -92,21 +93,21 @@ enamldef AWGForm(GroupBox):
 				 path=config.AWGDir)
 				dlg.open()
 		Conditional:
-			condition = isinstance(awg, AWGs.APS)
+			condition = isinstance(myAWGForm.awg, AWGs.APS)
 			Label:
 				text = 'Mini LL Repeat'
 			IntField:
-				value := awg.miniLLRepeat
-				tool_tip = awg.trait('miniLLRepeat').desc
+				value := myAWGForm.awg.miniLLRepeat
+				tool_tip = myAWGForm.awg.trait('miniLLRepeat').desc
 		Label:
 			text = 'Delay'
 		FloatField:
-			value := awg.delay
-			tool_tip = awg.trait('delay').desc
+			value := myAWGForm.awg.delay
+			tool_tip = myAWGForm.awg.trait('delay').desc
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
-			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(awg.channels)]
+			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(myAWGForm.sawg.channels)]
 
 enamldef AWGView(Window):
 	id: main
