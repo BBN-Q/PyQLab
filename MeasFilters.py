@@ -40,7 +40,7 @@ class Correlator(MeasFilter):
         jsonDict = super(Correlator, self).json_encode(matlabCompatible)
         #For correlation filters return the filter list as a list of filter names
         filterList = jsonDict.pop('filters')
-        jsonDict['filters'] = [item.name for item in filterList]
+        jsonDict['filters'] = [item.name for item in filterList] if filterList else []
         jsonDict.pop('channel')
         jsonDict.pop('plotScope')
         return jsonDict
