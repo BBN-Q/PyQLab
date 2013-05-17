@@ -25,8 +25,8 @@ class LibraryEncoder(json.JSONEncoder):
 			else:
 				jsonDict = obj.__getstate__()
 				#Inject the class name for decoding
-				jsonDict['__class__'] = obj.__class__.__name__
-				jsonDict['__module__'] = obj.__class__.__module__
+				jsonDict['x__class__'] = obj.__class__.__name__
+				jsonDict['x__module__'] = obj.__class__.__module__
 
 			#For channels' linked AWG or generator just return the name
 			if isinstance(obj, PhysicalChannel):
@@ -60,10 +60,15 @@ class LibraryDecoder(json.JSONDecoder):
 		super(LibraryDecoder, self).__init__(object_hook=self.dict_to_obj, **kwargs)
 
 	def dict_to_obj(self, jsonDict):
-		if '__class__' in jsonDict:
+		if 'x__class__' in jsonDict or '__class__' in jsonDict:
 			#Pop the class and module
-			className = jsonDict.pop('__class__')
-			moduleName = jsonDict.pop('__module__')
+			className = jsonDict.pop('x__class__', None)
+			if not className:
+				className = jsonDict.pop('__class__')
+			moduleName = jsonDict.pop('x__module__', None)
+			if not moduleName:
+				moduleName = jsonDict.pop('__module__')
+
 			__import__(moduleName)
 
 			#Re-encode the strings as ascii (this should go away in Python 3)
@@ -87,10 +92,15 @@ class ChannelDecoder(json.JSONDecoder):
 	def dict_to_obj(self, jsonDict):
 		import QGL.PulseShapes
 		from Libraries import instrumentLib
-		if '__class__' in jsonDict:
+		if 'x__class__' in jsonDict or '__class__' in jsonDict:
 			#Pop the class and module
-			className = jsonDict.pop('__class__')
-			moduleName = jsonDict.pop('__module__')
+			className = jsonDict.pop('x__class__', None)
+			if not className:
+				className = jsonDict.pop('__class__')
+			moduleName = jsonDict.pop('x__module__', None)
+			if not moduleName:
+				moduleName = jsonDict.pop('__module__')
+
 			__import__(moduleName)
 
 			#Re-encode the strings as ascii (this should go away in Python 3)

@@ -21,8 +21,8 @@ class Instrument(HasTraits):
 			jsonDict.pop('enabled', None)
 			jsonDict.pop('name', None)
 		else:
-			jsonDict['__class__'] = self.__class__.__name__
-			jsonDict['__module__'] = self.__class__.__module__
+			jsonDict['x__class__'] = self.__class__.__name__
+			jsonDict['x__module__'] = self.__class__.__module__
 		return jsonDict
 
 	def update_from_jsondict(self, jsonDict):
