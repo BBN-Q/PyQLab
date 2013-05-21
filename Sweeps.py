@@ -57,6 +57,7 @@ class PointsSweep(Sweep):
 class Power(PointsSweep):
     label = 'Power'
     instr = Str
+    units = Enum('dBm', 'Watts', desc='Logarithmic or linear power sweep')
 
 class Frequency(PointsSweep):
     label = 'Frequency'
