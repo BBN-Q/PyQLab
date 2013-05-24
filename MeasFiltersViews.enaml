@@ -28,13 +28,19 @@ enamldef DigitalHomodyneForm(GroupBox):
             value := myFilter.boxCarStop
             tool_tip = myFilter.trait('boxCarStop').desc
         Label:
-            text = 'I.F. Freq (M)'
+            text = 'I.F. Freq (MHz)'
         FloatField:
             value << myFilter.IFfreq/1e6
             value :: myFilter.IFfreq = value*1e6
             tool_tip = myFilter.trait('IFfreq').desc
         Label:
-            text = 'Sampling Rate (M)'
+            text = 'Bandwidth (MHz)'
+        FloatField:
+            value << myFilter.bandwidth/1e6
+            value :: myFilter.bandwidth = value*1e6
+            tool_tip = myFilter.trait('bandwidth').desc
+        Label:
+            text = 'Sampling Rate (MS/s)'
         FloatField:
             value << myFilter.samplingRate/1e6
             value :: myFilter.samplingRate = value*1e6

@@ -29,6 +29,7 @@ class DigitalHomodyne(MeasFilter):
     boxCarStart = Int(0, desc='The start index of the integration window in pts.')
     boxCarStop = Int(0, desc='The stop index of the integration window in pts.')
     IFfreq = Float(10e6, desc='The I.F. frequency for digital demodulation.')
+    bandwidth = Float(5e6, desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
     phase = Float(0.0, desc='Phase rotation to apply in rad.')
     affineFilePath = Str('', desc='Path to a .mat file containing "centers" and "angles" vectors.')
