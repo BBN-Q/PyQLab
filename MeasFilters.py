@@ -33,7 +33,9 @@ class DigitalHomodyne(MeasFilter):
     samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
     phase = Float(0.0, desc='Phase rotation to apply in rad.')
     filterFilePath = Str('', desc='Path to a .mat file containing the measurement filter and bias')
-
+    recordsFilePath = Str('', desc='Path to file where records will be optionally saved.')
+    saveRecords = Bool(False, desc='Whether to save the single-shot records to file.')
+    
 class Correlator(MeasFilter):
     filters = Either(List(MeasFilter), List(Str))
 
