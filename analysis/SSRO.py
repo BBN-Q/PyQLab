@@ -113,6 +113,23 @@ def wavelet_transform(measRecords, wavelet):
 		out.append(np.hstack((cA3, cD3)))
 	return np.array(out)
 
+def credible_interval(outcomes, c=0.95):
+	"""
+	Calculate the credible interval for a fidelity estimate.
+	"""
+	from scipy.special import betaincinv
+	N = outcomes.size
+	S = np.count_nonzero(outcomes)
+	xlo = betaincinv(S+1,N-S+1,(1-c)/2.)
+	xup = betaincinv(S+1,N-S+1,(1+c)/2.)
+
+	return xlo, xup
+
+for ct in range(90,120):
+	testSignals[::2] = np.sum((weights*gUnWound.real)[:,:ct], axis=1)
+	testSignals[1::2] = np.sum((weights*eUnWound.real)[:,:ct], axis=1)
+	print(fidelity_est(testSignals))
+
 if __name__ == '__main__':
 	pass
 
@@ -139,26 +156,26 @@ if __name__ == '__main__':
 	gData, eData = load_exp_data('/home/cryan/Desktop/SSData.mat')
 
 	# #Use PCA to extract fewer, more useful features
-	allData = np.vstack((np.hstack((gData.real, gData.imag)), np.hstack((eData.real, eData.imag))))
-	pca = decomposition.PCA()
-	pca.n_components = 4
-	reducedData = pca.fit_transform(allData)
+	# allData = np.vstack((np.hstack((gData.real, gData.imag)), np.hstack((eData.real, eData.imag))))
+	# pca = decomposition.PCA()
+	# pca.n_components = 20
+	# reducedData = pca.fit_transform(allData)
 
 
-	#Assing the assumed states
-	states = np.repeat([0,1], 10000)
+	# #Assing the assumed states
+	# states = np.repeat([0,1], 10000)
 
-	X_train, X_test, y_train, y_test = cross_validation.train_test_split(reducedData, states, test_size=0.2, random_state=0)
+	# X_train, X_test, y_train, y_test = cross_validation.train_test_split(reducedData, states, test_size=0.2, random_state=0)
 
-	# searchParams = {'gamma':(1.0/100)*np.logspace(-3, 0, 10), 'nu':np.arange(0.01, 0.2, 0.02)}
-	# clf = grid_search.GridSearchCV(svm.NuSVC(cache_size=2000), searchParams, n_jobs=2)
-	searchParams = {'C':np.linspace(0.1,4,20)}
-	clf = grid_search.GridSearchCV(svm.SVC(cache_size=2000), searchParams)
-	# clf = svm.SVC()
+	# # searchParams = {'gamma':(1.0/100)*np.logspace(-3, 0, 10), 'nu':np.arange(0.01, 0.2, 0.02)}
+	# # clf = grid_search.GridSearchCV(svm.NuSVC(cache_size=2000), searchParams, n_jobs=2)
+	# searchParams = {'C':np.linspace(0.1,4,20)}
+	# clf = grid_search.GridSearchCV(svm.SVC(cache_size=2000), searchParams)
+	# # clf = svm.SVC()
 
-	clf.fit(X_train, y_train)
+	# clf.fit(X_train, y_train)
 
-	print clf.score(X_test, y_test)
+	# print clf.score(X_test, y_test)
 
 	# gridScores =  np.reshape([x[1] for x in clf.grid_scores_], (clf.param_grid['nu'].size, clf.param_grid['gamma'].size))
 
