@@ -73,7 +73,7 @@ enamldef DigitalHomodyneForm(GroupBox):
         Label:
             text = 'Records File'
         Field:
-            text := myFilter.recordFilePath
+            text := myFilter.recordsFilePath
             tool_tip = myFilter.trait('recordsFilePath').desc
         Label: 
             text = "Save records"
