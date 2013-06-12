@@ -57,10 +57,10 @@ enamldef DigitalHomodyneForm(GroupBox):
             maximum = 2
             value := myFilter.channel
         Label:
-            text = 'Affine File Path'
+            text = 'Filter File Path'
         Field:
-            text := myFilter.affineFilePath
-            tool_tip = myFilter.trait('affineFilePath').desc
+            text := myFilter.filterFilePath
+            tool_tip = myFilter.trait('filterFilePath').desc
         Label: 
             text = "Plot scope"
         CheckBox:

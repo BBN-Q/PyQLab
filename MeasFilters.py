@@ -32,7 +32,7 @@ class DigitalHomodyne(MeasFilter):
     bandwidth = Float(5e6, desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
     phase = Float(0.0, desc='Phase rotation to apply in rad.')
-    affineFilePath = Str('', desc='Path to a .mat file containing "centers" and "angles" vectors.')
+    filterFilePath = Str('', desc='Path to a .mat file containing the measurement filter and bias')
 
 class Correlator(MeasFilter):
     filters = Either(List(MeasFilter), List(Str))
