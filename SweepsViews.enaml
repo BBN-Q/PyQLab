@@ -236,7 +236,8 @@ enamldef EmptySweepForm(Container):
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, 
                     Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm,
                     Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm, 
-                    Sweeps.Power:PowerSweepForm, Sweeps.Repeat:RepeatForm}
+                    Sweeps.Power:PowerSweepForm, Sweeps.Repeat:RepeatForm,
+                    Sweeps.DC:PointsSweepForm}
 
 def update_sweep_order(sweepList, objs):
     sweepOrder = []

@@ -88,11 +88,15 @@ class Attenuation(PointsSweep):
     channel = Enum(1, 2, 3, desc='Which channel to sweep')
     instr = Str
 
+class DC(PointsSweep):
+    label = 'DC'
+    instr = Str
+
 class SweepLibrary(HasTraits):
     sweepDict = Dict(Str, Sweep)
     sweepList = Property(List, depends_on='sweepDict.anytrait')
     sweepOrder = List(Str)
-    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, Repeat], transient=True)
+    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, DC, Repeat], transient=True)
     possibleInstrs = List(Str)
     libFile = Str(transient=True)
 
