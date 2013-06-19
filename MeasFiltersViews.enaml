@@ -56,11 +56,6 @@ enamldef DigitalHomodyneForm(GroupBox):
             minimum = 1
             maximum = 2
             value := myFilter.channel
-        Label:
-            text = 'Affine File Path'
-        Field:
-            text := myFilter.affineFilePath
-            tool_tip = myFilter.trait('affineFilePath').desc
         Label: 
             text = "Plot scope"
         CheckBox:
@@ -70,6 +65,21 @@ enamldef DigitalHomodyneForm(GroupBox):
         EnumComboBox:
             myObj := myFilter
             traitName = 'plotMode'
+        Label:
+            text = 'Filter File Path'
+        Field:
+            text := myFilter.filterFilePath
+            tool_tip = myFilter.trait('filterFilePath').desc
+        Label:
+            text = 'Records File'
+        Field:
+            text := myFilter.recordsFilePath
+            tool_tip = myFilter.trait('recordsFilePath').desc
+        Label: 
+            text = "Save records"
+        CheckBox:
+            checked := myFilter.saveRecords
+
 
 def update_filter_list(correlatorFilter, filterLib, objs):
     del correlatorFilter.filters[:]
