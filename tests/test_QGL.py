@@ -58,6 +58,13 @@ class MultiQubit(unittest.TestCase):
         seq = [align(X90(q1)*Xtheta(q2, amp=0.5, length=100e-9), 'right'), Y90(q1)*Y90(q2)]
         show(seq)
 
+    def test_composite(self):
+        q1 = self.q1
+        q2 = self.q2
+        flipFlop = X(q1) + X(q1)
+        seq = [align(flipFlop * Y(q2)), Y90(q1)]
+        show(seq)
+
 
 if __name__ == "__main__":
     
