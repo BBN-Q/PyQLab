@@ -7,10 +7,8 @@ from QGL import *
 
 class SingleQubit(unittest.TestCase):
     def setUp(self):
-        # this should read:
-        # self.q1 = QubitFactory('q1')]
-        params = {'piAmp':1.0, 'pi2Amp':0.5, 'length':30e-9}
-        self.q1 = Qubit('q1', pulseParams = params)
+        self.q1 = Qubit(name='q1')
+        self.q1.pulseParams.length = 30e-9
 
     def test_Ramsey(self):
         '''
@@ -31,10 +29,10 @@ class SingleQubit(unittest.TestCase):
 
 class MultiQubit(unittest.TestCase):
     def setUp(self):
-        params = {'piAmp':1.0, 'pi2Amp':0.5, 'length':30e-9}
-        self.q1 = Qubit('q1', pulseParams = params)
-        # goal is to make this just: q1 = Qubit('q1')
-        self.q2 = Qubit('q2', pulseParams = params)
+        self.q1 = Qubit(name='q1')
+        self.q1.pulseParams.length = 30e-9
+        self.q2 = Qubit(name='q2')
+        self.q2.pulseParams.length = 30e-9
 
     def test_Operators(self):
         q1 = self.q1
