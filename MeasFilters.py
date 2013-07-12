@@ -13,6 +13,8 @@ class MeasFilter(HasTraits):
     enabled = Bool(True)
     plotScope = Bool(False, desc='Whether to show the raw data scope.')
     plotMode = Enum('amp/phase', 'real/imag', 'quad', desc='Filtered data scope mode.')
+    childFilter = Str
+    dependent = Bool(False, desc='Whether this filter is a child of another filter.')
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
@@ -35,6 +37,10 @@ class DigitalHomodyne(MeasFilter):
     filterFilePath = Str('', desc='Path to a .mat file containing the measurement filter and bias')
     recordsFilePath = Str('', desc='Path to file where records will be optionally saved.')
     saveRecords = Bool(False, desc='Whether to save the single-shot records to file.')
+
+# ignore the difference between DigitalHomodyneSS and DigitalHomodyne
+class DigitalHomodyneSS(DigitalHomodyne):
+    pass
     
 class Correlator(MeasFilter):
     filters = Either(List(MeasFilter), List(Str))
@@ -48,10 +54,14 @@ class Correlator(MeasFilter):
         jsonDict.pop('plotScope')
         return jsonDict
 
+class StateComparator(MeasFilter):
+    threshold = Float(0.0)
+    integrationTime = Int(-1, desc='Comparator integration time in decimated samples, use -1 for the entire record')
+
 class MeasFilterLibrary(HasTraits):
     filterDict = Dict(Str, MeasFilter)
     libFile = Str(transient=True)
-    filterList = List([DigitalHomodyne, Correlator], transient=True)
+    filterList = List([DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS], transient=True)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
