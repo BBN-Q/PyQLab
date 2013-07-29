@@ -9,6 +9,7 @@ Contents:
 ### General
 * Python 2.7
 * Numpy/Scipy
+* Enthought traits
 * Matplotlib
 * PySide
 * h5py
