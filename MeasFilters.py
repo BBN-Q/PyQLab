@@ -45,6 +45,11 @@ class DigitalHomodyneSS(DigitalHomodyne):
 class Correlator(MeasFilter):
     filters = Either(List(MeasFilter), List(Str))
 
+    def __init__(self, **kwargs):
+        super(Correlator, self).__init__(**kwargs)
+        if not self.filters:
+            self.filters = []
+
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(Correlator, self).json_encode(matlabCompatible)
         #For correlation filters return the filter list as a list of filter names
