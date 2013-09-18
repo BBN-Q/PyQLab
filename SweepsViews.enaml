@@ -228,6 +228,48 @@ enamldef PowerSweepForm(GroupBox):
             myObj := sweep
             traitName = 'units'
 
+enamldef HeterodyneSweepForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label:
+            text = 'IF frequency (GHz)'
+        FloatField:
+            value := sweep.diffFreq
+        Label: 
+            text = 'LO Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr1) if (possibleInstrs and sweep.instr1) else 0
+            index :: sweep.instr1 = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+        Label: 
+            text = 'RF Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr2) if (possibleInstrs and sweep.instr2) else 0
+            index :: sweep.instr2 = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+
 enamldef EmptySweepForm(Container):
     attr sweep
     attr possibleInstrs
@@ -237,7 +279,7 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm,
                     Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm, 
                     Sweeps.Power:PowerSweepForm, Sweeps.Repeat:RepeatForm,
-                    Sweeps.DC:PointsSweepForm}
+                    Sweeps.DC:PointsSweepForm, Sweeps.HeterodyneFrequency:HeterodyneSweepForm}
 
 def update_sweep_order(sweepList, objs):
     sweepOrder = []

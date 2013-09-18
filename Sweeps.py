@@ -63,6 +63,13 @@ class Frequency(PointsSweep):
     label = 'Frequency'
     instr = Str
 
+class HeterodyneFrequency(PointsSweep):
+    label = 'HeterodyneFrequency'
+    label = Str
+    instr1 = Str
+    instr2 = Str
+    diffFreq = Float(10.0e-3, desc="IF frequency (GHz)")
+
 class SegmentNum(PointsSweep):
     label = 'SegmentNum'
     
@@ -96,7 +103,7 @@ class SweepLibrary(HasTraits):
     sweepDict = Dict(Str, Sweep)
     sweepList = Property(List, depends_on='sweepDict.anytrait')
     sweepOrder = List(Str)
-    newSweepClasses = List([Power, Frequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, DC, Repeat], transient=True)
+    newSweepClasses = List([Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, DC, Repeat], transient=True)
     possibleInstrs = List(Str)
     libFile = Str(transient=True)
 
