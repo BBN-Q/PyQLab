@@ -8,8 +8,9 @@ import numpy as np
 
 #Load the configuration from the json file and populate the global configuration dictionary
 import json
-from os import getenv
-PyQLabCfgFile = getenv('PYQLAB_CFGFILE')
+import os.path
+import sys
+PyQLabCfgFile = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
 if PyQLabCfgFile:
 	with open(PyQLabCfgFile, 'r') as f:
 		PyQLabCfg = json.load(f)
@@ -24,7 +25,4 @@ if PyQLabCfgFile:
 
 else:
 	raise NameError("Unable to find the PyQLab configuration environment variable")
-
-
-
 
