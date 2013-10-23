@@ -18,7 +18,7 @@ class ControlFlow(unittest.TestCase):
         label(seq2)
         # print qif(0, seq1, seq2)
         # print ([CmpEq(0), Goto(label(seq1))] + seq2, seq1 + [Goto(endlabel(seq2))])
-        assert( qif(0, seq1, seq2) == ([CmpEq(0), Goto(label(seq1))] + seq2, seq1 + [Goto(endlabel(seq2))]) )
+        assert( qif(0, seq1, seq2) == [CmpEq(0), Goto(label(seq1)), (seq2, seq1 + [ Goto(endlabel(seq2)) ])] )
 
     def test_qwhile(self):
         q1 = self.q1
@@ -50,6 +50,24 @@ class ControlFlow(unittest.TestCase):
         seq2[0].label = crseq[1][0].label
         # print seq2
         assert( Reset(q1) == (seq1, seq2) )
+
+    def test_flatten_and_separate(self):
+        seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]
+        main, branch = Compiler.flatten_and_separate(seq)
+        assert( main == [1,2,3] )
+        assert( branch == [4,5,6,7,8,9,10,11] )
+
+    def test_compile(self):
+        q1 = self.q1
+        seq1 = [X90(q1), Y90(q1)]
+        seq2 = [X(q1), Y(q1), Z(q1)]
+        # label(seq1)
+        # label(seq2)
+        # wfs1, lls = Compiler.compile_sequence(seq1 + seq2)
+        # wfs2, lls = Compiler.compile_sequence([X(q1), qif(0, seq1), Y(q1)])
+        # assert(wfs1 == wfs2)
+        # wfs3, lls = Compiler.compile_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
+        # assert(wfs1 == wfs3)
 
 
 if __name__ == "__main__":
