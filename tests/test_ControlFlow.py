@@ -1,7 +1,7 @@
 import unittest
 
 from QGL import *
-from QGL.ControlFlow import CmpEq, CmpNeq, Goto, Call, Return
+from QGL.ControlFlow import CmpEq, CmpNeq, Goto, Call, Return, LoadRepeat, Repeat
 from QGL.BlockLabel import label, endlabel
 
 
@@ -51,6 +51,12 @@ class ControlFlow(unittest.TestCase):
         # print seq2
         assert( Reset(q1) == (seq1, seq2) )
 
+    def test_qrepeat(self):
+        q1 = self.q1
+        seq1 = [X90(q1), Y90(q1)]
+        label(seq1)
+        assert( qrepeat(5, seq1) == [LoadRepeat(4)] + seq1 + [Repeat(label(seq1))] )
+
     def test_flatten_and_separate(self):
         seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]
         main, branch = Compiler.flatten_and_separate(seq)
@@ -63,8 +69,7 @@ class ControlFlow(unittest.TestCase):
         seq2 = [X(q1), Y(q1), Z(q1)]
         label(seq1)
         label(seq2)
-        nseq = Compiler.normalize(seq1 + seq2)
-        mainLL, branchLL, wfs1 = Compiler.compile_control_flow_sequence(nseq)
+        mainLL, branchLL, wfs1 = Compiler.compile_control_flow_sequence(seq1 + seq2)
         # mainLL, branchLL, wfs2 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1), Y(q1)])
         # assert(wfs1 == wfs2)
         # mainLL, branchLL, wfs3 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
