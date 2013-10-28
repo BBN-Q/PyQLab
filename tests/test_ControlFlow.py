@@ -61,12 +61,13 @@ class ControlFlow(unittest.TestCase):
         q1 = self.q1
         seq1 = [X90(q1), Y90(q1)]
         seq2 = [X(q1), Y(q1), Z(q1)]
-        # label(seq1)
-        # label(seq2)
-        # wfs1, lls = Compiler.compile_sequence(seq1 + seq2)
-        # wfs2, lls = Compiler.compile_sequence([X(q1), qif(0, seq1), Y(q1)])
+        label(seq1)
+        label(seq2)
+        nseq = Compiler.normalize(seq1 + seq2)
+        mainLL, branchLL, wfs1 = Compiler.compile_control_flow_sequence(nseq)
+        # mainLL, branchLL, wfs2 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1), Y(q1)])
         # assert(wfs1 == wfs2)
-        # wfs3, lls = Compiler.compile_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
+        # mainLL, branchLL, wfs3 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
         # assert(wfs1 == wfs3)
 
 
