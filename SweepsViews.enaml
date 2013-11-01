@@ -258,13 +258,13 @@ enamldef HeterodyneSweepForm(GroupBox):
         FloatField:
             value := sweep.diffFreq
         Label: 
-            text = 'LO Instrument'
+            text = 'RF Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr1) if (possibleInstrs and sweep.instr1) else 0
             index :: sweep.instr1 = possibleInstrs[index]
             items << [item for item in possibleInstrs]
         Label: 
-            text = 'RF Instrument'
+            text = 'LO Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr2) if (possibleInstrs and sweep.instr2) else 0
             index :: sweep.instr2 = possibleInstrs[index]
