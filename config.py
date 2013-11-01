@@ -10,7 +10,7 @@ import numpy as np
 import json
 import os.path
 import sys
-PyQLabCfgFile = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+PyQLabCfgFile = os.path.join(os.path.dirname( os.path.abspath(__file__) ), 'config.json')
 if PyQLabCfgFile:
 	with open(PyQLabCfgFile, 'r') as f:
 		PyQLabCfg = json.load(f)
