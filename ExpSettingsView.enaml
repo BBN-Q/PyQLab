@@ -97,16 +97,26 @@ enamldef ExpSettingsView(MainWindow): main:
 				clicked ::
 					expSettings.write_to_file()
 
-enamldef QuickPickView(Window):
+enamldef QuickPickView(Window): dlg:
 	GroupBox:
 		title = 'Quick Picker'
-		constraints = [hbox(quickpickCombo, quickpickLoad, spacer.flex())]
+		constraints = [
+			vertical(
+				top,
+				quickpickCombo,
+				horizontal(left, spacer.flex(), cancel, load, right),
+				buttom)
+			]
 		ComboBox: quickpickCombo:
 			items << quickpickList
 			hug_width = 'medium'
-		PushButton: quickpickLoad:
+		PushButton: cancel:
+			text = 'Cancel'
+			clicked :: dlg.close()
+		PushButton: load:
 			text = 'Load'
 			clicked ::
 				expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
+				dlg.close()
 			hug_width = 'medium'
 
