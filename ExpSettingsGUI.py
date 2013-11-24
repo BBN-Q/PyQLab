@@ -1,6 +1,7 @@
 from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
 import enaml
-from enaml.qt.qt_application import QtApplication
+from enaml.stdlib.sessions import show_simple_view
+# from enaml.qt.qt_application import QtApplication
 
 import argparse, sys
 
@@ -88,12 +89,10 @@ if __name__ == '__main__':
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
 
-    app = QtApplication()
-    view = ExpSettingsView(expSettings=expSettings)
-    view.show()
+    # app = QtApplication([])
+    # view = ExpSettingsView(expSettings=expSettings)
+    # view.show()
 
-    app.start()
+    # app.start()
 
-
-
-
+    app = show_simple_view(ExpSettingsView(expSettings=expSettings))

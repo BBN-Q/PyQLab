@@ -1,7 +1,7 @@
-from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, \
-					 Action, FileDialog, ComboBox, PushButton
+from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, GroupBox, Label, MenuBar, \
+					 Menu, Action, FileDialog, ComboBox, PushButton
 from enaml.widgets.include import Include
-from enaml.layout.api import hbox, vbox, spacer, horizontal
+from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
 from QGL.ChannelsViews import ChannelLibraryView
@@ -51,9 +51,10 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered :: print 'clicked save to quick pick'
 			Action:
 				text = 'Load from quick pick\tCtrl+L'
-				triggered ::
-					view = QuickPickView()
-					view.show()
+				triggered :: QuickPickView(main)
+			Action:
+				text = 'Quit\tCtrl+Q'
+				triggered :: main.close()
 		Menu:
 			title = '&Mode'
 			Action:
@@ -66,8 +67,13 @@ enamldef ExpSettingsView(MainWindow): main:
 				checkable = True
 				toggled :: import pdb; pdb.set_trace()
 	Container:
+		constraints = [
+			vbox(tabs,
+				hbox(spacer, settingsApply),
+				spacer)
+		]
 		padding = 5
-		Notebook:
+		Notebook: tabs:
 			tab_style = 'preferences'
 			Page:
 				title = 'Channels'
@@ -90,22 +96,18 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
-		GroupBox:
-			constraints = [horizontal(left, spacer.flex(), settingsApply, right)]
-			PushButton: settingsApply:
-				text = 'Apply'
-				clicked ::
-					expSettings.write_to_file()
+		PushButton: settingsApply:
+			text = 'Apply'
+			clicked :: expSettings.write_to_file()
 
 enamldef QuickPickView(Window): dlg:
-	GroupBox:
-		title = 'Quick Picker'
+	title = 'Quick Picker'
+	Container:
 		constraints = [
-			vertical(
-				top,
+			vbox(
 				quickpickCombo,
-				horizontal(left, spacer.flex(), cancel, load, right),
-				buttom)
+				spacer,
+				hbox(spacer.flex(), cancel, load))
 			]
 		ComboBox: quickpickCombo:
 			items << quickpickList

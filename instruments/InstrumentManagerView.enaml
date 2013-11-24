@@ -79,7 +79,7 @@ enamldef InstrumentManagerView(Container):
 				addDialog = lambda root, itemDict : \
 					AddDialog(root, itemDict=itemDict, newClassList=newOtherInstrs, objText='Instr')
 
-enamldef InstrumentManagerWindow(Window): instrLibWin
+enamldef InstrumentManagerWindow(Window): instrLibWin:
 	attr instrLib
 	title = 'Instrument Library'
 	Container:
