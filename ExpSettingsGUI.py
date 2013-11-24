@@ -1,6 +1,6 @@
 from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
 import enaml
-from enaml.stdlib.sessions import show_simple_view
+from enaml.qt.qt_application import QtApplication
 
 import argparse, sys
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     from ExpSettingsGUI import ExpSettings
     expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
-                     measurements=Libraries.measLib,  channels = Libraries.channelLib)
+                     measurements=Libraries.measLib,  channels=Libraries.channelLib)
 
     #If we were passed a scripter file to write to the use it
     parser = argparse.ArgumentParser()
@@ -88,8 +88,11 @@ if __name__ == '__main__':
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
 
-    show_simple_view(ExpSettingsView(expSettings=expSettings))
+    app = QtApplication()
+    view = ExpSettingsView(expSettings=expSettings)
+    view.show()
 
+    app.start()
 
 
 

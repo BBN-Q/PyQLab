@@ -1,7 +1,7 @@
 from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, \
 					 Action, FileDialog, ComboBox, PushButton
 from enaml.widgets.include import Include
-from enaml.layout.api import hbox, vbox, spacer
+from enaml.layout.api import hbox, vbox, spacer, horizontal
 from enaml.core.api import Looper, Include
 
 from QGL.ChannelsViews import ChannelLibraryView
@@ -28,33 +28,43 @@ def get_update_script_file_callback(expSettings):
 	return update_script_file_callback
 
 
-enamldef ExpSettingsView(MainWindow):
-	id: main
+enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
 	attr curFileName := expSettings.curFileName
 	title = 'Experiment Settings'
-	ToolBar:
-		Action:
-			text = 'Save'
-			tool_tip << 'Save to {}'.format(curFileName)
-			triggered :: expSettings.write_to_file()
-		Action:
-			text = 'Change File'
-			tool_tip = 'Update script file output location.'
-			triggered ::
+	MenuBar:
+		Menu:
+			title = '&File'
+			Action:
+				text = 'Open\tCtrl+O'
+				triggered ::
 					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
 						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
 					dlg.open()
-		Action:
-			text = 'CW Mode'
-			checkable = True
-			checked := expSettings.CWMode
-
-		Action:
-			text = 'Debug'
-			tool_tip << 'Start debugger console'
-			triggered :: import pdb; pdb.set_trace()
-
+			Action:
+				text = 'Save\tCtrl+S'
+				tool_tip << 'Save to {}'.format(curFileName)
+				triggered :: expSettings.write_to_file()
+			Action:
+				text = 'Save As\tCtrl+Shift+S'
+				tool_tip = 'Save to a quick pick slot'
+				triggered :: print 'clicked save to quick pick'
+			Action:
+				text = 'Load from quick pick\tCtrl+L'
+				triggered ::
+					view = QuickPickView()
+					view.show()
+		Menu:
+			title = '&Mode'
+			Action:
+				text = 'CW Mode'
+				checkable = True
+				checked := expSettings.CWMode
+			Action:
+				text = 'Debug\tCtrl+D'
+				tool_tip = 'Start debugger console'
+				checkable = True
+				toggled :: import pdb; pdb.set_trace()
 	Container:
 		padding = 5
 		Notebook:
@@ -81,13 +91,22 @@ enamldef ExpSettingsView(MainWindow):
 				SweepManager:
 					sweepLib := expSettings.sweeps
 		GroupBox:
-			title = 'Quick Picker'
-			constraints = [hbox(quickpickCombo, quickpickApply, spacer.flex())]
-			ComboBox: quickpickCombo:
-				items << quickpickList
-				hug_width = 'medium'
-			PushButton: quickpickApply:
+			constraints = [horizontal(left, spacer.flex(), settingsApply, right)]
+			PushButton: settingsApply:
 				text = 'Apply'
 				clicked ::
-					expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
-				hug_width = 'medium'
+					expSettings.write_to_file()
+
+enamldef QuickPickView(Window):
+	GroupBox:
+		title = 'Quick Picker'
+		constraints = [hbox(quickpickCombo, quickpickLoad, spacer.flex())]
+		ComboBox: quickpickCombo:
+			items << quickpickList
+			hug_width = 'medium'
+		PushButton: quickpickLoad:
+			text = 'Load'
+			clicked ::
+				expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
+			hug_width = 'medium'
+
