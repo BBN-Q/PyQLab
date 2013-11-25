@@ -36,19 +36,19 @@ enamldef ExpSettingsView(MainWindow): main:
 		Menu:
 			title = '&File'
 			Action:
-				text = 'Open\tCtrl+O'
-				triggered ::
-					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
-						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
-					dlg.open()
-			Action:
 				text = 'Save\tCtrl+S'
 				tool_tip << 'Save to {}'.format(curFileName)
 				triggered :: expSettings.write_to_file()
 			Action:
 				text = 'Save As\tCtrl+Shift+S'
-				tool_tip = 'Save to a quick pick slot'
-				triggered :: print 'clicked save to quick pick'
+				tool_tip = 'Save to a new setting file'
+				triggered ::
+					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
+						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
+					dlg.open()
+			Action:
+				text = 'Store to quick pick\tCtrl+O'
+				triggered :: print 'clicked store to quick pick'
 			Action:
 				text = 'Load from quick pick\tCtrl+L'
 				triggered :: QuickPickView(main)
