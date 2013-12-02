@@ -1,8 +1,8 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, GroupBox, Label, MenuBar, \
 					 Menu, Action, FileDialog, ComboBox, PushButton
-from enaml.widgets.include import Include
+# from enaml.widgets.include import Include
 from enaml.layout.api import hbox, vbox, spacer
-from enaml.core.api import Looper, Include
+# from enaml.core.api import Looper, Include
 
 from QGL.ChannelsViews import ChannelLibraryView
 from instruments.InstrumentManagerView import InstrumentManagerView
