@@ -6,7 +6,7 @@ from enaml.core.api import Conditional
 
 import MicrowaveSources
 
-from EnamlHelpers import EnumComboBox
+from widgets.enum_combos import EnumComboBox
 
 enamldef MicrowaveSourceForm(GroupBox):
 	attr uwSource
@@ -73,8 +73,8 @@ enamldef MicrowaveSourceView(Window): sourceWindow:
 		MicrowaveSourceForm:
 			uwSource := sourceWindow.uwSource
 
-# enamldef EmptySourceView(Container):
-# 	attr uwSource
+enamldef EmptySourceView(Container):
+	attr uwSource
 
-# MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
+MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
 		

@@ -9,8 +9,7 @@ from EnamlHelpers import EnumComboBox
 import AWGs
 import config
 
-enamldef ChannelView(GroupBox):
-	id: myChanView
+enamldef ChannelView(GroupBox): 
 	attr chan
 	attr number
 	share_layout=True
@@ -26,21 +25,21 @@ enamldef ChannelView(GroupBox):
 			constraints = [width == 50]
 			maximum = 4.0
 			minimum = 0.0
-			value := myChanView.chan.amplitude
-			tool_tip = myChanView.chan.trait('amplitude').desc
+			value := chan.amplitude
+			tool_tip = chan.trait('amplitude').desc
 		Label: 
 			text = 'Offset'
 		FloatField:
 			constraints = [width == 50]
 			maximum = 1.0
 			minimum = -1.0
-			value := myChanView.chan.offset
-			tool_tip = myChanView.chan.trait('offset').desc
+			value := chan.offset
+			tool_tip = chan.trait('offset').desc
 		Label:
 			text = 'Enabled'
 		CheckBox:
-			checked := myChanView.chan.enabled
-			tool_tip = myChanView.chan.trait('enabled').desc
+			checked := chan.enabled
+			tool_tip = chan.trait('enabled').desc
 
 
 def get_seq_file_callback(awg):
@@ -49,8 +48,7 @@ def get_seq_file_callback(awg):
 			awg.seqFile = dlg.path
 	return seq_file_callback
 
-enamldef AWGForm(GroupBox):
-	id: myAWGForm
+enamldef AWGForm(GroupBox): myAWGForm:
 	attr awg
 	padding = 5
 	title = '{} ({})'.format(awg.name, awg.__class__.__name__)
@@ -75,8 +73,8 @@ enamldef AWGForm(GroupBox):
 		Label:
 			text = "Trigger Source"
 		EnumComboBox:
-			myObj := myAWGForm.awg
-			traitName = 'triggerSource'
+			obj := myAWGForm.awg
+			enumName = 'triggerSource'
 
 	Form: formItems2:
 		Label:
@@ -109,8 +107,7 @@ enamldef AWGForm(GroupBox):
 		Include: inc:
 			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(myAWGForm.awg.channels)]
 
-enamldef AWGView(Window):
-	id: main
+enamldef AWGView(Window): main:
 	attr awg
 	title = awg.name
 	Container:

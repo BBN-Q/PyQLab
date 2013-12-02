@@ -7,7 +7,7 @@ from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Con
 from Instrument import Instrument
 
 import enaml
-from enaml.stdlib.sessions import show_simple_view
+from enaml.qt.qt_application import QtApplication
 
 
 class AWGChannel(HasTraits):
@@ -61,7 +61,10 @@ if __name__ == "__main__":
         from AWGViews import AWGView
     
     awg = APS(name='BBNAPS1')
-    session = show_simple_view(AWGView(awg=awg))
+    app = QtApplication()
+    view = AWGView(awg=awg)
+    view.show()
+    app.start()
 
 
 def get_empty_channel_set(AWG):

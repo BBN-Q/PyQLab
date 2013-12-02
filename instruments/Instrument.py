@@ -15,12 +15,12 @@ class Instrument(Atom):
 		if matlabCompatible:
 			jsonDict['deviceName'] = self.__class__.__name__
 			jsonDict.pop('enabled', None)
-			jsonDict.pop('name', None)
+			jsonDict.pop('label', None)
 		else:
 			jsonDict['x__class__'] = self.__class__.__name__
 			jsonDict['x__module__'] = self.__class__.__module__
 		return jsonDict
 
 	def update_from_jsondict(self, jsonDict):
-		for name,value in jsonDict.items():
-			setattr(self, name, value)
+		for label,value in jsonDict.items():
+			setattr(self, label, value)

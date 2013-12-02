@@ -1,22 +1,22 @@
-from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change, Any
-
-import json
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode)
+import json, enaml
+from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 import MicrowaveSources
-import AWGs
+# import AWGs
 import FileWatcher
 
-class InstrumentLibrary(HasTraits):
+class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
-    instrDict = Dict(Str, Instrument)
-    libFile = Str(transient=True)
+    instrDict = Dict(Unicode(), Instrument)
+    libFile = Str().tag(transient=True)
 
     #Some helpers to pull out certain types of instruments
-    AWGs = Property(List, depends_on='instrDict[]')
-    sources = Property(List, depends_on='instrDict[]')
+    AWGs = Property()
+    sources = Property()
 
-    fileWatcher = Any(None, transient=True)
+    fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
     def __init__(self, **kwargs):
         super(InstrumentLibrary, self).__init__(**kwargs)
@@ -28,18 +28,18 @@ class InstrumentLibrary(HasTraits):
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
-    @on_trait_change('instrDict.anytrait')
-    def write_to_library(self):
-        #Move import here to avoid circular import
-        import JSONHelpers
-        if self.libFile:
-            #Pause the file watcher to stop cicular updating insanity
-            if self.fileWatcher:
-                self.fileWatcher.pause()
-            with open(self.libFile,'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
-            if self.fileWatcher:
-                self.fileWatcher.resume()
+    # @on_trait_change('instrDict.anytrait')
+    # def write_to_library(self):
+    #     #Move import here to avoid circular import
+    #     import JSONHelpers
+    #     if self.libFile:
+    #         #Pause the file watcher to stop cicular updating insanity
+    #         if self.fileWatcher:
+    #             self.fileWatcher.pause()
+    #         with open(self.libFile,'w') as FID:
+    #             json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+    #         if self.fileWatcher:
+    #             self.fileWatcher.resume()
 
     def load_from_library(self):
         #Move import here to avoid circular import
@@ -85,20 +85,16 @@ class InstrumentLibrary(HasTraits):
         return sorted([instr for instr in self.instrDict.values() if isinstance(instr, MicrowaveSources.MicrowaveSource)], key = lambda instr : instr.name)
 
 if __name__ == '__main__':
-    import enaml
-    from enaml.stdlib.sessions import show_simple_view
 
-    from Libraries import instrumentLib
+    
+    instrLib = InstrumentLibrary()
+    from MicrowaveSources import AgilentN5183A
+    instrLib.instrDict['Agilent1'] = AgilentN5183A(label='Agilent1')
+    instrLib.instrDict['Agilent2'] = AgilentN5183A(label='Agilent2')
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
-    show_simple_view(InstrumentManagerWindow(instrLib=instrumentLib))
 
-
-
-
-
-
-
-
-    
-    
+    app = QtApplication()
+    view = InstrumentManagerWindow(instrLib=instrLib)
+    view.show()
+    app.start()

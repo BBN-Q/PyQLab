@@ -1,0 +1,21 @@
+# from atom.api import (Bool, List, Dict, observe, set_default, Unicode, Enum, Int, Callable, Typed)
+from enaml.widgets.api import ComboBox
+
+#A combo box connected to a Enum trait
+enamldef EnumComboBox(ComboBox):
+	attr obj
+	attr enumName
+	attr itemList = list(obj.get_member(enumName).items)
+	items = itemList
+	index << itemList.index(getattr(obj, enumName))
+	index :: setattr(obj, enumName, itemList[index])
+	tool_tip = obj.get_member(enumName).metadata["desc"]
+
+enamldef EnumFloatComboBox(ComboBox):
+	attr obj
+	attr floatName
+	attr itemList = [str(item) for item in list(obj.get_member(floatName).items)]
+	items = itemList
+	index << itemList.index(str(getattr(obj, floatName)))
+	index :: setattr(obj, floatName, float(itemList[index]))
+	tool_tip = obj.get_member(floatName).metadata["desc"]
