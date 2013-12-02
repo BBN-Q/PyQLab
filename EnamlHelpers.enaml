@@ -18,17 +18,21 @@ class DictManager(QtListStrWidget):
 	"""
 	Helper to manage a list next to a set of stack items
 	"""
-	itemDict = Dict()
-	displayFilter = Callable()
+	itemDict = d_(Dict())
+	displayFilter = d_(Callable())
 
-	def __init__(self, **kwargs):
-		if 'displayFilter' in kwargs:
-			self.displayFilter = kwargs.pop('displayFilter')
-		for k,v in kwargs['itemDict'].items():
-			self.itemDict[k] = v
-		kwargs.pop('itemDict')
-		items = filter(self.displayFilter, self.itemDict.keys())
-		super(DictManager, self).__init__(items=items, **kwargs)
+	# def __init__(self, **kwargs):
+	# 	if 'displayFilter' in kwargs:
+	# 		self.displayFilter = kwargs.pop('displayFilter')
+	# 	for k,v in kwargs['itemDict'].items():
+	# 		self.itemDict[k] = v
+	# 	kwargs.pop('itemDict')
+	# 	items = filter(self.displayFilter, self.itemDict.keys())
+	# 	super(DictManager, self).__init__(items=items, **kwargs)
+
+	def create_widget(self, parent):
+		self.items = filter(self.displayFilter, self.itemDict.keys())
+		return super(DictManager, self).create_widget(parent)
 
 	#--------------------------------------------------------------------------
 	# Signal handlers
@@ -39,12 +43,10 @@ class DictManager(QtListStrWidget):
 		"""
 		widget = self.get_widget()
 		oldkey = self.items[widget.currentRow()]
+		newkey = self.items[widget.currentRow()].text()
+		self.itemDict[newkey] = self.itemDict.pop(oldkey)
 		# let the superclass method update the items list
 		super(DictManager, self).on_edit(item)
-		# now we can grab the new key from the same place
-		newkey = self.items[widget.currentRow()]
-		# move the actual object in itemDict
-		self.itemDict[newkey] = self.itemDict.pop(oldkey)
 
 	#--------------------------------------------------------------------------
 	# Observers
@@ -61,23 +63,25 @@ class DictManager(QtListStrWidget):
 				self.items = filter(displayFilter, self.itemDict.keys())
 	
 enamldef DictManagerView(Container): dictview:
-	attr dictManager = DictManager(itemDict=myDict, displayFilter=displayFilter)
-	attr displayFilter = lambda x : True
+	# attr dictManager = DictManager(itemDict=myDict, displayFilter=displayFilter)
 	attr myDict
+	attr displayFilter = lambda x : True
 	attr modelName
 	attr viewMap
 	attr viewkwargs = {}
 	constraints = [
-		hbox(vbox(myList, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
-		myList.width <= 300]
-	QtListStrWidget: myList:
+		hbox(vbox(dictManager, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
+		dictManager.width <= 300]
+	DictManager: dictManager:
 		hug_width = 'medium'
-		items << sorted(dictManager.itemDict.keys(), key=lambda x : x.lower())
+		# items << sorted(dictManager.itemDict.keys(), key=lambda x : x.lower())
+		itemDict := dict(myDict)
+		displayFilter = dictview.displayFilter
 	Container: mapViewCont:
 		hug_width = 'medium'
 		MappedView:
 			#Hacky thing to catch deletions 
-			model << dictManager.itemDict[myList.selected_item] if myList.selected_item else None
+			model << dictManager.itemDict[dictManager.selected_item] if dictManager.selected_item else None
 			modelkey = modelName
 			typemap = viewMap
 			kwargs = viewkwargs
@@ -89,7 +93,7 @@ enamldef DictManagerView(Container): dictview:
 	PushButton: deleteButton:
 		text = 'Delete'
 		clicked ::
-			dictManager.itemDict.pop(myList.selected_item)
+			dictManager.itemDict.pop(dictManager.selected_item)
 			dictManager._update_proxy({'name': 'itemDict'})
 	PushButton: debugButton:
 		text = 'Debug'
