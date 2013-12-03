@@ -31,7 +31,7 @@ class DictManager(QtListStrWidget):
 	# 	super(DictManager, self).__init__(items=items, **kwargs)
 
 	def create_widget(self, parent):
-		self.items = filter(self.displayFilter, self.itemDict.keys())
+		self.items = sorted([k for k,v in self.itemDict.items() if self.displayFilter(v)])
 		return super(DictManager, self).create_widget(parent)
 
 	#--------------------------------------------------------------------------
@@ -43,24 +43,22 @@ class DictManager(QtListStrWidget):
 		"""
 		widget = self.get_widget()
 		oldkey = self.items[widget.currentRow()]
-		newkey = self.items[widget.currentRow()].text()
+		newkey = item.text()
 		self.itemDict[newkey] = self.itemDict.pop(oldkey)
+		self.itemDict[newkey].label = newkey
 		# let the superclass method update the items list
 		super(DictManager, self).on_edit(item)
+		# need to manually fire the update method since the observer doesn't see mutations
+		self.update_itemDict()
 
 	#--------------------------------------------------------------------------
 	# Observers
 	#--------------------------------------------------------------------------
-	@observe('items', 'itemDict')
-	def _update_proxy(self, change):
-		""" An observer which sends state change to the proxy.
-
-		"""
+	@observe('itemDict')
+	def update_itemDict(self, change={}):
 		if self.get_widget():
-			if change['name'] == 'items':
-				self.set_items(self.items)
-			if change['name'] == 'itemDict':
-				self.items = filter(displayFilter, self.itemDict.keys())
+			# self.items = sorted([k for k,v in self.itemDict.items() if self.displayFilter(v)])
+			self.items = self.itemDict.keys()
 	
 enamldef DictManagerView(Container): dictview:
 	# attr dictManager = DictManager(itemDict=myDict, displayFilter=displayFilter)
@@ -69,13 +67,14 @@ enamldef DictManagerView(Container): dictview:
 	attr modelName
 	attr viewMap
 	attr viewkwargs = {}
+	attr addDialog
 	constraints = [
 		hbox(vbox(dictManager, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
 		dictManager.width <= 300]
 	DictManager: dictManager:
 		hug_width = 'medium'
 		# items << sorted(dictManager.itemDict.keys(), key=lambda x : x.lower())
-		itemDict := dict(myDict)
+		itemDict = dict(myDict.items())
 		displayFilter = dictview.displayFilter
 	Container: mapViewCont:
 		hug_width = 'medium'
@@ -88,13 +87,14 @@ enamldef DictManagerView(Container): dictview:
 	PushButton: addButton:
 		text = 'Add'
 		clicked ::
-			newClassList = [n for n in viewMap.keys() if n]
-			AddDialog(dictview, dictManager=dictManager, newClassList=newClassList, objText=modelName)
+			# newClassList = [n for n in viewMap.keys() if n]
+			# AddDialog(root_object(), dictManager=dictManager, newClassList=newClassList, objText=modelName)
+			addDialog(root_object(), dictManager)
 	PushButton: deleteButton:
 		text = 'Delete'
 		clicked ::
 			dictManager.itemDict.pop(dictManager.selected_item)
-			dictManager._update_proxy({'name': 'itemDict'})
+			dictManager.update_itemDict()
 	PushButton: debugButton:
 		text = 'Debug'
 		clicked ::
@@ -107,7 +107,7 @@ enamldef AddDialog(Window):
 	title = 'Add a new {}...'.format(objText)
 	modality = 'window_modal'
 	Container:
-		constraints = [vbox(myForm, hbox(spacer, okButton, cancelButton))]
+		constraints = [vbox(myForm, hbox(spacer, cancelButton, okButton))]
 		Form: myForm:
 			Label:
 				text = 'New Name'
@@ -118,14 +118,14 @@ enamldef AddDialog(Window):
 			ComboBox: modelChoice:
 				index = 0
 				items = [f.__name__ for f in newClassList]
+		PushButton: cancelButton:
+			text = 'Cancel'
+			clicked ::
+				close()
 		PushButton: okButton:
 			text = 'OK'
 			clicked ::
 				dictManager.itemDict[newName.text] = newClassList[modelChoice.index](label=newName.text)
-				dictManager._update_proxy({'name': 'itemDict'})
-				close()
-		PushButton: cancelButton:
-			text = 'Cancel'
-			clicked ::
+				dictManager.update_itemDict()
 				close()
 

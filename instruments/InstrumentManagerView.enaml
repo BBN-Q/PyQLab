@@ -53,6 +53,8 @@ enamldef InstrumentManagerView(Container):
 				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
 				modelName = 'uwSource'
 				viewMap = MicrowaveSourceViewMap
+				addDialog = lambda root, dictManager : \
+					AddDialog(root, dictManager=dictManager, newClassList=MicrowaveSources.MicrowaveSourceList, objText='uwSource')
 
 		# Page:
 		# 	title = "AWG's"
