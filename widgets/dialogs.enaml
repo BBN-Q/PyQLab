@@ -27,5 +27,5 @@ enamldef AddDialog(Window):
 			text = 'OK'
 			clicked ::
 				dictManager.itemDict[newName.text] = newClassList[modelChoice.index](label=newName.text)
-				dictManager.update_itemDict()
+				dictManager.update_itemDict({'operation': 'add', 'item': newName.text})
 				close()

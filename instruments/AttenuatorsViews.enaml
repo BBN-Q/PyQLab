@@ -6,8 +6,6 @@ from enaml.core.api import Conditional
 
 import Attenuators
 
-from EnamlHelpers import EnumComboBox, EnumFloatComboBox
-
 enamldef DigitalAttenuatorForm(GroupBox):
 	attr instr
 	title := '{} ({})'.format(instr.name, instr.__class__.__name__)

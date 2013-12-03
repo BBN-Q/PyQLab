@@ -53,8 +53,7 @@ enamldef InstrumentManagerView(Container):
 				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
 				modelName = 'uwSource'
 				viewMap = MicrowaveSourceViewMap
-				addDialog = lambda root, dictManager : \
-					AddDialog(root, dictManager=dictManager, newClassList=MicrowaveSources.MicrowaveSourceList, objText='uwSource')
+				newClassList = MicrowaveSources.MicrowaveSourceList
 
 		# Page:
 		# 	title = "AWG's"
@@ -64,9 +63,8 @@ enamldef InstrumentManagerView(Container):
 		# 		displayFilter = lambda x : isinstance(x, AWGs.AWG)
 		# 		modelName = 'awg'
 		# 		viewMap = AWGViewMap
-		# 		addDialog = lambda root, itemDict : \
-		# 			AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
-
+		#		newClassList = AWGs.AWGList
+		
 		# Page:
 		# 	title = "Other"
 		# 	closable = False
@@ -75,8 +73,7 @@ enamldef InstrumentManagerView(Container):
 		# 		displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
 		# 		modelName = 'instr'
 		# 		viewMap = otherViewMap
-		# 		addDialog = lambda root, itemDict : \
-		# 			AddDialog(root, itemDict=itemDict, newClassList=newOtherInstrs, objText='Instr')
+		#		newnewClassList = newOtherInstrs
 
 enamldef InstrumentManagerWindow(Window): instrLibWin:
 	attr instrLib
