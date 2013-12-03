@@ -2,17 +2,14 @@
 Reusable widgets for handling lists and dictionaries
 """
 
-from atom.api import (Bool, List, Dict, observe, set_default, Unicode, Enum, Int, Callable, Typed)
+from atom.api import (Bool, List, Dict, observe, set_default, Unicode, Enum, Int, Callable, Typed, Atom)
 
-from widgets.qt_list_str_widget import QtListStrWidget
+from widgets import QtListStrWidget
 from enaml.widgets.api import Window, Container, PushButton, Form, Label, Field, ComboBox
 from enaml.stdlib.mapped_view import MappedView
 from enaml.core.declarative import d_
 
 from enaml.layout.api import hbox, vbox, spacer
-
-import instruments.MicrowaveSources
-import instruments.MicrowaveSourcesViews
 
 class DictManager(QtListStrWidget):
 	"""
@@ -49,7 +46,7 @@ class DictManager(QtListStrWidget):
 		# let the superclass method update the items list
 		super(DictManager, self).on_edit(item)
 		# need to manually fire the update method since the observer doesn't see mutations
-		self.update_itemDict()
+		# self.update_itemDict()
 
 	#--------------------------------------------------------------------------
 	# Observers
@@ -61,7 +58,6 @@ class DictManager(QtListStrWidget):
 			self.items = self.itemDict.keys()
 	
 enamldef DictManagerView(Container): dictview:
-	# attr dictManager = DictManager(itemDict=myDict, displayFilter=displayFilter)
 	attr myDict
 	attr displayFilter = lambda x : True
 	attr modelName
@@ -73,7 +69,6 @@ enamldef DictManagerView(Container): dictview:
 		dictManager.width <= 300]
 	DictManager: dictManager:
 		hug_width = 'medium'
-		# items << sorted(dictManager.itemDict.keys(), key=lambda x : x.lower())
 		itemDict = dict(myDict.items())
 		displayFilter = dictview.displayFilter
 	Container: mapViewCont:
@@ -99,33 +94,4 @@ enamldef DictManagerView(Container): dictview:
 		text = 'Debug'
 		clicked ::
 			import pdb; pdb.set_trace()
-
-enamldef AddDialog(Window):
-	attr dictManager
-	attr newClassList
-	attr objText
-	title = 'Add a new {}...'.format(objText)
-	modality = 'window_modal'
-	Container:
-		constraints = [vbox(myForm, hbox(spacer, cancelButton, okButton))]
-		Form: myForm:
-			Label:
-				text = 'New Name'
-			Field: newName:
-				text = 'New'+objText
-			Label:
-				text = 'New {} Model'.format(objText)
-			ComboBox: modelChoice:
-				index = 0
-				items = [f.__name__ for f in newClassList]
-		PushButton: cancelButton:
-			text = 'Cancel'
-			clicked ::
-				close()
-		PushButton: okButton:
-			text = 'OK'
-			clicked ::
-				dictManager.itemDict[newName.text] = newClassList[modelChoice.index](label=newName.text)
-				dictManager.update_itemDict()
-				close()
 

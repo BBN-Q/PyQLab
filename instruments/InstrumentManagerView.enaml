@@ -4,7 +4,7 @@ from enaml.core.api import Looper, Include
 
 import MicrowaveSources, AWGs
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog
+from widgets import AddDialog, DictManagerView, DictManager
 
 # from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap

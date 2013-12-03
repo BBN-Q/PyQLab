@@ -1,0 +1,31 @@
+from enaml.widgets.api import Window, Container, PushButton, Form, Label, Field, ComboBox
+from enaml.layout.api import hbox, vbox, spacer
+
+enamldef AddDialog(Window):
+	attr dictManager
+	attr newClassList
+	attr objText
+	title = 'Add a new {}...'.format(objText)
+	modality = 'window_modal'
+	Container:
+		constraints = [vbox(myForm, hbox(spacer, cancelButton, okButton))]
+		Form: myForm:
+			Label:
+				text = 'New Name'
+			Field: newName:
+				text = 'New'+objText
+			Label:
+				text = 'New {} Model'.format(objText)
+			ComboBox: modelChoice:
+				index = 0
+				items = [f.__name__ for f in newClassList]
+		PushButton: cancelButton:
+			text = 'Cancel'
+			clicked ::
+				close()
+		PushButton: okButton:
+			text = 'OK'
+			clicked ::
+				dictManager.itemDict[newName.text] = newClassList[modelChoice.index](label=newName.text)
+				dictManager.update_itemDict()
+				close()
