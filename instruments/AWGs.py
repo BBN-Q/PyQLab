@@ -2,7 +2,7 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Constant, Str
+from atom.api import Atom, List, Int, Float, FloatRange, Range, Enum, Bool, Constant, Str
 
 from Instrument import Instrument
 
@@ -10,21 +10,21 @@ import enaml
 from enaml.qt.qt_application import QtApplication
 
 
-class AWGChannel(HasTraits):
-    amplitude = Range(value=1.0, low=0.0, high=4.0, desc="Scaling applied to channel amplitude")
-    offset = Range(value=0.0, low=-1.0, high=1.0, desc='D.C. offset applied to channel')
-    enabled = Bool(True, desc='Whether the channel output is enabled.')
+class AWGChannel(Atom):
+    amplitude = FloatRange(value=1.0, low=0.0, high=4.0).tag(desc="Scaling applied to channel amplitude")
+    offset = FloatRange(value=0.0, low=-1.0, high=1.0).tag(desc='D.C. offset applied to channel')
+    enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
 
 class AWG(Instrument):
-    isMaster = Bool(False, desc='Whether this AWG is master')
-    triggerSource = Enum('Internal', 'External', desc='Source of trigger')
-    triggerInterval = Float(1e-4, desc='Internal trigger interval')
-    samplingRate = Float(1200000000, desc='Sampling rate in Hz')
+    isMaster = Bool(False).tag(desc='Whether this AWG is master')
+    triggerSource = Enum('Internal', 'External').tag(desc='Source of trigger')
+    triggerInterval = Float(1e-4).tag(desc='Internal trigger interval')
+    samplingRate = Float(1200000000).tag(desc='Sampling rate in Hz')
     numChannels = Int()
     channels = List(AWGChannel)
-    seqFile = File(desc='Path to sequence file.')
-    seqForce = Bool(True, desc='Whether to reload the sequence')
-    delay = Float(0.0, desc='time shift to align multiple AWGs')
+    seqFile = Str().tag(desc='Path to sequence file.')
+    seqForce = Bool(True).tag(desc='Whether to reload the sequence')
+    delay = Float(0.0).tag(desc='time shift to align multiple AWGs')
 
     def __init__(self, **traits):
         super(AWG, self).__init__(**traits)
@@ -42,7 +42,7 @@ class AWG(Instrument):
 
 class APS(AWG):
     numChannels = 4
-    miniLLRepeat = Int(0, desc='How many times to repeat each miniLL')
+    miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
     seqFileExt = Constant('.h5')
 
 class Tek5014(AWG):

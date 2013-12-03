@@ -6,7 +6,7 @@ import MicrowaveSources, AWGs
 
 from widgets import AddDialog, DictManagerView, DictManager
 
-# from AWGsViews import AWGViewMap
+from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
 # from DigitizersViews import DigitizerViewMap
@@ -55,15 +55,15 @@ enamldef InstrumentManagerView(Container):
 				viewMap = MicrowaveSourceViewMap
 				newClassList = MicrowaveSources.MicrowaveSourceList
 
-		# Page:
-		# 	title = "AWG's"
-		# 	closable = False
-		# 	DictManagerView:
-		# 		myDict = instrLib.instrDict
-		# 		displayFilter = lambda x : isinstance(x, AWGs.AWG)
-		# 		modelName = 'awg'
-		# 		viewMap = AWGViewMap
-		#		newClassList = AWGs.AWGList
+		Page:
+			title = "AWG's"
+			closable = False
+			DictManagerView:
+				myDict = instrLib.instrDict
+				displayFilter = lambda x : isinstance(x, AWGs.AWG)
+				modelName = 'awg'
+				viewMap = AWGViewMap
+				newClassList = AWGs.AWGList
 		
 		# Page:
 		# 	title = "Other"
