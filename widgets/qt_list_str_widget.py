@@ -101,7 +101,7 @@ class QtListStrWidget(RawWidget):
                 self.add_item(widget, item)
         elif nitems < count:
             for idx in reversed(xrange(nitems, count)):
-                widget.removeItem(idx)
+                widget.takeItem(idx)
 
     #--------------------------------------------------------------------------
     # Observers
