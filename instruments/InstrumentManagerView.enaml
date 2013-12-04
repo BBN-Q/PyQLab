@@ -12,10 +12,10 @@ from MicrowaveSourcesViews import MicrowaveSourceViewMap
 from DigitizersViews import DigitizerViewMap
 import Digitizers
 
-# from DCSourcesViews import DCSourcesViewMap
+from DCSourcesViews import DCSourcesViewMap
 import DCSources
 
-# from AttenuatorsViews import AttenuatorsViewMap
+from AttenuatorsViews import AttenuatorsViewMap
 import Attenuators
 
 import Analysers
@@ -36,8 +36,8 @@ enamldef DefaultInstrView(GroupBox):
 
 otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.SpectrumAnalyzer:DefaultInstrView}
 otherViewMap.update(DigitizerViewMap.items())
-# otherViewMap.update(DCSourcesViewMap.items())
-# otherViewMap.update(AttenuatorsViewMap.items())
+otherViewMap.update(DCSourcesViewMap.items())
+otherViewMap.update(AttenuatorsViewMap.items())
 
 newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
 
