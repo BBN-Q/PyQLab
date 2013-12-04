@@ -69,7 +69,7 @@ enamldef DictManagerView(Container): dictview:
 		dictManager.width <= 300]
 	DictManager: dictManager:
 		hug_width = 'medium'
-		itemDict = dict(myDict.items())
+		itemDict := myDict
 		displayFilter = dictview.displayFilter
 	Container: mapViewCont:
 		hug_width = 'medium'

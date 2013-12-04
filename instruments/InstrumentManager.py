@@ -1,4 +1,4 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -9,7 +9,7 @@ import FileWatcher
 
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
-    instrDict = Dict(Unicode(), Instrument)
+    instrDict = Coerced(dict)
     libFile = Str().tag(transient=True)
 
     #Some helpers to pull out certain types of instruments
