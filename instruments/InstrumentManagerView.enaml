@@ -9,16 +9,16 @@ from widgets import AddDialog, DictManagerView, DictManager
 from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
-# from DigitizersViews import DigitizerViewMap
-# import Digitizers
+from DigitizersViews import DigitizerViewMap
+import Digitizers
 
 # from DCSourcesViews import DCSourcesViewMap
-# import DCSources
+import DCSources
 
 # from AttenuatorsViews import AttenuatorsViewMap
-# import Attenuators
+import Attenuators
 
-# import Analysers
+import Analysers
 
 enamldef EmptyInstrView(Container):
 	attr instr
@@ -34,12 +34,12 @@ enamldef DefaultInstrView(GroupBox):
 		Field:
 			text := instr.address
 
-# otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.SpectrumAnalyzer:DefaultInstrView}
-# otherViewMap.update(DigitizerViewMap.items())
+otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.SpectrumAnalyzer:DefaultInstrView}
+otherViewMap.update(DigitizerViewMap.items())
 # otherViewMap.update(DCSourcesViewMap.items())
 # otherViewMap.update(AttenuatorsViewMap.items())
 
-# newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
@@ -65,15 +65,15 @@ enamldef InstrumentManagerView(Container):
 				viewMap = AWGViewMap
 				newClassList = AWGs.AWGList
 		
-		# Page:
-		# 	title = "Other"
-		# 	closable = False
-		# 	DictManagerView:
-		# 		myDict = instrLib.instrDict
-		# 		displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
-		# 		modelName = 'instr'
-		# 		viewMap = otherViewMap
-		#		newnewClassList = newOtherInstrs
+		Page:
+			title = "Other"
+			closable = False
+			DictManagerView:
+				myDict = instrLib.instrDict
+				displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
+				modelName = 'instr'
+				viewMap = otherViewMap
+				newClassList = newOtherInstrs
 
 enamldef InstrumentManagerWindow(Window): instrLibWin:
 	attr instrLib

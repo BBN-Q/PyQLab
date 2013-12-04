@@ -4,7 +4,7 @@ from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 import MicrowaveSources
-# import AWGs
+import AWGs
 import FileWatcher
 
 class InstrumentLibrary(Atom):
