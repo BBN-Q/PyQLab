@@ -11,8 +11,8 @@ enamldef AddDialog(Window):
 		constraints = [vbox(myForm, hbox(spacer, cancelButton, okButton))]
 		Form: myForm:
 			Label:
-				text = 'New Name'
-			Field: newName:
+				text = 'New Label'
+			Field: newLabel:
 				text = 'New'+objText
 			Label:
 				text = 'New {} Model'.format(objText)
@@ -26,6 +26,5 @@ enamldef AddDialog(Window):
 		PushButton: okButton:
 			text = 'OK'
 			clicked ::
-				dictManager.itemDict[newName.text] = newClassList[modelChoice.index](label=newName.text)
-				dictManager.update_itemDict({'operation': 'add', 'item': newName.text})
+				dictManager.add(newLabel.text, newClassList[modelChoice.index](label=newLabel.text))
 				close()

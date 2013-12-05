@@ -2,7 +2,7 @@
 Reusable widgets for handling lists and dictionaries
 """
 
-from atom.api import (Bool, List, Dict, observe, set_default, Unicode, Enum, Int, Callable, Typed, Atom)
+from atom.api import (Bool, List, Dict, observe, set_default, Unicode, Enum, Int, Callable, Typed, Instance, Atom)
 
 from widgets import QtListStrWidget, AddDialog
 from enaml.widgets.api import Window, Container, PushButton, Form, Label, Field, ComboBox
@@ -17,6 +17,7 @@ class DictManager(QtListStrWidget):
 	"""
 	itemDict = d_(Dict())
 	displayFilter = d_(Callable())
+	selected_model = d_(Instance((Atom, None)))
 
 	# def __init__(self, **kwargs):
 	# 	if 'displayFilter' in kwargs:
@@ -29,7 +30,16 @@ class DictManager(QtListStrWidget):
 
 	def create_widget(self, parent):
 		self.items = sorted([k for k,v in self.itemDict.items() if self.displayFilter(v)])
+		self.selected_model = None
 		return super(DictManager, self).create_widget(parent)
+
+	def add(self, label, value):
+		self.itemDict[label] = value
+		self.itemDict_observer({'type': 'append', 'value': label})
+
+	def remove_selection(self):
+		self.itemDict.pop(self.selected_item)
+		self.itemDict_observer({'type': 'remove', 'value': self.selected_index})
 
 	#--------------------------------------------------------------------------
 	# Signal handlers
@@ -46,16 +56,22 @@ class DictManager(QtListStrWidget):
 		# let the superclass method update the items list
 		super(DictManager, self).on_edit(item)
 
+	def on_selection(self):
+		super(DictManager, self).on_selection()
+		self.selected_model = self.itemDict[self.selected_item]
+
 	#--------------------------------------------------------------------------
 	# Observers
 	#--------------------------------------------------------------------------
 	@observe('itemDict')
-	def update_itemDict(self, change={'operation': 'set'}):
+	def itemDict_observer(self, change={'type': 'set'}):
 		if self.get_widget():
-			if change['operation'] == 'set':
+			if change['type'] == 'set':
 				self.items = sorted([k for k,v in self.itemDict.items() if self.displayFilter(v)])
-			elif change['operation'] == 'add':
-				self.items = self.items + [change['item']]
+			elif change['type'] == 'append':
+				self.items = self.items + [change['value']]
+			elif change['type'] == 'remove':
+				self.items = self.items[:change['value']] + self.items[change['value']+1:]
 	
 enamldef DictManagerView(Container): dictview:
 	attr myDict
@@ -74,8 +90,7 @@ enamldef DictManagerView(Container): dictview:
 	Container: mapViewCont:
 		hug_width = 'medium'
 		MappedView:
-			#Hacky thing to catch deletions 
-			model << dictManager.itemDict[dictManager.selected_item] if dictManager.selected_item else None
+			model << dictManager.selected_model
 			modelkey = modelName
 			typemap = viewMap
 			kwargs = viewkwargs
@@ -87,8 +102,7 @@ enamldef DictManagerView(Container): dictview:
 	PushButton: deleteButton:
 		text = 'Delete'
 		clicked ::
-			dictManager.itemDict.pop(dictManager.selected_item)
-			dictManager.update_itemDict()
+			dictManager.remove_selection()
 	PushButton: debugButton:
 		text = 'Debug'
 		clicked ::
