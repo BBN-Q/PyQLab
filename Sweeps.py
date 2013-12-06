@@ -10,7 +10,6 @@ from enaml.qt.qt_application import QtApplication
 from instruments.MicrowaveSources import MicrowaveSource
 from instruments.Instrument import Instrument
 
-# import abc
 import numpy as np
 import json 
 
@@ -20,7 +19,6 @@ class Sweep(Atom):
     enabled = Bool(True)
     order = Int(-1)
 
-    # @abc.abstractmethod
     def step(self, index):
         pass
 
@@ -31,11 +29,9 @@ class PointsSweep(Sweep):
     'step' and 'numPoints' both depend on the internal numPoints_ variable to break the dependency cycle
     """
     start = Float()
-    # step = Property(depends_on=['numPoints_'])
-    step = Property(Float)
+    step = Property()
     stop = Float()
-    # numPoints = Property(depends_on=['step'])
-    numPoints = Property(Int)
+    numPoints = Property()
     numPoints_ = Int()
 
     def _set_step(self, step):
@@ -102,11 +98,9 @@ class DC(PointsSweep):
     instr = Str()
 
 class SweepLibrary(Atom):
-    # sweepDict = Dict(Str, Sweep)
     sweepDict = Coerced(dict)
-    # sweepList = Property(List, depends_on='sweepDict.anytrait')
-    sweepList = Property(list)
-    sweepOrder = List(Str)
+    sweepList = Property()
+    sweepOrder = List()
     newSweepClasses = List([Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, DC, Repeat]).tag(transient=True)
     possibleInstrs = List()
     libFile = Str().tag(transient=True)
@@ -119,7 +113,6 @@ class SweepLibrary(Atom):
     def __getitem__(self, sweepName):
         return self.sweepDict[sweepName]
 
-    @cached_property
     def _get_sweepList(self):
         return [sweep.name for sweep in self.sweepDict.values() if sweep.enabled]
 

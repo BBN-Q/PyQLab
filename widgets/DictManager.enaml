@@ -17,16 +17,7 @@ class DictManager(QtListStrWidget):
 	"""
 	itemDict = d_(Dict())
 	displayFilter = d_(Callable())
-	selected_model = d_(Instance((Atom, None)))
-
-	# def __init__(self, **kwargs):
-	# 	if 'displayFilter' in kwargs:
-	# 		self.displayFilter = kwargs.pop('displayFilter')
-	# 	for k,v in kwargs['itemDict'].items():
-	# 		self.itemDict[k] = v
-	# 	kwargs.pop('itemDict')
-	# 	items = filter(self.displayFilter, self.itemDict.keys())
-	# 	super(DictManager, self).__init__(items=items, **kwargs)
+	selected_model = Typed(Atom)
 
 	def create_widget(self, parent):
 		self.items = sorted([k for k,v in self.itemDict.items() if self.displayFilter(v)])

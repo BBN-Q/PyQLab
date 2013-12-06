@@ -284,14 +284,6 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.Power:PowerSweepForm, Sweeps.Repeat:RepeatForm,
                     Sweeps.DC:PointsSweepForm, Sweeps.HeterodyneFrequency:HeterodyneSweepForm}
 
-def update_sweep_order(sweepList, objs):
-    sweepOrder = []
-    for obj in objs:
-        comboBoxIdx = obj[0].children[1].index
-        if comboBoxIdx>-1:
-            sweepOrder.append(sweepList[comboBoxIdx])
-    return sweepOrder
-
 enamldef SweepManager(Container): sweepManager:
     attr sweepLib
     attr sweepOrderObjs = None
@@ -318,16 +310,21 @@ enamldef SweepManager(Container): sweepManager:
             hug_width = 'medium'
             Looper: sweepLooper:
                 iterable << range(numSweepsBox.value)
+                iterable ::
+                    if len(sweepLib.sweepOrder) > len(iterable):
+                        sweepLib.sweepOrder = sweepLib.sweepOrder[:numSweepsBox.value]
+                    elif len(sweepLib.sweepOrder) < len(iterable):
+                        sweepLib.sweepOrder += [sweepLib.sweepList[0]]
                 Form:
                     initialized ::
-                        sweepLib.sweepOrder = update_sweep_order(sweepLib.sweepList, sweepLooper.items)
+                        sweepLib.sweepOrder = [sweepLib.sweepList[0]]
                     Label:
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
                         items << sweepLib.sweepList
                         index << sweepLib.sweepList.index(sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepLib.sweepOrder) else -1
-                        index :: 
-                            sweepLib.sweepOrder = update_sweep_order(sweepLib.sweepList, sweepLooper.items)
+                        index ::
+                            sweepLib.sweepOrder[loop_index] = sweepLib.sweepList[index]
 
 enamldef SweepManagerWindow(Window): sweepManagerTest:
     attr sweepLib
