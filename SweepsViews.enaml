@@ -1,10 +1,10 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
+    PushButton, SpinBox
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog, EnumComboBox
+from widgets import DictManagerView, DictManager, AddDialog, EnumComboBox
 
 import Sweeps
 
@@ -134,13 +134,13 @@ enamldef AWGChannelForm(GroupBox):
         Label:
             text = 'Channel'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'channel'
+            obj := sweep
+            enumName = 'channel'
         Label:
             text = 'Mode'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'mode'
+            obj := sweep
+            enumName = 'mode'
         Label:
             text = 'AWG'
         ComboBox:
@@ -164,18 +164,21 @@ enamldef AWGSequenceForm(GroupBox):
         Label:
             text = 'Start'
         IntField:
-            value << int(sweep.start)
-            value >> sweep.start        
+            # value << int(sweep.start)
+            # value >> sweep.start
+            value := sweep.start 
         Label:
             text = 'Stop'
         IntField:
-            value << int(sweep.stop)
-            value >> sweep.stop       
+            # value << int(sweep.stop)
+            # value >> sweep.stop
+            value := sweep.stop
         Label:
             text = 'Step'
         IntField:
-            value << int(sweep.step)
-            value >> sweep.step        
+            # value << int(sweep.step)
+            # value >> sweep.step
+            value := sweep.step
 
 enamldef RepeatForm(GroupBox):
     attr sweep
@@ -225,8 +228,8 @@ enamldef PowerSweepForm(GroupBox):
         Label:
             text = 'Units'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'units'
+            obj := sweep
+            enumName = 'units'
 
 enamldef HeterodyneSweepForm(GroupBox):
     attr sweep
@@ -289,8 +292,7 @@ def update_sweep_order(sweepList, objs):
             sweepOrder.append(sweepList[comboBoxIdx])
     return sweepOrder
 
-enamldef SweepManager(Container):
-    id: sweepManager
+enamldef SweepManager(Container): sweepManager:
     attr sweepLib
     attr sweepOrderObjs = None
     constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
@@ -299,8 +301,7 @@ enamldef SweepManager(Container):
         modelName = 'sweep'
         viewMap = sweepViewMap
         viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
-        addDialog = lambda root, itemDict, sweepLib=sweepLib : \
-            AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep')
+        newClassList = sweepLib.newSweepClasses
     GroupBox: orderBox:
         title = 'Sweep Order'
         hug_width = 'medium'
@@ -309,27 +310,26 @@ enamldef SweepManager(Container):
             hug_width = 'medium'
             Label:
                 text = "Number of Sweeps"
-            SpinBox:
-                id: numSweepsBox
+            SpinBox: numSweepsBox:
                 minimum = 1
                 maximum = 3
-                value = len(sweepManager.sweepLib.sweepOrder) if len(sweepManager.sweepLib.sweepOrder) > 0 else 1
+                value = len(sweepLib.sweepOrder) if len(sweepLib.sweepOrder) > 0 else 1
         Form: sweepOrderForm:
             hug_width = 'medium'
             Looper: sweepLooper:
                 iterable << range(numSweepsBox.value)
                 Form:
-                    initialized :: sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
+                    initialized ::
+                        sweepLib.sweepOrder = update_sweep_order(sweepLib.sweepList, sweepLooper.items)
                     Label:
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
-                        items << sweepManager.sweepLib.sweepList
-                        index << sweepManager.sweepLib.sweepList.index(sweepManager.sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepManager.sweepLib.sweepOrder) else -1
+                        items << sweepLib.sweepList
+                        index << sweepLib.sweepList.index(sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepLib.sweepOrder) else -1
                         index :: 
-                            sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
+                            sweepLib.sweepOrder = update_sweep_order(sweepLib.sweepList, sweepLooper.items)
 
-enamldef SweepManagerWindow(Window):
-    id: sweepManagerTest
+enamldef SweepManagerWindow(Window): sweepManagerTest:
     attr sweepLib
     title = 'Sweep Manager'
     SweepManager:
