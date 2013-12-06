@@ -70,6 +70,29 @@ class HeterodyneFrequency(PointsSweep):
 
 class SegmentNum(PointsSweep):
     label = 'SegmentNum'
+
+class SegmentNumWithCals(PointsSweep):
+    label = 'SegmentNum'
+    stopProxy = Property()
+    numCals = Int(0)
+
+    def _set_stopProxy(self, stop):
+        self.stop = stop + self.step*self.numCals
+
+    def _get_stopProxy(self):
+        return self.stop - self.step*self.numCals
+
+    def _set_step(self, step):
+        self.numPoints = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
+
+    def _get_step(self):
+        return (self.stop - self.start)/max(1, self.numPoints-1)
+
+    def _set_numPoints(self, numPoints):
+        self.numPoints_ = numPoints + self.numCals
+
+    def _get_numPoints(self):
+        return self.numPoints_ - self.numCals
     
 class Repeat(Sweep):
     label = 'Repeat'
@@ -101,7 +124,7 @@ class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
     sweepList = Property()
     sweepOrder = List()
-    newSweepClasses = List([Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, AWGChannel, AWGSequence, DC, Repeat]).tag(transient=True)
+    newSweepClasses = List([Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]).tag(transient=True)
     possibleInstrs = List()
     libFile = Str().tag(transient=True)
 
@@ -145,10 +168,11 @@ if __name__ == "__main__":
     testSource1 = AgilentN5183A(label='TestSource1')
     testSource2 = AgilentN5183A(label='TestSource2')
 
-    from Sweeps import Frequency, Power, SweepLibrary
+    from Sweeps import Frequency, Power, SegmentNumWithCals, SweepLibrary
     sweepLib = SweepLibrary(possibleInstrs=[testSource1.label, testSource2.label])
     sweepLib.sweepDict.update({'TestSweep1':Frequency(name='TestSweep1', start=5, step=0.1, stop=6, instr=testSource1.label)})
     sweepLib.sweepDict.update({'TestSweep2':Power(name='TestSweep2', start=-20, stop=0, numPoints=41, instr=testSource2.label)})
+    sweepLib.sweepDict.update({'SegWithCals':SegmentNumWithCals(name='SegWithCals', start=0, stopProxy=20, numPoints=101, numCals=4)})
     # sweepLib = SweepLibrary(libFile='Sweeps.json')
     # sweepLib.load_from_library()
 
