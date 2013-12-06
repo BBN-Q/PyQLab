@@ -155,14 +155,9 @@ class ScripterEncoder(json.JSONEncoder):
 				#If in CWMode, add the run method to AWGs
 				if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
 					jsonDict['run'] = '{}'
-			#Same thing for filters
-			elif isinstance(obj, MeasFilters.MeasFilter):
+			#Same thing for filters and sweeps
+			elif isinstance(obj, (MeasFilters.MeasFilter, Sweep)):
 				jsonDict = obj.json_encode(matlabCompatible=True)
-			#Inject the sweep type for sweeps
-			elif isinstance(obj, Sweep):
-				jsonDict = obj.__getstate__()
-				jsonDict['type'] = obj.__class__.__name__
-				jsonDict.pop('enabled', None)
 			else:
 				jsonDict = obj.__getstate__()
 

@@ -19,8 +19,16 @@ class Sweep(Atom):
     enabled = Bool(True)
     order = Int(-1)
 
-    def step(self, index):
-        pass
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = self.__getstate__()
+        if matlabCompatible:
+            jsonDict['type'] = self.__class__.__name__
+            jsonDict.pop('enabled', None)
+            jsonDict.pop('name', None)
+        else:
+            jsonDict['x__class__'] = self.__class__.__name__
+            jsonDict['x__module__'] = self.__class__.__module__
+        return jsonDict
 
 class PointsSweep(Sweep):
     """
@@ -53,6 +61,12 @@ class PointsSweep(Sweep):
         self.numPoints_ = -1
         self.step = newStep
 
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = super(PointsSweep, self).json_encode(matlabCompatible)
+        if matlabCompatible:
+            jsonDict.pop('numPoints_', None)
+        return jsonDict
+
 class Power(PointsSweep):
     label = 'Power'
     instr = Str()
@@ -73,26 +87,15 @@ class SegmentNum(PointsSweep):
 
 class SegmentNumWithCals(PointsSweep):
     label = 'SegmentNum'
-    stopProxy = Property()
     numCals = Int(0)
 
-    def _set_stopProxy(self, stop):
-        self.stop = stop + self.step*self.numCals
-
-    def _get_stopProxy(self):
-        return self.stop - self.step*self.numCals
-
-    def _set_step(self, step):
-        self.numPoints = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
-
-    def _get_step(self):
-        return (self.stop - self.start)/max(1, self.numPoints-1)
-
-    def _set_numPoints(self, numPoints):
-        self.numPoints_ = numPoints + self.numCals
-
-    def _get_numPoints(self):
-        return self.numPoints_ - self.numCals
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = super(SegmentNumWithCals, self).json_encode(matlabCompatible)
+        if matlabCompatible:
+            jsonDict['type'] = 'SegmentNum'
+            jsonDict['stop'] = self.stop + self.step * self.numCals
+            jsonDict['numPoints'] = self.numPoints + self.numCals
+        return jsonDict
     
 class Repeat(Sweep):
     label = 'Repeat'
@@ -172,7 +175,7 @@ if __name__ == "__main__":
     sweepLib = SweepLibrary(possibleInstrs=[testSource1.label, testSource2.label])
     sweepLib.sweepDict.update({'TestSweep1':Frequency(name='TestSweep1', start=5, step=0.1, stop=6, instr=testSource1.label)})
     sweepLib.sweepDict.update({'TestSweep2':Power(name='TestSweep2', start=-20, stop=0, numPoints=41, instr=testSource2.label)})
-    sweepLib.sweepDict.update({'SegWithCals':SegmentNumWithCals(name='SegWithCals', start=0, stopProxy=20, numPoints=101, numCals=4)})
+    sweepLib.sweepDict.update({'SegWithCals':SegmentNumWithCals(name='SegWithCals', start=0, stop=20, numPoints=101, numCals=4)})
     # sweepLib = SweepLibrary(libFile='Sweeps.json')
     # sweepLib.load_from_library()
 

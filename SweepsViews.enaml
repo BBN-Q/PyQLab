@@ -122,7 +122,7 @@ enamldef SegmentNumWithCalsForm(GroupBox):
         Label:
             text = 'Stop'
         FloatField:
-            value := sweep.stopProxy
+            value := sweep.stop
         Label:
             text = 'Step'
         FloatField:
