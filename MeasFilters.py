@@ -9,7 +9,7 @@ from enaml.qt.qt_application import QtApplication
 import json
 
 class MeasFilter(Atom):
-    name = Str()
+    label = Str()
     channel = Int(1)
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
@@ -22,7 +22,7 @@ class MeasFilter(Atom):
         if matlabCompatible:
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
-            jsonDict.pop('name', None)
+            jsonDict.pop('label', None)
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
@@ -50,13 +50,13 @@ class Correlator(MeasFilter):
     def __init__(self, **kwargs):
         super(Correlator, self).__init__(**kwargs)
         if not self.filters:
-            self.filters = []
+            self.filters = [None, None]
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(Correlator, self).json_encode(matlabCompatible)
         #For correlation filters return the filter list as a list of filter names
         filterList = jsonDict.pop('filters')
-        jsonDict['filters'] = [item.name for item in filterList] if filterList else []
+        jsonDict['filters'] = [item.label for item in filterList] if filterList else []
         jsonDict.pop('channel')
         jsonDict.pop('plotScope')
         return jsonDict
@@ -69,7 +69,6 @@ class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
-    filterList = List([DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]).tag(transient=True)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
@@ -80,12 +79,12 @@ class MeasFilterLibrary(Atom):
         return self.filterDict[filterName]
 
     # @observe('filterDict')
-    # def write_to_library(self):
-    #     #Move import here to avoid circular import
-    #     import JSONHelpers
-    #     if self.libFile:
-    #         with open(self.libFile,'w') as FID:
-    #             json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+    def write_to_library(self):
+        #Move import here to avoid circular import
+        import JSONHelpers
+        if self.libFile:
+            with open(self.libFile,'w') as FID:
+                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
         import JSONHelpers
@@ -105,16 +104,19 @@ class MeasFilterLibrary(Atom):
             except IOError:
                 print("No measurement library found.")
 
+measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]
+
 if __name__ == "__main__":
 
     #Work around annoying problem with multiple class definitions 
-    from MeasFilters import DigitalHomodyne, MeasFilterLibrary
+    from MeasFilters import DigitalHomodyne, Correlator, MeasFilterLibrary
 
-    testFilter1 = DigitalHomodyne(name='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
-    testFilter2 = DigitalHomodyne(name='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
+    testFilter1 = DigitalHomodyne(label='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
+    testFilter2 = DigitalHomodyne(label='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
+    testFilter3 = Correlator(label='M12')
 
     testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json')
-    testLib.filterDict.update({'M1':testFilter1, 'M2':testFilter2})
+    testLib.filterDict.update({'M1':testFilter1, 'M2':testFilter2, 'M12':testFilter3})
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow
     

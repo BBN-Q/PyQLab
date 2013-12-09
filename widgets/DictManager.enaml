@@ -72,7 +72,7 @@ enamldef DictManagerView(Container): dictview:
 	attr viewkwargs = {}
 	attr newClassList
 	constraints = [
-		hbox(vbox(dictManager, hbox(addButton, deleteButton, debugButton, spacer)), mapViewCont),
+		hbox(vbox(dictManager, hbox(addButton, deleteButton, debugButton, spacer), spacer), mapViewCont),
 		dictManager.width <= 300]
 	DictManager: dictManager:
 		hug_width = 'medium'

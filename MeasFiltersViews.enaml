@@ -14,7 +14,7 @@ from numpy import pi
 enamldef DigitalHomodyneForm(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     hug_width = 'medium'
     Form:
         Label:
@@ -84,18 +84,10 @@ enamldef DigitalHomodyneForm(GroupBox):
         CheckBox:
             checked := myFilter.dependent
 
-def update_filter_list(correlatorFilter, filterLib, objs):
-    del correlatorFilter.filters[:]
-    for obj in objs:
-        comboBoxIdx = obj[0].children[1].index
-        if comboBoxIdx>-1:
-            filterName = obj[0].children[1].items[comboBoxIdx]
-            correlatorFilter.filters.append(filterLib[filterName])
-
 enamldef CorrelatorView(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
             text = 'Num. Channels'
@@ -104,20 +96,29 @@ enamldef CorrelatorView(GroupBox):
             value = len(myFilter.filters) if myFilter.filters and (len(myFilter.filters) > 0) else 2
         Looper: filterLooper:
             iterable << range(numFiltersBox.value)
+            iterable ::
+                if len(myFilter.filters) > len(iterable):
+                    myFilter.filters = myFilter.filters[:numSweepsBox.value]
+                elif len(myFilter.filters) < len(iterable):
+                    defaultFilterName = filterLib.filterDict.keys()[0]
+                    myFilter.filters += [filterLib.filterDict[defaultFilterName]]
             Form:
-                #Should work but trashes the filter list
-                # initialized :: update_filter_list(myFilter, filterLib, filterLooper.items)
+                # initialized ::
+                #     if not myFilter.filters:
+                #         defaultFilterName = filterLib.filterDict.keys()[0]
+                #         myFilter.filters = [filterLib[defaultFilterName] for _ in range(numFiltersBox.value)]
                 Label:
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
                     items << filterLib.filterDict.keys()
-                    index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if myFilter.filters and loop_index < len(myFilter.filters) else -1
-                    index :: update_filter_list(myFilter, filterLib, filterLooper.items)
+                    index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if loop_index < len(myFilter.filters) and myFilter.filters[loop_index] else -1
+                    index ::
+                        myFilter.filters[loop_index] = filterLib.filterDict[items[index]]
 
 enamldef StateComparatorView(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
             text = 'Threshold'
@@ -161,7 +162,7 @@ enamldef MeasFilterManager(Container): measFilterManager:
         modelName = 'myFilter'
         viewMap = filterViewMap
         viewkwargs = {'filterLib':filterLib}
-        newClassList = filterLib.filterList
+        newClassList = MeasFilters.measFilterList
 
 enamldef MeasFilterManagerWindow(Window): measFilterManagerTest:
     attr filterLib
