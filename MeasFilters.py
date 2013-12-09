@@ -2,19 +2,20 @@
 Measurement filters
 """
 
-from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, Enum, on_trait_change, Either
+from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, observe
 import enaml
+from enaml.qt.qt_application import QtApplication
 
 import json
 
-class MeasFilter(HasTraits):
-    name = Str
+class MeasFilter(Atom):
+    name = Str()
     channel = Int(1)
     enabled = Bool(True)
-    plotScope = Bool(False, desc='Whether to show the raw data scope.')
-    plotMode = Enum('amp/phase', 'real/imag', 'quad', desc='Filtered data scope mode.')
-    childFilter = Str
-    dependent = Bool(False, desc='Whether this filter is a child of another filter.')
+    plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
+    plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
+    childFilter = Str()
+    dependent = Bool(False).tag(desc='Whether this filter is a child of another filter.')
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
@@ -28,22 +29,23 @@ class MeasFilter(HasTraits):
         return jsonDict
 
 class DigitalHomodyne(MeasFilter):
-    boxCarStart = Int(0, desc='The start index of the integration window in pts.')
-    boxCarStop = Int(0, desc='The stop index of the integration window in pts.')
-    IFfreq = Float(10e6, desc='The I.F. frequency for digital demodulation.')
-    bandwidth = Float(5e6, desc='Low-pass filter bandwidth')
-    samplingRate = Float(250e6, desc='The sampling rate of the digitizer.')
-    phase = Float(0.0, desc='Phase rotation to apply in rad.')
-    filterFilePath = Str('', desc='Path to a .mat file containing the measurement filter and bias')
-    recordsFilePath = Str('', desc='Path to file where records will be optionally saved.')
-    saveRecords = Bool(False, desc='Whether to save the single-shot records to file.')
+    boxCarStart = Int(0).tag(desc='The start index of the integration window in pts.')
+    boxCarStop = Int(0).tag(desc='The stop index of the integration window in pts.')
+    IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
+    bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
+    samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
+    phase = Float(0.0).tag(desc='Phase rotation to apply in rad.')
+    filterFilePath = Str('').tag(desc='Path to a .mat file containing the measurement filter and bias')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
 
 # ignore the difference between DigitalHomodyneSS and DigitalHomodyne
 class DigitalHomodyneSS(DigitalHomodyne):
     pass
     
 class Correlator(MeasFilter):
-    filters = Either(List(MeasFilter), List(Str))
+    # filters = Either(List(MeasFilter), List(Str))
+    filters = List()
 
     def __init__(self, **kwargs):
         super(Correlator, self).__init__(**kwargs)
@@ -61,12 +63,13 @@ class Correlator(MeasFilter):
 
 class StateComparator(MeasFilter):
     threshold = Float(0.0)
-    integrationTime = Int(-1, desc='Comparator integration time in decimated samples, use -1 for the entire record')
+    integrationTime = Int(-1).tag(desc='Comparator integration time in decimated samples, use -1 for the entire record')
 
-class MeasFilterLibrary(HasTraits):
-    filterDict = Dict(Str, MeasFilter)
-    libFile = Str(transient=True)
-    filterList = List([DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS], transient=True)
+class MeasFilterLibrary(Atom):
+    # filterDict = Dict(Str, MeasFilter)
+    filterDict = Coerced(dict)
+    libFile = Str().tag(transient=True)
+    filterList = List([DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]).tag(transient=True)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
@@ -76,13 +79,13 @@ class MeasFilterLibrary(HasTraits):
     def __getitem__(self, filterName):
         return self.filterDict[filterName]
 
-    @on_trait_change('filterDict.anytrait')
-    def write_to_library(self):
-        #Move import here to avoid circular import
-        import JSONHelpers
-        if self.libFile:
-            with open(self.libFile,'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+    # @observe('filterDict')
+    # def write_to_library(self):
+    #     #Move import here to avoid circular import
+    #     import JSONHelpers
+    #     if self.libFile:
+    #         with open(self.libFile,'w') as FID:
+    #             json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
         import JSONHelpers
@@ -112,7 +115,11 @@ if __name__ == "__main__":
 
     testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json')
     testLib.filterDict.update({'M1':testFilter1, 'M2':testFilter2})
-    from enaml.stdlib.sessions import show_simple_view
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow
-    session = show_simple_view(MeasFilterManagerWindow(filterLib=testLib))
+    
+    app = QtApplication()
+    view = MeasFilterManagerWindow(filterLib=testLib)
+    view.show()
+
+    app.start()
