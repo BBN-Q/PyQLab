@@ -328,7 +328,7 @@ enamldef SweepManager(Container): sweepManager:
         modelName = 'sweep'
         viewMap = sweepViewMap
         viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
-        newClassList = sweepLib.newSweepClasses
+        newClassList = Sweeps.newSweepClasses
     GroupBox: orderBox:
         title = 'Sweep Order'
         hug_width = 'medium'

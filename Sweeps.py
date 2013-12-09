@@ -127,7 +127,6 @@ class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
     sweepList = Property()
     sweepOrder = List()
-    newSweepClasses = List([Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]).tag(transient=True)
     possibleInstrs = List()
     libFile = Str().tag(transient=True)
 
@@ -143,11 +142,11 @@ class SweepLibrary(Atom):
         return [sweep.name for sweep in self.sweepDict.values() if sweep.enabled]
 
     # @on_trait_change('[sweepDict.anytrait, sweepOrder]')
-    # def write_to_library(self):
-    #     import JSONHelpers
-    #     if self.libFile:
-    #         with open(self.libFile, 'w') as FID:
-    #             json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+    def write_to_library(self):
+        import JSONHelpers
+        if self.libFile:
+            with open(self.libFile, 'w') as FID:
+                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
         import JSONHelpers
@@ -165,6 +164,8 @@ class SweepLibrary(Atom):
                             self.sweepOrder.append(sweepStr)
             except IOError:
                 print('No sweep library found.')
+
+newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
 
 if __name__ == "__main__":
     from instruments.MicrowaveSources import AgilentN5183A  
