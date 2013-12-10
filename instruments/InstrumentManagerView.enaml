@@ -75,11 +75,10 @@ enamldef InstrumentManagerView(Container):
 		# 		viewMap = otherViewMap
 		# 		newClassList = newOtherInstrs
 
-enamldef InstrumentManagerWindow(Window): instrLibWin:
+enamldef InstrumentManagerWindow(Window): 
 	attr instrLib
 	title = 'Instrument Library'
-	Container:
-		InstrumentManagerView:
-			instrLib = instrLibWin.instrLib
+	InstrumentManagerView:
+		instrLib = parent.instrLib
 
 
