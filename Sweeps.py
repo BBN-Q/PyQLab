@@ -34,43 +34,24 @@ class PointsSweep(Sweep):
     """
     A class for sweeps with floating points with one instrument.
 
-    'step' and 'numPoints' both depend on the internal numPoints_ variable to break the dependency cycle
+    'step' depends on numPoints (but not the other way around) to break the dependency cycle
     """
     start = Float(1.0)
     step = Property()
     stop = Float(1.0)
-    numPoints = Property()
-    numPoints_ = Int(1)
+    numPoints = Int(1)
 
     def _set_step(self, step):
-        self.numPoints_ = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
+        self.numPoints = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
 
     def _get_step(self):
-        return (self.stop - self.start)/max(1, self.numPoints_-1)
+        return (self.stop - self.start)/max(1, self.numPoints-1)
 
-    def _set_numPoints(self, numPoints):
-        self.numPoints_ = numPoints
-
-    def _get_numPoints(self):
-        return self.numPoints_
-
-    @observe('start', 'stop')
+    @observe('start', 'stop', 'numPoints')
     def update_step(self, change):
         if change['type'] == 'update':
             # update the step to keep numPoints fixed
             self.get_member('step').reset(self)
-
-    @observe('numPoints_')
-    def _reset_numPoints(self, change):
-        if change['type'] == 'update':
-            self.get_member('numPoints').reset(self)
-            self.get_member('step').reset(self)
-
-    def json_encode(self, matlabCompatible=False):
-        jsonDict = super(PointsSweep, self).json_encode(matlabCompatible)
-        if matlabCompatible:
-            jsonDict.pop('numPoints_', None)
-        return jsonDict
 
 class Power(PointsSweep):
     label = 'Power'
