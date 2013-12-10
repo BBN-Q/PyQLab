@@ -7,14 +7,16 @@ import MicrowaveSources
 import AWGs
 import FileWatcher
 
+from DictManager import DictManager
+
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
-    instrDict = Coerced(dict)
+    instrDict = Dict()
     libFile = Str().tag(transient=True)
 
-    #Some helpers to pull out certain types of instruments
-    AWGs = Property()
-    sources = Property()
+    #Some helpers to manage types of instruments
+    AWGs = Typed(DictManager)
+    sources = Typed(DictManager)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -24,7 +26,11 @@ class InstrumentLibrary(Atom):
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
-    #Overload [] to allow direct pulling of channel info
+        #Setup the dictionary managers for the different instrument types
+        self.AWGs = DictManager(itemDict=self.instrDict, displayFilter=lambda x: isinstance(x, AWGs.AWG))
+        self.sources = DictManager(itemDict=self.instrDict, displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource))
+
+    #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
@@ -87,10 +93,8 @@ class InstrumentLibrary(Atom):
 if __name__ == '__main__':
 
     
-    instrLib = InstrumentLibrary()
     from MicrowaveSources import AgilentN5183A
-    instrLib.instrDict['Agilent1'] = AgilentN5183A(label='Agilent1')
-    instrLib.instrDict['Agilent2'] = AgilentN5183A(label='Agilent2')
+    instrLib = InstrumentLibrary(instrDict={'Agilent1':AgilentN5183A(label='Agilent1'), 'Agilent2':AgilentN5183A(label='Agilent2')})
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
 

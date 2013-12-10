@@ -2,7 +2,7 @@
 Measurement filters
 """
 
-from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, Enum, on_trait_change, Either
+# from traits.api import HasTraits, Int, Float, List, Str, Dict, Bool, Enum, on_trait_change, Either
 import enaml
 
 import json
