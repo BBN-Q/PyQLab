@@ -100,20 +100,15 @@ enamldef CorrelatorView(GroupBox):
                 if len(myFilter.filters) > len(iterable):
                     myFilter.filters = myFilter.filters[:numSweepsBox.value]
                 elif len(myFilter.filters) < len(iterable):
-                    defaultFilterName = filterLib.filterDict.keys()[0]
-                    myFilter.filters += [filterLib.filterDict[defaultFilterName]]
+                    myFilter.filters += [None]
             Form:
-                # initialized ::
-                #     if not myFilter.filters:
-                #         defaultFilterName = filterLib.filterDict.keys()[0]
-                #         myFilter.filters = [filterLib[defaultFilterName] for _ in range(numFiltersBox.value)]
                 Label:
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
                     items << filterLib.filterDict.keys()
                     index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if loop_index < len(myFilter.filters) and myFilter.filters[loop_index] else -1
                     index ::
-                        myFilter.filters[loop_index] = filterLib.filterDict[items[index]]
+                        myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
 
 enamldef StateComparatorView(GroupBox):
     attr myFilter
