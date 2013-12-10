@@ -1,4 +1,4 @@
-from atom.api import (Atom, List, ContainerList, Dict, observe, Callable, Typed)
+from atom.api import (Atom, List, ContainerList, Dict, observe, Callable, Typed, Unicode)
 
 class DictManager(Atom):
 	"""
@@ -8,7 +8,7 @@ class DictManager(Atom):
 	itemDict = Typed(dict)
 	displayFilter = Callable() # filter which items to display later
 	possibleItems = List() # a list of classes that can possibly be added to this list
-	displayList = ContainerList() 
+	displayList = ContainerList()
 
 	def add_item(parent):
 		"""

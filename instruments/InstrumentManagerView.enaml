@@ -50,9 +50,9 @@ enamldef InstrumentManagerView(Container):
 			closable = False
 			DictManagerView:
 				dictManager = instrLib.sources
+				viewMap = MicrowaveSourceViewMap
+				modelName = 'uwSource'
 				# displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
-				# modelName = 'uwSource'
-				# viewMap = MicrowaveSourceViewMap
 				# newClassList = MicrowaveSources.MicrowaveSourceList
 
 		# Page:
