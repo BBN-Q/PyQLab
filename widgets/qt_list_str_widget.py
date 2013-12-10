@@ -53,7 +53,13 @@ class QtListStrWidget(RawWidget):
         widget.itemChanged.connect(self.on_edit)
 
         # set selected_item here so that first change fires an 'update' rather than 'create' event
-        self.selected_item = ''
+        if self.items:
+            self.selected_item = self.items[0] 
+            self.items[0].setSelected(True)
+        else:
+            self.selected_item = ''
+
+
         
         return widget
 
