@@ -9,13 +9,25 @@ from enaml.core.declarative import d_
 
 from enaml.layout.api import hbox, vbox, spacer
 
-enamldef DictManagerView(Container):
+enamldef DictManagerView(Container): dictView:
 	"""
 	Display a list of items on the left; a view of the selected item on the right and some add/delete buttons.
 	"""
 	attr dictManager
 	attr viewMap # dictionary mapping classes to views
 	attr modelName # attr name for the model in the view
+
+	constraints = [
+		hbox(
+			vbox(
+				itemList,
+				hbox(addButton, removeButton, spacer),
+				spacer
+				),
+			selectedItemView,
+			spacer
+			)
+		]
 
 	QtListStrWidget: itemList:
 		items << dictManager.displayList
@@ -25,10 +37,11 @@ enamldef DictManagerView(Container):
 	PushButton: removeButton:
 		text = "Remove"
 		clicked :: dictManager.remove_item()
-	MappedView:
-		model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
-		typemap = parent.viewMap
-		modelkey = parent.modelName
+	Container: selectedItemView:
+		MappedView: 
+			model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
+			typemap = dictView.viewMap
+			modelkey = dictView.modelName
 
 
 
