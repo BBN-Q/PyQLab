@@ -36,11 +36,11 @@ class PointsSweep(Sweep):
 
     'step' and 'numPoints' both depend on the internal numPoints_ variable to break the dependency cycle
     """
-    start = Float()
+    start = Float(1.0)
     step = Property()
-    stop = Float()
+    stop = Float(1.0)
     numPoints = Property()
-    numPoints_ = Int()
+    numPoints_ = Int(1)
 
     def _set_step(self, step):
         self.numPoints_ = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
@@ -54,12 +54,17 @@ class PointsSweep(Sweep):
     def _get_numPoints(self):
         return self.numPoints_
 
-    @observe('start, stop')
-    def update_step(self):
-        # update the step to keep numPoints fixed
-        newStep = self.step
-        self.numPoints_ = -1
-        self.step = newStep
+    @observe('start', 'stop')
+    def update_step(self, change):
+        if change['type'] == 'update':
+            # update the step to keep numPoints fixed
+            self.get_member('step').reset(self)
+
+    @observe('numPoints_')
+    def _reset_numPoints(self, change):
+        if change['type'] == 'update':
+            self.get_member('numPoints').reset(self)
+            self.get_member('step').reset(self)
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(PointsSweep, self).json_encode(matlabCompatible)

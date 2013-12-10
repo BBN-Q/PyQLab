@@ -44,7 +44,6 @@ class DigitalHomodyneSS(DigitalHomodyne):
     pass
     
 class Correlator(MeasFilter):
-    # filters = Either(List(MeasFilter), List(Str))
     filters = List()
 
     def __init__(self, **kwargs):
