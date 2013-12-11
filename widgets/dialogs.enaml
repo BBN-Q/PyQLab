@@ -47,6 +47,7 @@ enamldef AddItemDialog(Dialog):
 		modelNames = parent.modelNames
 
 
+
 # enamldef AddDialog(Window):
 # 	attr newClassList
 # 	attr objText

@@ -1,5 +1,8 @@
 from atom.api import (Atom, List, ContainerList, Dict, observe, Callable, Typed, Unicode)
 
+import enaml
+
+
 class DictManager(Atom):
 	"""
 	Control - Presenter for a dictionary of items. 
@@ -10,10 +13,19 @@ class DictManager(Atom):
 	possibleItems = List() # a list of classes that can possibly be added to this list
 	displayList = ContainerList()
 
-	def add_item(item):
-		pass
+	def add_item(self, parent):
+		"""
+		Create a new item dialog window and handle the result
+		"""
+		with enaml.imports():
+			from widgets.dialogs import AddItemDialog
+		dialogBox = AddItemDialog(parent, modelNames=[i.__name__ for i in self.possibleItems], objText='')
+		dialogBox.exec_()
+		if dialogBox.result:
+			self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
+			self.displayList.append(dialogBox.newLabel)
 
-	def remove_item(parent):
+	def remove_item(self, parent):
 		print("Remove item called")
 
 	def name_change():

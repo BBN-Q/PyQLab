@@ -27,8 +27,13 @@ class InstrumentLibrary(Atom):
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
         #Setup the dictionary managers for the different instrument types
-        self.AWGs = DictManager(itemDict=self.instrDict, displayFilter=lambda x: isinstance(x, AWGs.AWG))
-        self.sources = DictManager(itemDict=self.instrDict, displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource))
+        self.AWGs = DictManager(itemDict=self.instrDict,
+                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
+                                 possibleItems=AWGs.AWGList)
+        
+        self.sources = DictManager(itemDict=self.instrDict,
+                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
+                                    possibleItems=MicrowaveSources.MicrowaveSourceList)
 
     #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
