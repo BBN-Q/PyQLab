@@ -11,6 +11,8 @@ from widgets.enum_combos import EnumComboBox
 enamldef MicrowaveSourceForm(GroupBox):
 	attr uwSource
 	title := "{} ({})".format(uwSource.label, uwSource.__class__.__name__)
+	hug_width = "strong"
+	hug_height = "strong"
 	padding = 5
 	Form:
 		padding = 2

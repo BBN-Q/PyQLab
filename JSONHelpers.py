@@ -1,12 +1,12 @@
 import json, sys
 
-from traits.api import HasTraits
+# from traits.api import HasTraits
 
 import instruments
 import instruments.DCSources
 from Sweeps import Sweep, SweepLibrary
-import MeasFilters
-from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
+# import MeasFilters
+# from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
 from types import FunctionType
 
 class LibraryEncoder(json.JSONEncoder):

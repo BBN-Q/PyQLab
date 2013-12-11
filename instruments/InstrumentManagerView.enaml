@@ -4,8 +4,6 @@ from enaml.core.api import Looper, Include
 
 import MicrowaveSources, AWGs
 
-from widgets import AddDialog, DictManagerView, DictManager
-
 from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
 
@@ -19,6 +17,8 @@ from AttenuatorsViews import AttenuatorsViewMap
 import Attenuators
 
 import Analysers
+
+from DictManagerView import DictManagerView
 
 enamldef EmptyInstrView(Container):
 	attr instr
@@ -49,37 +49,36 @@ enamldef InstrumentManagerView(Container):
 			title = 'uwSources'
 			closable = False
 			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
-				modelName = 'uwSource'
+				dictManager = instrLib.sources
 				viewMap = MicrowaveSourceViewMap
-				newClassList = MicrowaveSources.MicrowaveSourceList
+				modelName = 'uwSource'
+				# displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
+				# newClassList = MicrowaveSources.MicrowaveSourceList
 
-		Page:
-			title = "AWG's"
-			closable = False
-			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : isinstance(x, AWGs.AWG)
-				modelName = 'awg'
-				viewMap = AWGViewMap
-				newClassList = AWGs.AWGList
+		# Page:
+		# 	title = "AWG's"
+		# 	closable = False
+		# 	DictManagerView:
+		# 		myDict = instrLib.instrDict
+		# 		displayFilter = lambda x : isinstance(x, AWGs.AWG)
+		# 		modelName = 'awg'
+		# 		viewMap = AWGViewMap
+		# 		newClassList = AWGs.AWGList
 		
-		Page:
-			title = "Other"
-			closable = False
-			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
-				modelName = 'instr'
-				viewMap = otherViewMap
-				newClassList = newOtherInstrs
+		# Page:
+		# 	title = "Other"
+		# 	closable = False
+		# 	DictManagerView:
+		# 		myDict = instrLib.instrDict
+		# 		displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
+		# 		modelName = 'instr'
+		# 		viewMap = otherViewMap
+		# 		newClassList = newOtherInstrs
 
-enamldef InstrumentManagerWindow(Window): instrLibWin:
+enamldef InstrumentManagerWindow(Window): 
 	attr instrLib
 	title = 'Instrument Library'
-	Container:
-		InstrumentManagerView:
-			instrLib = instrLibWin.instrLib
+	InstrumentManagerView:
+		instrLib = parent.instrLib
 
 
