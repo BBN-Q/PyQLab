@@ -25,8 +25,11 @@ class DictManager(Atom):
 			self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
 			self.displayList.append(dialogBox.newLabel)
 
-	def remove_item(self, parent):
+	def remove_item(self, itemLabel):
 		print("Remove item called")
+		self.itemDict.pop(itemLabel)
+		#TODO: once ContainerDicts land see if we still need this
+		self.update_display_list(None)
 
 	def name_change():
 		pass

@@ -37,7 +37,7 @@ enamldef DictManagerView(Container): dictView:
 		clicked :: dictManager.add_item(self)
 	PushButton: removeButton:
 		text = "Remove"
-		clicked :: dictManager.remove_item()
+		clicked :: dictManager.remove_item(itemList.selected_item)
 	Container: selectedItemView:
 		MappedView: 
 			model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
