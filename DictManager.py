@@ -34,6 +34,9 @@ class DictManager(Atom):
 		self.itemDict[newLabel] = self.itemDict.pop(oldLabel)
 		self.itemDict[newLabel].label = newLabel
 
+	def update_enable(self, itemLabel, checkState):
+		self.itemDict[itemLabel].enabled = checkState
+
 	@observe('itemDict')
 	def update_display_list(self, change):
 		"""
