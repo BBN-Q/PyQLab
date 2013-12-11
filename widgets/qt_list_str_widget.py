@@ -80,7 +80,7 @@ class QtListStrWidget(RawWidget):
         """
         widget = self.get_widget()
         self.selected_index = widget.currentRow()
-        self.selected_item = self.items[widget.currentRow()]                   
+        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''            
 
     def on_edit(self, item):
         """ The signal handler for the item changed signal.
