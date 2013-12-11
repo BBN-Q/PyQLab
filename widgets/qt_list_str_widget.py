@@ -49,16 +49,19 @@ class QtListStrWidget(RawWidget):
         for item in self.items:
             self.add_item(widget, item)
 
+
+        # set selected_item here so that first change fires an 'update' rather than 'create' event
+        self.selected_item = ''
+        if self.items:
+            self.selected_index = 0
+            self.selected_item = self.items[0]
+            widget.setCurrentRow(0) 
+
         widget.itemSelectionChanged.connect(self.on_selection)
         widget.itemChanged.connect(self.on_edit)
 
-        # set selected_item here so that first change fires an 'update' rather than 'create' event
-        if self.items:
-            self.selected_item = self.items[0] 
-        else:
-            self.selected_item = ''
-
         return widget
+
 
     def add_item(self, widget, item):
         itemWidget = QListWidgetItem(item)
