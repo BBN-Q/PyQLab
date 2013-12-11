@@ -30,8 +30,9 @@ class DictManager(Atom):
 		#TODO: once ContainerDicts land see if we still need this
 		self.update_display_list(None)
 
-	def name_change():
-		pass
+	def name_changed(self, oldLabel, newLabel):
+		self.itemDict[newLabel] = self.itemDict.pop(oldLabel)
+		self.itemDict[newLabel].label = newLabel
 
 	@observe('itemDict')
 	def update_display_list(self, change):

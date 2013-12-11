@@ -4,13 +4,12 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from atom.api import (Bool, List, observe, set_default, Unicode, Enum, Int)
+from atom.api import (Bool, List, observe, set_default, Unicode, Enum, Int, Signal)
 
 from enaml.widgets.api import RawWidget
 from enaml.core.declarative import d_
 from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView
-from enaml.qt.QtCore import *
-
+from enaml.qt.QtCore import Qt
 
 class QtListStrWidget(RawWidget):
     """ A Qt4 implementation of an Enaml ProxyListStrView.
@@ -36,6 +35,8 @@ class QtListStrWidget(RawWidget):
 
     #: .
     hug_width = set_default('weak')
+
+    item_changed = Signal()
     
     #--------------------------------------------------------------------------
     # Initialization API
@@ -86,7 +87,10 @@ class QtListStrWidget(RawWidget):
         """ The signal handler for the item changed signal.
         """
         widget = self.get_widget()
-        self.items[widget.currentRow()] = item.text()
+        oldLabel = self.items[widget.currentRow()]
+        newLabel = item.text()
+        self.item_changed(oldLabel, newLabel)
+        self.items[widget.currentRow()] = newLabel
         self.selected_item = item.text()
 
     #--------------------------------------------------------------------------

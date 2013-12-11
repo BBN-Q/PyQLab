@@ -31,7 +31,8 @@ enamldef DictManagerView(Container): dictView:
 		]
 
 	QtListStrWidget: itemList:
-		items << dictManager.displayList
+		items := dictManager.displayList
+		initialized :: itemList.item_changed.connect(dictManager.name_changed)
 	PushButton: addButton:
 		text = "Add"
 		clicked :: dictManager.add_item(self)
