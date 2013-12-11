@@ -68,7 +68,7 @@ class QtListStrWidget(RawWidget):
         return widget
 
 
-    def add_item(self, widget, item, checked):
+    def add_item(self, widget, item, checked=True):
         itemWidget = QListWidgetItem(item)
         if self.checkable:
             itemWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
