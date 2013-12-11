@@ -26,7 +26,6 @@ class DictManager(Atom):
 			self.displayList.append(dialogBox.newLabel)
 
 	def remove_item(self, itemLabel):
-		print("Remove item called")
 		self.itemDict.pop(itemLabel)
 		#TODO: once ContainerDicts land see if we still need this
 		self.update_display_list(None)
