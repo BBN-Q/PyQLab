@@ -28,7 +28,7 @@ class DictManager(Atom):
 	def remove_item(self, itemLabel):
 		self.itemDict.pop(itemLabel)
 		#TODO: once ContainerDicts land see if we still need this
-		self.update_display_list(None)
+		self.displayList.pop(self.displayList.index(itemLabel))
 
 	def name_changed(self, oldLabel, newLabel):
 		self.itemDict[newLabel] = self.itemDict.pop(oldLabel)
