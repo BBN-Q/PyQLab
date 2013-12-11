@@ -10,20 +10,11 @@ class DictManager(Atom):
 	possibleItems = List() # a list of classes that can possibly be added to this list
 	displayList = ContainerList()
 
-	def add_item(parent):
-		"""
-		Open a dialog box and add an instrument
-		"""
+	def add_item(item):
 		pass
-		#Call a blocking dialog
-		# dialog = AddDialog()
-		# AddDialog(root_object(), dictManager=dictManager, newClassList=newClassList, objText=modelName)
-		#...
-		#Deal with the result
-		# if ok 
 
 	def remove_item(parent):
-		pass
+		print("Remove item called")
 
 	def name_change():
 		pass

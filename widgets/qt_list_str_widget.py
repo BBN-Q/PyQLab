@@ -55,12 +55,9 @@ class QtListStrWidget(RawWidget):
         # set selected_item here so that first change fires an 'update' rather than 'create' event
         if self.items:
             self.selected_item = self.items[0] 
-            self.items[0].setSelected(True)
         else:
             self.selected_item = ''
 
-
-        
         return widget
 
     def add_item(self, widget, item):

@@ -9,6 +9,8 @@ from enaml.core.declarative import d_
 
 from enaml.layout.api import hbox, vbox, spacer
 
+from widgets.dialogs import AddItemDialog
+
 enamldef DictManagerView(Container): dictView:
 	"""
 	Display a list of items on the left; a view of the selected item on the right and some add/delete buttons.
@@ -33,7 +35,19 @@ enamldef DictManagerView(Container): dictView:
 		items << dictManager.displayList
 	PushButton: addButton:
 		text = "Add"
-		clicked :: dictManager.add_item()
+		clicked :: 
+			#Open a dialog box and add an item
+			print("Add item called")
+			dialogBox = AddItemDialog(self, modelNames=[i.__name__ for i in dictManager.possibleItems], objText=modelName)
+			dialogBox.exec_()
+			
+			import ipdb; ipdb.set_trace()
+			# dialog = AddDialog()
+			# AddDialog(root_object(), dictManager=dictManager, newClassList=newClassList, objText=modelName)
+			#...
+			#Deal with the result
+			# if ok 
+			# dictManager.add_item()
 	PushButton: removeButton:
 		text = "Remove"
 		clicked :: dictManager.remove_item()
