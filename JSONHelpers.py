@@ -1,6 +1,6 @@
 import json, sys
 
-# from traits.api import HasTraits
+from atom.api import Atom
 
 import instruments
 import instruments.DCSources
@@ -17,10 +17,8 @@ class LibraryEncoder(json.JSONEncoder):
 		#For the pulse functions in channels just return the name
 		if isinstance(obj, FunctionType):
 			return obj.__name__
-		elif isinstance(obj, HasTraits):
-			if isinstance(obj, instruments.Instrument.Instrument):
-				jsonDict = obj.json_encode()
-			elif isinstance(obj, MeasFilters.MeasFilter):
+		elif isinstance(obj, Atom):
+			if isinstance(obj, (instruments.Instrument.Instrument, MeasFilters.MeasFilter)):
 				jsonDict = obj.json_encode()
 			else:
 				jsonDict = obj.__getstate__()
@@ -28,26 +26,26 @@ class LibraryEncoder(json.JSONEncoder):
 				jsonDict['x__class__'] = obj.__class__.__name__
 				jsonDict['x__module__'] = obj.__class__.__module__
 
-			#For channels' linked AWG or generator just return the name
+			#For channels' linked AWG or generator just return the label
 			if isinstance(obj, PhysicalChannel):
 				awg = jsonDict.pop('AWG')
 				if awg:
-					jsonDict['AWG'] = awg.name
+					jsonDict['AWG'] = awg.label
 				source = jsonDict.pop('generator', None)
 				if source:
-					jsonDict['generator'] = source.name
+					jsonDict['generator'] = source.label
 
 			if isinstance(obj, LogicalChannel):
 				physChan = jsonDict.pop('physChan')
 				if physChan:
-					jsonDict['physChan'] = physChan.name
+					jsonDict['physChan'] = physChan.label
 			if isinstance(obj, PhysicalQuadratureChannel):
 				gateChan = jsonDict.pop('gateChan')
 				if gateChan:
-					jsonDict['gateChan'] = gateChan.name
+					jsonDict['gateChan'] = gateChan.label
 
 			#Strip out __traits_version__
-			jsonDict.pop('__traits_version__', None)
+			# jsonDict.pop('__traits_version__', None)
 
 			return jsonDict
 
