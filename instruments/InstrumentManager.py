@@ -9,6 +9,9 @@ import FileWatcher
 
 from DictManager import DictManager
 
+import Digitizers, Analysers, DCSources, Attenuators
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
+
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
     instrDict = Dict()
@@ -17,6 +20,7 @@ class InstrumentLibrary(Atom):
     #Some helpers to manage types of instruments
     AWGs = Typed(DictManager)
     sources = Typed(DictManager)
+    others = Typed(DictManager)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -28,12 +32,16 @@ class InstrumentLibrary(Atom):
 
         #Setup the dictionary managers for the different instrument types
         self.AWGs = DictManager(itemDict=self.instrDict,
-                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
-                                 possibleItems=AWGs.AWGList)
+                                displayFilter=lambda x: isinstance(x, AWGs.AWG),
+                                possibleItems=AWGs.AWGList)
         
         self.sources = DictManager(itemDict=self.instrDict,
-                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
-                                    possibleItems=MicrowaveSources.MicrowaveSourceList)
+                                   displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
+                                   possibleItems=MicrowaveSources.MicrowaveSourceList)
+
+        self.others = DictManager(itemDict=self.instrDict,
+                                  displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
+                                  possibleItems=newOtherInstrs)
 
     #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):

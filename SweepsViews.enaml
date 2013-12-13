@@ -4,7 +4,8 @@ from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from widgets import DictManagerView, DictManager, AddDialog, EnumComboBox
+from widgets import EnumComboBox
+from DictManagerView import DictManagerView
 
 import Sweeps
 
@@ -324,11 +325,10 @@ enamldef SweepManager(Container): sweepManager:
     attr sweepOrderObjs = None
     constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
     DictManagerView: sweepDictView:
-        myDict = sweepLib.sweepDict
-        modelName = 'sweep'
+        dictManager = sweepLib.sweepManager
         viewMap = sweepViewMap
         viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
-        newClassList = Sweeps.newSweepClasses
+        modelName = 'sweep'
     GroupBox: orderBox:
         title = 'Sweep Order'
         hug_width = 'medium'

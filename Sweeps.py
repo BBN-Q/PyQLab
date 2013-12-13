@@ -3,12 +3,14 @@ Various sweeps for scanning experiment parameters
 """
 
 from atom.api import Atom, Str, Float, Int, Bool, Dict, List, Enum, \
-    Coerced, Property, observe, cached_property
+    Coerced, Property, Typed, observe, cached_property
 import enaml
 from enaml.qt.qt_application import QtApplication
 
 from instruments.MicrowaveSources import MicrowaveSource
 from instruments.Instrument import Instrument
+
+from DictManager import DictManager
 
 import numpy as np
 import json 
@@ -54,25 +56,25 @@ class PointsSweep(Sweep):
             self.get_member('step').reset(self)
 
 class Power(PointsSweep):
-    label = 'Power'
+    name = 'Power'
     instr = Str()
     units = Enum('dBm', 'Watts').tag(desc='Logarithmic or linear power sweep')
 
 class Frequency(PointsSweep):
-    label = 'Frequency'
+    name = 'Frequency'
     instr = Str()
 
 class HeterodyneFrequency(PointsSweep):
-    label = 'HeterodyneFrequency'
+    name = 'HeterodyneFrequency'
     instr1 = Str()
     instr2 = Str()
     diffFreq = Float(10.0e-3).tag(desc="IF frequency (GHz)")
 
 class SegmentNum(PointsSweep):
-    label = 'SegmentNum'
+    name = 'SegmentNum'
 
 class SegmentNumWithCals(PointsSweep):
-    label = 'SegmentNum'
+    name = 'SegmentNumWithCals'
     numCals = Int(0)
 
     def json_encode(self, matlabCompatible=False):
@@ -84,11 +86,11 @@ class SegmentNumWithCals(PointsSweep):
         return jsonDict
     
 class Repeat(Sweep):
-    label = 'Repeat'
+    name = 'Repeat'
     numRepeats = Int(1).tag(desc='How many times to loop.')
 
 class AWGChannel(PointsSweep):
-    label = 'AWGChannel'
+    name = 'AWGChannel'
     channel = Enum('1','2','3','4','1&2','3&4').tag(desc='Which channel or pair to sweep')
     mode = Enum('Amp.', 'Offset').tag(desc='Sweeping amplitude or offset')
     instr = Str()
@@ -97,35 +99,42 @@ class AWGSequence(Sweep):
     start = Int()
     stop = Int()
     step = Int(1)
-    label = 'AWGSequence'
+    name = 'AWGSequence'
     sequenceFile = Str().tag(desc='Base string for the sequence files')
 
 class Attenuation(PointsSweep):
-    label = 'Attenuation (dB)'
+    name = 'Attenuation (dB)'
     channel = Enum(1, 2, 3).tag(desc='Which channel to sweep')
     instr = Str()
 
 class DC(PointsSweep):
-    label = 'DC'
+    name = 'DC'
     instr = Str()
+
+newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
 
 class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
+
+    sweepManager = Typed(DictManager)
+
     libFile = Str().tag(transient=True)
 
     def __init__(self, **kwargs):
         super(SweepLibrary, self).__init__(**kwargs)
         self.load_from_library()
+        self.sweepManager = DictManager(itemDict=self.sweepDict,
+                                        possibleItems=newSweepClasses)
 
     #Overload [] to allow direct pulling of sweep info
     def __getitem__(self, sweepName):
         return self.sweepDict[sweepName]
 
     def _get_sweepList(self):
-        return [sweep.name for sweep in self.sweepDict.values() if sweep.enabled]
+        return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
     # @on_trait_change('[sweepDict.anytrait, sweepOrder]')
     def write_to_library(self):
@@ -151,20 +160,19 @@ class SweepLibrary(Atom):
             except IOError:
                 print('No sweep library found.')
 
-newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
-
 if __name__ == "__main__":
     from instruments.MicrowaveSources import AgilentN5183A  
     testSource1 = AgilentN5183A(label='TestSource1')
     testSource2 = AgilentN5183A(label='TestSource2')
 
     from Sweeps import Frequency, Power, SegmentNumWithCals, SweepLibrary
-    sweepLib = SweepLibrary(possibleInstrs=[testSource1.label, testSource2.label])
-    sweepLib.sweepDict.update({'TestSweep1':Frequency(name='TestSweep1', start=5, step=0.1, stop=6, instr=testSource1.label)})
-    sweepLib.sweepDict.update({'TestSweep2':Power(name='TestSweep2', start=-20, stop=0, numPoints=41, instr=testSource2.label)})
-    sweepLib.sweepDict.update({'SegWithCals':SegmentNumWithCals(name='SegWithCals', start=0, stop=20, numPoints=101, numCals=4)})
+    sweepDict = {
+        'TestSweep1': Frequency(label='TestSweep1', start=5, step=0.1, stop=6, instr=testSource1.label),
+        'TestSweep2': Power(label='TestSweep2', start=-20, stop=0, numPoints=41, instr=testSource2.label),
+        'SegWithCals': SegmentNumWithCals(label='SegWithCals', start=0, stop=20, numPoints=101, numCals=4)
+    }
+    sweepLib = SweepLibrary(possibleInstrs=[testSource1.label, testSource2.label], sweepDict=sweepDict)
     # sweepLib = SweepLibrary(libFile='Sweeps.json')
-    # sweepLib.load_from_library()
 
     with enaml.imports():
         from SweepsViews import SweepManagerWindow

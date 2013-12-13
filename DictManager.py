@@ -13,6 +13,10 @@ class DictManager(Atom):
 	possibleItems = List() # a list of classes that can possibly be added to this list
 	displayList = ContainerList()
 
+	def __init__(self, displayFilter=lambda x: True, **kwargs):
+		self.displayFilter = displayFilter
+		super(DictManager, self).__init__(displayFilter=displayFilter, **kwargs)
+
 	def add_item(self, parent):
 		"""
 		Create a new item dialog window and handle the result

@@ -16,6 +16,7 @@ enamldef DictManagerView(Container): dictView:
 	"""
 	attr dictManager
 	attr viewMap # dictionary mapping classes to views
+	attr viewkwargs # extra parameters to pass to the model view
 	attr modelName # attr name for the model in the view
 
 	constraints = [
@@ -48,6 +49,7 @@ enamldef DictManagerView(Container): dictView:
 			model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
 			typemap = dictView.viewMap
 			modelkey = dictView.modelName
+			kwargs = dictView.viewkwargs
 
 
 

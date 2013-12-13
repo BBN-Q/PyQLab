@@ -2,21 +2,13 @@ from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, Gro
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
-import MicrowaveSources, AWGs
+import MicrowaveSources, AWGs, Digitizers, Analysers, DCSources, Attenuators
 
 from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
-
 from DigitizersViews import DigitizerViewMap
-import Digitizers
-
 from DCSourcesViews import DCSourcesViewMap
-import DCSources
-
 from AttenuatorsViews import AttenuatorsViewMap
-import Attenuators
-
-import Analysers
 
 from DictManagerView import DictManagerView
 
@@ -39,8 +31,6 @@ otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
 
-newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
-
 enamldef InstrumentManagerView(Container):
 	attr instrLib
 	Notebook:
@@ -52,28 +42,22 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.sources
 				viewMap = MicrowaveSourceViewMap
 				modelName = 'uwSource'
-				# displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
-				# newClassList = MicrowaveSources.MicrowaveSourceList
-
-		# Page:
-		# 	title = "AWG's"
-		# 	closable = False
-		# 	DictManagerView:
-		# 		myDict = instrLib.instrDict
-		# 		displayFilter = lambda x : isinstance(x, AWGs.AWG)
-		# 		modelName = 'awg'
-		# 		viewMap = AWGViewMap
-		# 		newClassList = AWGs.AWGList
 		
-		# Page:
-		# 	title = "Other"
-		# 	closable = False
-		# 	DictManagerView:
-		# 		myDict = instrLib.instrDict
-		# 		displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
-		# 		modelName = 'instr'
-		# 		viewMap = otherViewMap
-		# 		newClassList = newOtherInstrs
+		Page:
+			title = "AWG's"
+			closable = False
+			DictManagerView:
+				dictManager = instrLib.AWGs
+				viewMap = AWGViewMap
+				modelName = 'awg'
+		
+		Page:
+			title = "Other"
+			closable = False
+			DictManagerView:
+				dictManager = instrLib.others
+				viewMap = otherViewMap
+				modelName = 'instr'
 
 enamldef InstrumentManagerWindow(Window): 
 	attr instrLib
