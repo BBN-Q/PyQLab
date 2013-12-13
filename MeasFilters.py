@@ -2,10 +2,11 @@
 Measurement filters
 """
 
-from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, observe
+from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typed, observe
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+from DictManager import DictManager
 import json
 
 class MeasFilter(Atom):
@@ -68,10 +69,12 @@ class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
+    filterManager = Typed(DictManager)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
         self.load_from_library()
+        self.filterManager = DictManager(itemDict=self.filterDict, possibleItems=measFilterList)
 
     #Overload [] to allow direct pulling of measurement filter info
     def __getitem__(self, filterName):
@@ -113,9 +116,10 @@ if __name__ == "__main__":
     testFilter1 = DigitalHomodyne(label='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
     testFilter2 = DigitalHomodyne(label='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
     testFilter3 = Correlator(label='M12')
+    filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M12':testFilter3}
 
-    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json')
-    testLib.filterDict.update({'M1':testFilter1, 'M2':testFilter2, 'M12':testFilter3})
+    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json', filterDict=filterDict)
+
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow
     

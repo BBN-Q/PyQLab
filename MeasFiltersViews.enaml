@@ -5,7 +5,8 @@ from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
 
 
-from widgets import DictManagerView, DictManager, AddDialog, EnumComboBox
+from widgets import EnumComboBox
+from DictManagerView import DictManagerView
 
 import MeasFilters
 
@@ -153,11 +154,10 @@ filterViewMap = {type(None):EmptyMeasFilterForm, MeasFilters.DigitalHomodyne:Dig
 enamldef MeasFilterManager(Container): measFilterManager: 
     attr filterLib
     DictManagerView:
-        myDict = filterLib.filterDict
+        dictManager = filterLib.filterManager
         modelName = 'myFilter'
         viewMap = filterViewMap
         viewkwargs = {'filterLib':filterLib}
-        newClassList = MeasFilters.measFilterList
 
 enamldef MeasFilterManagerWindow(Window): measFilterManagerTest:
     attr filterLib
