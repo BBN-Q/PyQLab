@@ -1,7 +1,7 @@
-from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
+from atom.api import Atom, Typed, Str, Bool
+
 import enaml
-from enaml.stdlib.sessions import show_simple_view
-# from enaml.qt.qt_application import QtApplication
+from enaml.qt.qt_application import QtApplication
 
 import argparse, sys
 
@@ -13,20 +13,20 @@ import json
 import os
 import config
 
-class ExpSettings(HasTraits):
+class ExpSettings(Atom):
 
-    sweeps = Instance(Sweeps.SweepLibrary)
-    instruments = Instance(InstrumentLibrary)
-    measurements = Instance(MeasFilters.MeasFilterLibrary)
-    channels = Instance(QGL.Channels.ChannelLibrary, transient=True)
+    sweeps = Typed(Sweeps.SweepLibrary)
+    instruments = Typed(InstrumentLibrary)
+    measurements = Typed(MeasFilters.MeasFilterLibrary)
+    channels = Typed(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
-    curFileName = Str('DefaultExpSettings.json', transient=True)
+    curFileName = Str('DefaultExpSettings.json')
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
 
-    @on_trait_change('instruments.instrDict_items')
+    # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
         if self.sweeps:
             del self.sweeps.possibleInstrs[:]
@@ -89,10 +89,8 @@ if __name__ == '__main__':
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
 
-    # app = QtApplication([])
-    # view = ExpSettingsView(expSettings=expSettings)
-    # view.show()
+    app = QtApplication()
+    view = ExpSettingsView(expSettings=expSettings)
+    view.show()
+    app.start()
 
-    # app.start()
-
-    app = show_simple_view(ExpSettingsView(expSettings=expSettings))
