@@ -11,6 +11,7 @@ from enaml.qt.qt_application import QtApplication
 
 
 class AWGChannel(Atom):
+    label = Str()
     amplitude = FloatRange(value=1.0, low=0.0, high=4.0).tag(desc="Scaling applied to channel amplitude")
     offset = FloatRange(value=0.0, low=-1.0, high=1.0).tag(desc='D.C. offset applied to channel')
     enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
@@ -41,16 +42,16 @@ class AWG(Instrument):
         return jsonDict
 
 class APS(AWG):
-    numChannels = 4
+    # numChannels = 4
     miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
     seqFileExt = Constant('.h5')
 
 class Tek5014(AWG):
-    numChannels = 4
+    # numChannels = 4
     seqFileExt = Constant('.awg')
 
 class Tek7000(AWG):
-    numChannels = 2
+    # numChannels = 2
     seqFileExt = Constant('.awg')
 
 AWGList = [APS, Tek5014, Tek7000]
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     with enaml.imports():
         from AWGViews import AWGView
     
-    awg = APS(name='BBNAPS1')
+    awg = APS(label='BBNAPS1')
     app = QtApplication()
     view = AWGView(awg=awg)
     view.show()
