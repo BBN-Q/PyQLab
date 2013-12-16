@@ -16,8 +16,8 @@ import numpy as np
 import json 
 
 class Sweep(Atom):
-    name = Str()
     label = Str()
+    axisLabel = Str()
     enabled = Bool(True)
     order = Int(-1)
 
@@ -56,25 +56,25 @@ class PointsSweep(Sweep):
             self.get_member('step').reset(self)
 
 class Power(PointsSweep):
-    name = 'Power'
+    label = Str(default='Power')
     instr = Str()
     units = Enum('dBm', 'Watts').tag(desc='Logarithmic or linear power sweep')
 
 class Frequency(PointsSweep):
-    name = 'Frequency'
+    label = Str(default='Frequency')
     instr = Str()
 
 class HeterodyneFrequency(PointsSweep):
-    name = 'HeterodyneFrequency'
+    label = Str(default='HeterodyneFrequency')
     instr1 = Str()
     instr2 = Str()
     diffFreq = Float(10.0e-3).tag(desc="IF frequency (GHz)")
 
 class SegmentNum(PointsSweep):
-    name = 'SegmentNum'
+    label = Str(default='SegmentNum')
 
 class SegmentNumWithCals(PointsSweep):
-    name = 'SegmentNumWithCals'
+    label = Str(default='SegmentNumWithCals')
     numCals = Int(0)
 
     def json_encode(self, matlabCompatible=False):
@@ -86,29 +86,29 @@ class SegmentNumWithCals(PointsSweep):
         return jsonDict
     
 class Repeat(Sweep):
-    name = 'Repeat'
+    label = Str(default='Repeat')
     numRepeats = Int(1).tag(desc='How many times to loop.')
 
 class AWGChannel(PointsSweep):
-    name = 'AWGChannel'
+    label = Str(default='AWGChannel')
     channel = Enum('1','2','3','4','1&2','3&4').tag(desc='Which channel or pair to sweep')
     mode = Enum('Amp.', 'Offset').tag(desc='Sweeping amplitude or offset')
     instr = Str()
 
 class AWGSequence(Sweep):
+    label = Str(default='AWGSequence')
     start = Int()
     stop = Int()
     step = Int(1)
-    name = 'AWGSequence'
     sequenceFile = Str().tag(desc='Base string for the sequence files')
 
 class Attenuation(PointsSweep):
-    name = 'Attenuation (dB)'
+    label = Str(default='Attenuation (dB)')
     channel = Enum(1, 2, 3).tag(desc='Which channel to sweep')
     instr = Str()
 
 class DC(PointsSweep):
-    name = 'DC'
+    label = Str(default='DC')
     instr = Str()
 
 newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]

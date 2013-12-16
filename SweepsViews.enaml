@@ -14,7 +14,7 @@ from instruments.AWGs import AWG
 enamldef PointsSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
@@ -46,7 +46,7 @@ enamldef PointsSweepForm(GroupBox):
 enamldef AttenuationSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
@@ -84,7 +84,7 @@ enamldef AttenuationSweepForm(GroupBox):
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
@@ -110,7 +110,7 @@ enamldef SegmentNumForm(GroupBox):
 enamldef SegmentNumWithCalsForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
@@ -140,7 +140,7 @@ enamldef SegmentNumWithCalsForm(GroupBox):
 enamldef AWGChannelForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
             text = 'Label'
@@ -182,7 +182,7 @@ enamldef AWGChannelForm(GroupBox):
 enamldef AWGSequenceForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
             text = 'Label'
@@ -214,7 +214,7 @@ enamldef AWGSequenceForm(GroupBox):
 enamldef RepeatForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
             text = 'Label'
@@ -228,7 +228,7 @@ enamldef RepeatForm(GroupBox):
 enamldef PowerSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
@@ -265,7 +265,7 @@ enamldef PowerSweepForm(GroupBox):
 enamldef HeterodyneSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
