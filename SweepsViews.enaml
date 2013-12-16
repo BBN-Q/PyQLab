@@ -352,7 +352,8 @@ enamldef SweepManager(Container): sweepManager:
                         sweepLib.sweepOrder += [sweepLib.sweepList[0]]
                 Form:
                     initialized ::
-                        sweepLib.sweepOrder = [sweepLib.sweepList[0]] if sweepLib.sweepList else []
+                        if len(sweepLib.sweepOrder) < loop_index+1:
+                            sweepLib.sweepOrder += [sweepLib.sweepList[0]]
                     Label:
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
