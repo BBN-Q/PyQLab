@@ -94,14 +94,13 @@ class InstrumentLibrary(Atom):
                             for ct in range(self.instrDict[instrName].numChannels):
                                 self.instrDict[instrName].channels[ct].offset = instrParams['channels'][ct]['offset']
 
+    def json_encode(self, matlabCompatible=False):
+        #When serializing for matlab return only enabled instruments, otherwise all
+        if matlabCompatible:
+            return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
+        else:
+            return {label:instr for label,instr in self.instrDict.items()}
 
-    #Getter for AWG list
-    def _get_AWGs(self):
-        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, AWGs.AWG)], key = lambda instr : instr.name)
-
-    #Getter for microwave source list
-    def _get_sources(self):
-        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, MicrowaveSources.MicrowaveSource)], key = lambda instr : instr.name)
 
 if __name__ == '__main__':
 

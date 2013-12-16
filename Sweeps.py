@@ -121,7 +121,7 @@ class SweepLibrary(Atom):
 
     sweepManager = Typed(DictManager)
 
-    libFile = Str().tag(transient=True)
+    libFile = Str()
 
     def __init__(self, **kwargs):
         super(SweepLibrary, self).__init__(**kwargs)
@@ -159,6 +159,19 @@ class SweepLibrary(Atom):
                             self.sweepOrder.append(sweepStr)
             except IOError:
                 print('No sweep library found.')
+
+    def json_encode(self, matlabCompatible=False):
+            if matlabCompatible:
+                #  re-assign based on sweepOrder
+                for ct, sweep in enumerate(self.sweepOrder):
+                  self.sweepDict[sweep].order = ct+1
+                return {label:sweep for label,sweep in self.sweepDict.items() if label in self.sweepOrder}
+            else:
+                return {'sweepDict':{label:sweep for label,sweep in self.sweepDict.items()}, 'sweepOrder':self.sweepOrder}
+
+
+
+
 
 if __name__ == "__main__":
     from instruments.MicrowaveSources import AgilentN5183A  

@@ -5,8 +5,8 @@ from atom.api import Atom
 import instruments
 import instruments.DCSources
 from Sweeps import Sweep, SweepLibrary
-# import MeasFilters
-# from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
+import MeasFilters
+from QGL.Channels import PhysicalChannel, LogicalChannel, PhysicalQuadratureChannel
 from types import FunctionType
 
 class LibraryEncoder(json.JSONEncoder):
@@ -132,39 +132,27 @@ class ScripterEncoder(json.JSONEncoder):
 		self.CWMode = CWMode
 
 	def default(self, obj):
-		if isinstance(obj, HasTraits):
-			#For the instrument library pull out enabled instruments from the dictionary
-			if isinstance(obj, instruments.InstrumentManager.InstrumentLibrary):
-				jsonDict = {name:instr for name,instr in obj.instrDict.items() if instr.enabled}
-			#For the measurment library just pull-out enabled measurements from the filter dictionary
-			elif isinstance(obj, MeasFilters.MeasFilterLibrary):
-				jsonDict = {name:filt for name,filt in obj.filterDict.items() if filt.enabled}
-			#For the sweep library we return a list of sweeps in order
-			elif isinstance(obj, SweepLibrary):
-				# reset all 'order' fields to -1, then re-label
-				for sweep in obj.sweepDict.values():
-					sweep.order = -1
-				for ct, sweep in enumerate(obj.sweepOrder):
-					obj.sweepDict[sweep].order = ct+1
-				jsonDict = {name:sweep for name,sweep in obj.sweepDict.items() if name in obj.sweepOrder}
-			#For instruments call the encoder
-			elif isinstance(obj, instruments.Instrument.Instrument):
+		if isinstance(obj, Atom):
+			#Check for a json_encode option
+			try:
 				jsonDict = obj.json_encode(matlabCompatible=True)
-				#If in CWMode, add the run method to AWGs
-				if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
-					jsonDict['run'] = '{}'
-			#Same thing for filters and sweeps
-			elif isinstance(obj, (MeasFilters.MeasFilter, Sweep)):
-				jsonDict = obj.json_encode(matlabCompatible=True)
-			else:
+			except AttributeError:
 				jsonDict = obj.__getstate__()
+			except:
+				print("Unexpected error encoding to JSON")
+				raise 
 
-			#Strip out __traits_version__
-			jsonDict.pop('__traits_version__', None)
-			jsonDict.pop('name', None)
+			#Patch up some issues on the JSON dictionary
+
+			#If in CWMode, add the run method to AWGs
+			if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
+				jsonDict['run'] = '{}'
+
+			#Matlab doesn't use the label
+			jsonDict.pop('label', None)
 
 			return jsonDict
 
 		else:
 			return super(ScripterEncoder, self).default(obj)	
-	
+

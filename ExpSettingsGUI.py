@@ -71,6 +71,9 @@ class ExpSettings(Atom):
         if 'nbrSegments' in quickPick:
             self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
 
+    def json_encode(self, matlabCompatible=True):
+        #We encode this for an experiment settings file so no channels
+        return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
 
 if __name__ == '__main__':
     import Libraries

@@ -106,6 +106,13 @@ class MeasFilterLibrary(Atom):
             except IOError:
                 print("No measurement library found.")
 
+    def json_encode(self, matlabCompatible=False):
+        if matlabCompatible:
+            return {label:filt for label,filt in self.filterDict.items() if filt.enabled}
+        else:
+            return {label:filt for label,filt in self.filterDict.items()}
+
+
 measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]
 
 if __name__ == "__main__":
