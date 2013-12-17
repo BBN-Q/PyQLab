@@ -42,6 +42,14 @@ class ExpSettings(Atom):
         with open(self.curFileName,'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
+    def write_libraries(self):
+        """Write all the libraries to their files.
+
+        """
+        # self.instruments.write_to_file()
+        # self.measurements.write_to_file()
+        self.channels.write_to_file()
+
     def apply_quickpick(self, name):
         try:
             with open(config.quickpickFile, 'r') as FID:

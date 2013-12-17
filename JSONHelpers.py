@@ -14,43 +14,26 @@ class LibraryEncoder(json.JSONEncoder):
 	Helper for QLab to encode all the classes we use.
 	"""
 	def default(self, obj):
-		#For the pulse functions in channels just return the name
-		if isinstance(obj, FunctionType):
-			return obj.__name__
-		elif isinstance(obj, Atom):
-			if isinstance(obj, (instruments.Instrument.Instrument, MeasFilters.MeasFilter)):
+		if isinstance(obj, Atom):
+			#Check for a json_encode option
+			try:
 				jsonDict = obj.json_encode()
-			else:
+			except AttributeError:
 				jsonDict = obj.__getstate__()
-				#Inject the class name for decoding
-				jsonDict['x__class__'] = obj.__class__.__name__
-				jsonDict['x__module__'] = obj.__class__.__module__
+			except:
+				print("Unexpected error encoding to JSON")
+				raise 
 
-			#For channels' linked AWG or generator just return the label
-			if isinstance(obj, PhysicalChannel):
-				awg = jsonDict.pop('AWG')
-				if awg:
-					jsonDict['AWG'] = awg.label
-				source = jsonDict.pop('generator', None)
-				if source:
-					jsonDict['generator'] = source.label
+			#Inject the class name for decoding
+			jsonDict['x__class__'] = obj.__class__.__name__
+			jsonDict['x__module__'] = obj.__class__.__module__
 
-			if isinstance(obj, LogicalChannel):
-				physChan = jsonDict.pop('physChan')
-				if physChan:
-					jsonDict['physChan'] = physChan.label
-			if isinstance(obj, PhysicalQuadratureChannel):
-				gateChan = jsonDict.pop('gateChan')
-				if gateChan:
-					jsonDict['gateChan'] = gateChan.label
-
-			#Strip out __traits_version__
-			# jsonDict.pop('__traits_version__', None)
-
+			if hasattr(obj, 'label') and obj.label == 'BBNAPS1-1m1':
+				import ipdb; ipdb.set_trace()
 			return jsonDict
 
 		else:
-			return super(LibraryEncoder, self).default(obj)
+			return super(LibraryEncoder, self).default(obj)	
 
 class LibraryDecoder(json.JSONDecoder):
 

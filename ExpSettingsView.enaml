@@ -37,7 +37,9 @@ enamldef ExpSettingsView(MainWindow): main:
 			Action:
 				text = 'Save\tCtrl+S'
 				tool_tip << 'Save to {}'.format(curFileName)
-				triggered :: expSettings.write_to_file()
+				triggered :: 
+					expSettings.write_to_file()
+					expSettings.write_libraries()
 			Action:
 				text = 'Save As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
