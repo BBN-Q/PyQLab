@@ -21,6 +21,10 @@ enamldef PointsSweepForm(GroupBox):
         Field:
             text := sweep.label
         Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
             text = 'Start'
         FloatField:
             value := sweep.start
