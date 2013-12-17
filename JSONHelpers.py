@@ -28,8 +28,6 @@ class LibraryEncoder(json.JSONEncoder):
 			jsonDict['x__class__'] = obj.__class__.__name__
 			jsonDict['x__module__'] = obj.__class__.__module__
 
-			if hasattr(obj, 'label') and obj.label == 'BBNAPS1-1m1':
-				import ipdb; ipdb.set_trace()
 			return jsonDict
 
 		else:
