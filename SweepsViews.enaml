@@ -57,6 +57,10 @@ enamldef AttenuationSweepForm(GroupBox):
         Field:
             text := sweep.label
         Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
             text = 'Start'
         FloatField:
             value := sweep.start
@@ -95,6 +99,10 @@ enamldef SegmentNumForm(GroupBox):
         Field:
             text := sweep.label
         Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
             text = 'Start'
         FloatField:
             value := sweep.start
@@ -120,6 +128,10 @@ enamldef SegmentNumWithCalsForm(GroupBox):
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -150,6 +162,10 @@ enamldef AWGChannelForm(GroupBox):
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -193,6 +209,10 @@ enamldef AWGSequenceForm(GroupBox):
         Field:
             text := sweep.label
         Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
             text = 'Base Sequence'
         Field:
             text := sweep.sequenceFile
@@ -225,6 +245,10 @@ enamldef RepeatForm(GroupBox):
         Field:
             text := sweep.label
         Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
             text = 'Num. Reps.'
         IntField:
             value := sweep.numRepeats
@@ -238,6 +262,10 @@ enamldef PowerSweepForm(GroupBox):
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -275,6 +303,10 @@ enamldef HeterodyneSweepForm(GroupBox):
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
