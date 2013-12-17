@@ -46,9 +46,10 @@ class ExpSettings(Atom):
         """Write all the libraries to their files.
 
         """
-        # self.instruments.write_to_file()
-        # self.measurements.write_to_file()
         self.channels.write_to_file()
+        self.instruments.write_to_file()
+        self.measurements.write_to_file()
+        self.sweeps.write_to_file()
 
     def apply_quickpick(self, name):
         try:

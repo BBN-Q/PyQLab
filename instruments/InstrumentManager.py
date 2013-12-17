@@ -98,7 +98,7 @@ class InstrumentLibrary(Atom):
         if matlabCompatible:
             return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
         else:
-            return {label:instr for label,instr in self.instrDict.items()}
+            return {"instrDict":{label:instr for label,instr in self.instrDict.items()}}
 
 
 if __name__ == '__main__':

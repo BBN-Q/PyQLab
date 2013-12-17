@@ -80,8 +80,7 @@ class MeasFilterLibrary(Atom):
     def __getitem__(self, filterName):
         return self.filterDict[filterName]
 
-    # @observe('filterDict')
-    def write_to_library(self):
+    def write_to_file(self):
         #Move import here to avoid circular import
         import JSONHelpers
         if self.libFile:
@@ -110,7 +109,7 @@ class MeasFilterLibrary(Atom):
         if matlabCompatible:
             return {label:filt for label,filt in self.filterDict.items() if filt.enabled}
         else:
-            return {label:filt for label,filt in self.filterDict.items()}
+            return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
 measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]

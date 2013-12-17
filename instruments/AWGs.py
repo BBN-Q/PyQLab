@@ -35,6 +35,10 @@ class AWG(Instrument):
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(AWG, self).json_encode(matlabCompatible)
+
+        #The seq file extension is constant so don't encode
+        del jsonDict["seqFileExt"]
+
         if matlabCompatible:
             channels = jsonDict.pop('channels', None)
             for ct,chan in enumerate(channels):
@@ -42,16 +46,16 @@ class AWG(Instrument):
         return jsonDict
 
 class APS(AWG):
-    # numChannels = 4
+    numChannels = Int(default=4)
     miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
     seqFileExt = Constant('.h5')
 
 class Tek5014(AWG):
-    # numChannels = 4
+    numChannels = Int(default=4)
     seqFileExt = Constant('.awg')
 
 class Tek7000(AWG):
-    # numChannels = 2
+    numChannels = Int(default=2)
     seqFileExt = Constant('.awg')
 
 AWGList = [APS, Tek5014, Tek7000]

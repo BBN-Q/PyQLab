@@ -136,8 +136,7 @@ class SweepLibrary(Atom):
     def _get_sweepList(self):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
-    # @on_trait_change('[sweepDict.anytrait, sweepOrder]')
-    def write_to_library(self):
+    def write_to_file(self):
         import JSONHelpers
         if self.libFile:
             with open(self.libFile, 'w') as FID:
