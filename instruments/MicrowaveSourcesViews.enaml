@@ -24,14 +24,14 @@ enamldef MicrowaveSourceForm(GroupBox):
 		Label:
 			text = "Power"
 		FloatField:
-			maximum = 25
+			maximum = 25.0
 			value := uwSource.power
 			tool_tip = uwSource.get_member("power").metadata["desc"]
 		Label:
 			text = "Frequency"
 		FloatField:
-			maximum = 20
-			minimum = 0
+			maximum = 20.0
+			minimum = 0.0
 			value := uwSource.frequency
 			tool_tip = uwSource.get_member("frequency").metadata["desc"]
 		Label:
