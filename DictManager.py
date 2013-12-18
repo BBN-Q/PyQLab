@@ -44,6 +44,7 @@ class DictManager(Atom):
 	@observe('itemDict')
 	def update_display_list(self, change):
 		"""
-		Eventualy itemDict will be a ContainerDict and this will fire on all events
+		Eventualy itemDict will be a ContainerDict and this will fire on all events. 
+		Will have to be more careful about whether it is a "create" event or "update"
 		"""
-		self.displayList = [v.label for v in self.itemDict.values() if self.displayFilter(v)]
+		self.displayList = sorted([v.label for v in self.itemDict.values() if self.displayFilter(v)])
