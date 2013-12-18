@@ -1,10 +1,11 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    PushButton, ListControl, ListItem, Stack, StackItem, SpinBox
+    PushButton, SpinBox
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog, EnumComboBox
+from widgets import EnumComboBox
+from DictManagerView import DictManagerView
 
 import Sweeps
 
@@ -13,12 +14,16 @@ from instruments.AWGs import AWG
 enamldef PointsSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -45,12 +50,16 @@ enamldef PointsSweepForm(GroupBox):
 enamldef AttenuationSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -83,12 +92,16 @@ enamldef AttenuationSweepForm(GroupBox):
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -106,15 +119,53 @@ enamldef SegmentNumForm(GroupBox):
         IntField:
             value := sweep.numPoints
 
-enamldef AWGChannelForm(GroupBox):
+enamldef SegmentNumWithCalsForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label:
+            text = 'Num Cals'
+        IntField:
+            value := sweep.numCals
+
+enamldef AWGChannelForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.label, sweep.label)
+    Form:
+        Label:
+            text = 'Label'
+        Field:
+            text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -134,13 +185,13 @@ enamldef AWGChannelForm(GroupBox):
         Label:
             text = 'Channel'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'channel'
+            obj := sweep
+            enumName = 'channel'
         Label:
             text = 'Mode'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'mode'
+            obj := sweep
+            enumName = 'mode'
         Label:
             text = 'AWG'
         ComboBox:
@@ -151,12 +202,16 @@ enamldef AWGChannelForm(GroupBox):
 enamldef AWGSequenceForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Base Sequence'
         Field:
@@ -164,28 +219,35 @@ enamldef AWGSequenceForm(GroupBox):
         Label:
             text = 'Start'
         IntField:
-            value << int(sweep.start)
-            value >> sweep.start        
+            # value << int(sweep.start)
+            # value >> sweep.start
+            value := sweep.start 
         Label:
             text = 'Stop'
         IntField:
-            value << int(sweep.stop)
-            value >> sweep.stop       
+            # value << int(sweep.stop)
+            # value >> sweep.stop
+            value := sweep.stop
         Label:
             text = 'Step'
         IntField:
-            value << int(sweep.step)
-            value >> sweep.step        
+            # value << int(sweep.step)
+            # value >> sweep.step
+            value := sweep.step
 
 enamldef RepeatForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.label)
+    title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Num. Reps.'
         IntField:
@@ -194,12 +256,16 @@ enamldef RepeatForm(GroupBox):
 enamldef PowerSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -225,18 +291,22 @@ enamldef PowerSweepForm(GroupBox):
         Label:
             text = 'Units'
         EnumComboBox:
-            myObj := sweep
-            traitName = 'units'
+            obj := sweep
+            enumName = 'units'
 
 enamldef HeterodyneSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
-    title := '{} ({})'.format(sweep.name, sweep.__class__.__name__)
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
             text = 'Label'
         Field:
             text := sweep.label
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
         Label:
             text = 'Start'
         FloatField:
@@ -276,31 +346,25 @@ enamldef EmptySweepForm(Container):
 
 #Map sweeps to view
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, 
-                    Sweeps.SegmentNum:SegmentNumForm, Sweeps.AWGChannel:AWGChannelForm,
-                    Sweeps.AWGSequence:AWGSequenceForm, Sweeps.Attenuation:AttenuationSweepForm, 
-                    Sweeps.Power:PowerSweepForm, Sweeps.Repeat:RepeatForm,
-                    Sweeps.DC:PointsSweepForm, Sweeps.HeterodyneFrequency:HeterodyneSweepForm}
+                    Sweeps.SegmentNum:SegmentNumForm,
+                    Sweeps.SegmentNumWithCals:SegmentNumWithCalsForm,
+                    Sweeps.AWGChannel:AWGChannelForm,
+                    Sweeps.AWGSequence:AWGSequenceForm,
+                    Sweeps.Attenuation:AttenuationSweepForm, 
+                    Sweeps.Power:PowerSweepForm,
+                    Sweeps.Repeat:RepeatForm,
+                    Sweeps.DC:PointsSweepForm,
+                    Sweeps.HeterodyneFrequency:HeterodyneSweepForm}
 
-def update_sweep_order(sweepList, objs):
-    sweepOrder = []
-    for obj in objs:
-        comboBoxIdx = obj[0].children[1].index
-        if comboBoxIdx>-1:
-            sweepOrder.append(sweepList[comboBoxIdx])
-    return sweepOrder
-
-enamldef SweepManager(Container):
-    id: sweepManager
+enamldef SweepManager(Container): sweepManager:
     attr sweepLib
     attr sweepOrderObjs = None
     constraints = [vbox(sweepDictView, hbox(orderBox, spacer))]
     DictManagerView: sweepDictView:
-        myDict = sweepLib.sweepDict
-        modelName = 'sweep'
+        dictManager = sweepLib.sweepManager
         viewMap = sweepViewMap
         viewkwargs = {'possibleInstrs':sweepLib.possibleInstrs}
-        addDialog = lambda root, itemDict, sweepLib=sweepLib : \
-            AddDialog(root, itemDict=itemDict, newClassList=sweepLib.newSweepClasses, objText='Sweep')
+        modelName = 'sweep'
     GroupBox: orderBox:
         title = 'Sweep Order'
         hug_width = 'medium'
@@ -309,27 +373,32 @@ enamldef SweepManager(Container):
             hug_width = 'medium'
             Label:
                 text = "Number of Sweeps"
-            SpinBox:
-                id: numSweepsBox
+            SpinBox: numSweepsBox:
                 minimum = 1
                 maximum = 3
-                value = len(sweepManager.sweepLib.sweepOrder) if len(sweepManager.sweepLib.sweepOrder) > 0 else 1
+                value = len(sweepLib.sweepOrder) if len(sweepLib.sweepOrder) > 0 else 1
         Form: sweepOrderForm:
             hug_width = 'medium'
             Looper: sweepLooper:
                 iterable << range(numSweepsBox.value)
+                iterable ::
+                    if len(sweepLib.sweepOrder) > len(iterable):
+                        sweepLib.sweepOrder = sweepLib.sweepOrder[:numSweepsBox.value]
+                    elif len(sweepLib.sweepOrder) < len(iterable):
+                        sweepLib.sweepOrder += [sweepLib.sweepList[0]]
                 Form:
-                    initialized :: sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
+                    initialized ::
+                        if len(sweepLib.sweepOrder) < loop_index+1:
+                            sweepLib.sweepOrder += [sweepLib.sweepList[0]]
                     Label:
                         text = 'Sweep {}:'.format(loop_index+1)
                     ComboBox:
-                        items << sweepManager.sweepLib.sweepList
-                        index << sweepManager.sweepLib.sweepList.index(sweepManager.sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepManager.sweepLib.sweepOrder) else -1
-                        index :: 
-                            sweepManager.sweepLib.sweepOrder = update_sweep_order(sweepManager.sweepLib.sweepList, sweepLooper.items)
+                        items << sweepLib.sweepList
+                        index << sweepLib.sweepList.index(sweepLib.sweepOrder[loop_index]) if loop_index < len(sweepLib.sweepOrder) else -1
+                        index ::
+                            sweepLib.sweepOrder[loop_index] = sweepLib.sweepList[index]
 
-enamldef SweepManagerWindow(Window):
-    id: sweepManagerTest
+enamldef SweepManagerWindow(Window): sweepManagerTest:
     attr sweepLib
     title = 'Sweep Manager'
     SweepManager:

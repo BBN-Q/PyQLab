@@ -3,10 +3,10 @@ from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, C
 from enaml.stdlib.fields import FloatField, IntField, Field
 from enaml.layout.api import hbox, vbox, spacer
 
-from EnamlHelpers import EnumComboBox
+from widgets import EnumComboBox
 
-from enaml.validation.api import Validator
-from traits.api import Int
+from enaml.validator import Validator
+from atom.api import Int
 
 import Digitizers
 
@@ -40,7 +40,7 @@ class SampleRateValidator(Validator):
 
 enamldef AlazarView(GroupBox):
 	attr instr
-	title = '{} ({})'.format(instr.name, instr.__class__.__name__)
+	title = '{} ({})'.format(instr.label, instr.__class__.__name__)
 	ScrollArea:
 		Container:
 			hug_width = 'medium'
@@ -50,22 +50,22 @@ enamldef AlazarView(GroupBox):
 					Label:
 						text = 'Acquisition Mode:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'acquireMode'
+						obj := instr
+						enumName = 'acquireMode'
 					Label:
 						text = 'Trigger Delay:'
 					FloatField:
 						value := instr.delay
-						tool_tip = instr.trait('delay').desc
+						tool_tip = instr.get_member('delay').metadata['desc']
 					Label:
 						text = 'Sampling Rate (M):'
 					FloatField:
-						minimum = 0
-						maximum = 1200
+						minimum = 0.0
+						maximum = 1200.0
 						validator = SampleRateValidator()
 						value <<  instr.samplingRate/1e6
 						value :: instr.samplingRate = value*1e6
-						tool_tip = instr.trait('samplingRate').desc
+						tool_tip = instr.get_member('samplingRate').metadata['desc']
 			GroupBox: 
 				title = 'Vertical'
 				Form:
@@ -73,22 +73,22 @@ enamldef AlazarView(GroupBox):
 						text = 'Scale:'
 					FloatField:
 						value := instr.verticalScale
-						tool_tip = instr.trait('verticalScale').desc
+						tool_tip = instr.get_member('verticalScale').metadata['desc']
 					Label:
 						text = 'Offset:'
 					FloatField:
 						value := instr.verticalOffset
-						tool_tip = instr.trait('verticalOffset').desc
+						tool_tip = instr.get_member('verticalOffset').metadata['desc']
 					Label:
 						text = 'Coupling:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'verticalCoupling'
+						obj := instr
+						enumName = 'verticalCoupling'
 					Label:
 						text = 'Bandwidth:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'bandwidth'
+						obj := instr
+						enumName = 'bandwidth'
 			GroupBox: 
 				title = 'Averager'
 				Form:
@@ -97,22 +97,22 @@ enamldef AlazarView(GroupBox):
 					IntField:
 						validator = RecordLengthValidator(lengthMult=64)
 						value := instr.recordLength
-						tool_tip = instr.trait('recordLength').desc
+						tool_tip = instr.get_member('recordLength').metadata['desc']
 					Label: 
 						text = 'Segments'
 					IntField:
 						value := instr.nbrSegments
-						tool_tip = instr.trait('nbrSegments').desc
+						tool_tip = instr.get_member('nbrSegments').metadata['desc']
 					Label:
 						text = 'Waveforms'
 					IntField:
 						value := instr.nbrWaveforms
-						tool_tip = instr.trait('nbrWaveforms').desc
+						tool_tip = instr.get_member('nbrWaveforms').metadata['desc']
 					Label:
 						text = 'Round Robins:'
 					IntField:
 						value := instr.nbrRoundRobins
-						tool_tip = instr.trait('nbrRoundRobins').desc
+						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
 			GroupBox: 
 				title = 'Trigger'
 				Form:
@@ -120,32 +120,27 @@ enamldef AlazarView(GroupBox):
 						text = 'Level:'
 					FloatField:
 						value := instr.triggerLevel
-						tool_tip = instr.trait('triggerLevel').desc
+						tool_tip = instr.get_member('triggerLevel').metadata['desc']
 					Label:
 						text = 'Source:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'triggerSource'
+						obj := instr
+						enumName = 'triggerSource'
 					Label:
 						text = 'Coupling:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'triggerCoupling'
+						obj := instr
+						enumName = 'triggerCoupling'
 					Label:
 						text = 'Slope:'
 					EnumComboBox:
-						myObj := instr
-						traitName = 'triggerSlope'
+						obj := instr
+						enumName = 'triggerSlope'
 
-enamldef TestAlazarWindow(Window):
-	id: tester
+enamldef TestAlazarWindow(Window): tester:
 	attr instr
 	title = 'Test Alazar Window'
 	AlazarView:
 		instr := tester.instr
-	# PushButton:
-	# 	text = 'Debug'
-	# 	tool_tip << 'Start debugger console'
-	# 	clicked :: import pdb; pdb.set_trace()
 
 DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView}

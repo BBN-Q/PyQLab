@@ -1,16 +1,14 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
-								PushButton, StackItem
+								PushButton
 from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
 import Attenuators
 
-from EnamlHelpers import EnumComboBox, EnumFloatComboBox
-
 enamldef DigitalAttenuatorForm(GroupBox):
 	attr instr
-	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	padding = 5
 	Form:
 		padding = 2
@@ -18,21 +16,21 @@ enamldef DigitalAttenuatorForm(GroupBox):
 			text = 'Address'
 		Field: 
 			text := instr.address
-			tool_tip = instr.trait('address').desc
+			tool_tip = instr.get_member('address').metadata['desc']
 		Label:
 			text = 'Ch1 Attenuation'
 		FloatField:
 			value := instr.ch1Attenuation
-			tool_tip = instr.trait('ch1Attenuation').desc
+			tool_tip = instr.get_member('ch1Attenuation').metadata['desc']
 		Label:
 			text = 'Ch2 Attenuation'
 		FloatField:
 			value := instr.ch2Attenuation
-			tool_tip = instr.trait('ch2Attenuation').desc
+			tool_tip = instr.get_member('ch2Attenuation').metadata['desc']
 		Label:
 			text = 'Ch3 Attenuation'
 		FloatField:
 			value := instr.ch3Attenuation
-			tool_tip = instr.trait('ch3Attenuation').desc
+			tool_tip = instr.get_member('ch3Attenuation').metadata['desc']
 
 AttenuatorsViewMap = {Attenuators.DigitalAttenuator:DigitalAttenuatorForm}

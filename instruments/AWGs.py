@@ -2,29 +2,30 @@
 AWGs
 """
 
-from traits.api import HasTraits, List, Int, Float, Range, Bool, Enum, File, Constant, Str
+from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
 from Instrument import Instrument
 
 import enaml
-from enaml.stdlib.sessions import show_simple_view
+from enaml.qt.qt_application import QtApplication
 
 
-class AWGChannel(HasTraits):
-    amplitude = Range(value=1.0, low=0.0, high=4.0, desc="Scaling applied to channel amplitude")
-    offset = Range(value=0.0, low=-1.0, high=1.0, desc='D.C. offset applied to channel')
-    enabled = Bool(True, desc='Whether the channel output is enabled.')
+class AWGChannel(Atom):
+    label = Str()
+    amplitude = Float(default=1.0).tag(desc="Scaling applied to channel amplitude")
+    offset = Float(default=0.0).tag(desc='D.C. offset applied to channel')
+    enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
 
 class AWG(Instrument):
-    isMaster = Bool(False, desc='Whether this AWG is master')
-    triggerSource = Enum('Internal', 'External', desc='Source of trigger')
-    triggerInterval = Float(1e-4, desc='Internal trigger interval')
-    samplingRate = Float(1200000000, desc='Sampling rate in Hz')
+    isMaster = Bool(False).tag(desc='Whether this AWG is master')
+    triggerSource = Enum('Internal', 'External').tag(desc='Source of trigger')
+    triggerInterval = Float(1e-4).tag(desc='Internal trigger interval')
+    samplingRate = Float(1200000000).tag(desc='Sampling rate in Hz')
     numChannels = Int()
     channels = List(AWGChannel)
-    seqFile = File(desc='Path to sequence file.')
-    seqForce = Bool(True, desc='Whether to reload the sequence')
-    delay = Float(0.0, desc='time shift to align multiple AWGs')
+    seqFile = Str().tag(desc='Path to sequence file.')
+    seqForce = Bool(True).tag(desc='Whether to reload the sequence')
+    delay = Float(0.0).tag(desc='time shift to align multiple AWGs')
 
     def __init__(self, **traits):
         super(AWG, self).__init__(**traits)
@@ -34,6 +35,10 @@ class AWG(Instrument):
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(AWG, self).json_encode(matlabCompatible)
+
+        #The seq file extension is constant so don't encode
+        del jsonDict["seqFileExt"]
+
         if matlabCompatible:
             channels = jsonDict.pop('channels', None)
             for ct,chan in enumerate(channels):
@@ -41,16 +46,16 @@ class AWG(Instrument):
         return jsonDict
 
 class APS(AWG):
-    numChannels = 4
-    miniLLRepeat = Int(0, desc='How many times to repeat each miniLL')
+    numChannels = Int(default=4)
+    miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
     seqFileExt = Constant('.h5')
 
 class Tek5014(AWG):
-    numChannels = 4
+    numChannels = Int(default=4)
     seqFileExt = Constant('.awg')
 
 class Tek7000(AWG):
-    numChannels = 2
+    numChannels = Int(default=2)
     seqFileExt = Constant('.awg')
 
 AWGList = [APS, Tek5014, Tek7000]
@@ -60,8 +65,11 @@ if __name__ == "__main__":
     with enaml.imports():
         from AWGViews import AWGView
     
-    awg = APS(name='BBNAPS1')
-    session = show_simple_view(AWGView(awg=awg))
+    awg = APS(label='BBNAPS1')
+    app = QtApplication()
+    view = AWGView(awg=awg)
+    view.show()
+    app.start()
 
 
 def get_empty_channel_set(AWG):

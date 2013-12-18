@@ -6,11 +6,11 @@ from enaml.core.api import Conditional
 
 import DCSources
 
-from EnamlHelpers import EnumComboBox, EnumFloatComboBox
+from widgets import EnumComboBox, EnumFloatComboBox
 
 enamldef YokoGS200Form(GroupBox):
 	attr instr
-	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	title := "{} ({})".format(instr.label, instr.__class__.__name__)
 	padding = 5
 	Form:
 		padding = 2
@@ -18,26 +18,26 @@ enamldef YokoGS200Form(GroupBox):
 			text = 'Address'
 		Field: 
 			text := instr.address
-			tool_tip = instr.trait('address').desc
+			tool_tip = instr.get_member('address').metadata['desc']
 		Label:
 			text = 'Mode'
 		EnumComboBox:
-			myObj := instr
-			traitName = 'mode'
+			obj := instr
+			enumName = 'mode'
 		Label:
 			text = 'Range'
 		EnumFloatComboBox:
-			myObj := instr
-			traitName = 'outputRange'
+			obj := instr
+			floatName = 'outputRange'
 		Label:
 			text = 'Output'
 		CheckBox:
 			checked := instr.output
-			tool_tip = instr.trait('output').desc
+			tool_tip = instr.get_member('output').metadata['desc']
 		Label:
 			text = 'Value'
 		FloatField:
 			value := instr.value
-			tool_tip = instr.trait('value').desc
+			tool_tip = instr.get_member('value').metadata['desc']
 
 DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form}

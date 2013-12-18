@@ -1,7 +1,7 @@
-from traits.api import HasTraits, Instance, Str, Bool, on_trait_change
+from atom.api import Atom, Typed, Str, Bool
+
 import enaml
-from enaml.stdlib.sessions import show_simple_view
-# from enaml.qt.qt_application import QtApplication
+from enaml.qt.qt_application import QtApplication
 
 import argparse, sys
 
@@ -13,20 +13,20 @@ import json
 import os
 import config
 
-class ExpSettings(HasTraits):
+class ExpSettings(Atom):
 
-    sweeps = Instance(Sweeps.SweepLibrary)
-    instruments = Instance(InstrumentLibrary)
-    measurements = Instance(MeasFilters.MeasFilterLibrary)
-    channels = Instance(QGL.Channels.ChannelLibrary, transient=True)
+    sweeps = Typed(Sweeps.SweepLibrary)
+    instruments = Typed(InstrumentLibrary)
+    measurements = Typed(MeasFilters.MeasFilterLibrary)
+    channels = Typed(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
-    curFileName = Str('DefaultExpSettings.json', transient=True)
+    curFileName = Str('DefaultExpSettings.json')
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
 
-    @on_trait_change('instruments.instrDict_items')
+    # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
         if self.sweeps:
             del self.sweeps.possibleInstrs[:]
@@ -41,6 +41,15 @@ class ExpSettings(HasTraits):
         import JSONHelpers
         with open(self.curFileName,'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
+
+    def write_libraries(self):
+        """Write all the libraries to their files.
+
+        """
+        self.channels.write_to_file()
+        self.instruments.write_to_file()
+        self.measurements.write_to_file()
+        self.sweeps.write_to_file()
 
     def apply_quickpick(self, name):
         try:
@@ -71,6 +80,9 @@ class ExpSettings(HasTraits):
         if 'nbrSegments' in quickPick:
             self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
 
+    def json_encode(self, matlabCompatible=True):
+        #We encode this for an experiment settings file so no channels
+        return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
 
 if __name__ == '__main__':
     import Libraries
@@ -89,10 +101,8 @@ if __name__ == '__main__':
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
 
-    # app = QtApplication([])
-    # view = ExpSettingsView(expSettings=expSettings)
-    # view.show()
+    app = QtApplication()
+    view = ExpSettingsView(expSettings=expSettings)
+    view.show()
+    app.start()
 
-    # app.start()
-
-    app = show_simple_view(ExpSettingsView(expSettings=expSettings))
