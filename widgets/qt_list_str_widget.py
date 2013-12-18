@@ -99,8 +99,9 @@ class QtListStrWidget(RawWidget):
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
             self.items[itemRow] = item.text()
-        self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
-        self.enable_changed(item.text(), self.checked_states[itemRow])
+        else:
+            self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
+            self.enable_changed(item.text(), self.checked_states[itemRow])
 
     #--------------------------------------------------------------------------
     # ProxyListStrView API
@@ -114,16 +115,15 @@ class QtListStrWidget(RawWidget):
         nitems = len(items)
         for idx, item in enumerate(items[:count]):
             itemWidget = widget.item(idx)
-            itemWidget.setText(item)
+            #Update checked state before the text so that we can distinguish a checked state change from a label change
             itemWidget.setCheckState(Qt.Checked if self.checked_states[idx] else Qt.Unchecked)
+            itemWidget.setText(item)
         if nitems > count:
             for item in items[count:]:
-                self.checked_states.append(True)
                 self.add_item(widget, item)
         elif nitems < count:
             for idx in reversed(xrange(nitems, count)):
                 widget.takeItem(idx)
-                del self.checked_states[-1]
 
     #--------------------------------------------------------------------------
     # Observers
@@ -134,10 +134,18 @@ class QtListStrWidget(RawWidget):
 
         """
         # The superclass handler implementation is sufficient.
-        name = change['name']
         if self.get_widget():
-            if name == 'items':
-                self.set_items(self.items)       
+            if change["name"] == "items":
+                if change["type"] == "update":
+                    if len(change["oldvalue"]) > len(change["value"]):
+                        #We've lost an item
+                        removedKey = set(change["oldvalue"]) - set(change["value"])
+                        removedIndex = change["oldvalue"].index(list(removedKey)[0])
+                        del self.checked_states[removedIndex]
+                    elif len(change["oldvalue"]) < len(change["value"]):
+                        self.checked_states.append(True)
+
+            self.set_items(self.items)       
 
 # Helper methods
 def _set_item_flag(item, flag, enabled):
