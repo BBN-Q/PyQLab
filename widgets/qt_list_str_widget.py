@@ -115,12 +115,15 @@ class QtListStrWidget(RawWidget):
         for idx, item in enumerate(items[:count]):
             itemWidget = widget.item(idx)
             itemWidget.setText(item)
+            itemWidget.setCheckState(Qt.Checked if self.checked_states[idx] else Qt.Unchecked)
         if nitems > count:
             for item in items[count:]:
+                self.checked_states.append(True)
                 self.add_item(widget, item)
         elif nitems < count:
             for idx in reversed(xrange(nitems, count)):
                 widget.takeItem(idx)
+                del self.checked_states[-1]
 
     #--------------------------------------------------------------------------
     # Observers
