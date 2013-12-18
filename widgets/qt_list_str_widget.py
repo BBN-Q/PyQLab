@@ -98,6 +98,7 @@ class QtListStrWidget(RawWidget):
         if oldLabel != newLabel:
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
+            self.items[itemRow] = item.text()
         self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
         self.enable_changed(item.text(), self.checked_states[itemRow])
 
