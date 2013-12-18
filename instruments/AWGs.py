@@ -2,7 +2,7 @@
 AWGs
 """
 
-from atom.api import Atom, List, Int, Float, FloatRange, Range, Enum, Bool, Constant, Str
+from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
 from Instrument import Instrument
 
@@ -12,8 +12,8 @@ from enaml.qt.qt_application import QtApplication
 
 class AWGChannel(Atom):
     label = Str()
-    amplitude = FloatRange(value=1.0, low=0.0, high=4.0).tag(desc="Scaling applied to channel amplitude")
-    offset = FloatRange(value=0.0, low=-1.0, high=1.0).tag(desc='D.C. offset applied to channel')
+    amplitude = Float(default=1.0).tag(desc="Scaling applied to channel amplitude")
+    offset = Float(default=0.0).tag(desc='D.C. offset applied to channel')
     enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
 
 class AWG(Instrument):
