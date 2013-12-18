@@ -17,10 +17,6 @@ enamldef PointsSweepForm(GroupBox):
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
-        Label:
             text = 'Axis Label'
         Field:
             text := sweep.axisLabel
@@ -52,10 +48,6 @@ enamldef AttenuationSweepForm(GroupBox):
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
-        Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
         Label:
             text = 'Axis Label'
         Field:
@@ -95,10 +87,6 @@ enamldef SegmentNumForm(GroupBox):
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
-        Label:
             text = 'Axis Label'
         Field:
             text := sweep.axisLabel
@@ -124,10 +112,6 @@ enamldef SegmentNumWithCalsForm(GroupBox):
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
-        Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
         Label:
             text = 'Axis Label'
         Field:
@@ -158,10 +142,6 @@ enamldef AWGChannelForm(GroupBox):
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
-        Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
         Label:
             text = 'Axis Label'
         Field:
@@ -205,10 +185,6 @@ enamldef AWGSequenceForm(GroupBox):
     title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
-        Label:
             text = 'Axis Label'
         Field:
             text := sweep.axisLabel
@@ -241,10 +217,6 @@ enamldef RepeatForm(GroupBox):
     title := '{} ({})'.format(sweep.label, sweep.label)
     Form:
         Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
-        Label:
             text = 'Axis Label'
         Field:
             text := sweep.axisLabel
@@ -258,10 +230,6 @@ enamldef PowerSweepForm(GroupBox):
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
-        Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
         Label:
             text = 'Axis Label'
         Field:
@@ -299,10 +267,6 @@ enamldef HeterodyneSweepForm(GroupBox):
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
-        Label:
-            text = 'Label'
-        Field:
-            text := sweep.label
         Label:
             text = 'Axis Label'
         Field:
