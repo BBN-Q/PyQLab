@@ -124,7 +124,7 @@ enamldef StateComparatorView(GroupBox):
             text = 'Integration time (samples)'
         IntField:
             value := myFilter.integrationTime
-            tool_tip = myFilter.trait('integrationTime').desc
+            tool_tip = myFilter.get_member('integrationTime').metadata['desc']
         Label:
             text = "Plot mode"
         EnumComboBox:
