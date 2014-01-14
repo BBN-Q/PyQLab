@@ -70,10 +70,10 @@ class ControlFlow(unittest.TestCase):
         label(seq1)
         label(seq2)
         mainLL, branchLL, wfs1 = Compiler.compile_control_flow_sequence(seq1 + seq2)
-        # mainLL, branchLL, wfs2 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1), Y(q1)])
-        # assert(wfs1 == wfs2)
-        # mainLL, branchLL, wfs3 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
-        # assert(wfs1 == wfs3)
+        mainLL, branchLL, wfs2 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1), Y(q1)])
+        assert(wfs1 == wfs2)
+        mainLL, branchLL, wfs3 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
+        assert(wfs1 == wfs3)
 
 
 if __name__ == "__main__":
