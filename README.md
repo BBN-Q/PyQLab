@@ -7,7 +7,7 @@ Contents:
 
 ##Setup instructions
 
-The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies (although you may have to `conda update`) except for watchdog which can be installed with `pip install watchdog`.  Until an issue is fixed upstream you need to either use PyQt (set environment variable `QT_API=pyqt`) or install a patched version of enaml (`pip install git+git://github.com/caryan/enaml-nucleic.git@fix/pyside-dialogs`). 
+The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies (although you may have to `conda update`) except for watchdog which can be installed with `pip install watchdog`.  Until an issue is fixed upstream you need to either use PyQt (set environment variable `QT_API=pyqt`) or install a patched version of enaml (`pip install git+git://github.com/caryan/enaml-nucleic.git@fix/pyside-dialogs`) and set `QT_API=pyside`. 
 
 Use of the `QGL` module requires the PyQLab folder to be included in `PYTHONPATH`. On windows machines, you add/modify this environment variable by going to System -> Advanced Settings -> Environment variables. On Mac/Linux machines add the following line to your .bashrc or .bash_profile:
 ```
