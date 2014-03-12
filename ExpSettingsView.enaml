@@ -99,7 +99,9 @@ enamldef ExpSettingsView(MainWindow): main:
 					sweepLib := expSettings.sweeps
 		PushButton: settingsApply:
 			text = 'Apply'
-			clicked :: expSettings.write_to_file()
+			clicked ::
+				expSettings.write_to_file()
+				expSettings.write_libraries()
 
 enamldef QuickPickView(Window): dlg:
 	title = 'Quick Picker'
