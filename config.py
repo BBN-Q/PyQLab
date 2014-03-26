@@ -6,6 +6,7 @@ import sys
 
 #Load the configuration from the json file and populate the global configuration dictionary
 rootFolder = os.path.dirname( os.path.abspath(__file__) )
+rootFolder = rootFolder.replace('\\', '/') # use unix-like convention
 PyQLabCfgFile = os.path.join(rootFolder, 'config.json')
 if not os.path.isfile(PyQLabCfgFile):
 	# build a config file from the template
