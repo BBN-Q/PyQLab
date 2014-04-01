@@ -13,7 +13,8 @@ from instruments.Instrument import Instrument
 from DictManager import DictManager
 
 import numpy as np
-import json 
+import json
+import floatbits
 
 class Sweep(Atom):
     label = Str()
@@ -44,7 +45,8 @@ class PointsSweep(Sweep):
     numPoints = Int(1)
 
     def _set_step(self, step):
-        self.numPoints = np.arange(self.start, self.stop-2*np.finfo(float).eps, step).size+1
+        # int() will give floor() casted to an Int
+        self.numPoints = int((self.stop - self.start)/floatbits.prevfloat(step)) + 1
 
     def _get_step(self):
         return (self.stop - self.start)/max(1, self.numPoints-1)
