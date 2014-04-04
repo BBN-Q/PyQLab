@@ -77,12 +77,12 @@ enamldef ExpSettingsView(MainWindow): main:
 					dlg.open()
 			Action:
 				text = "Stash current settings"
-				enabled = False;
+				enabled = False
 				triggered ::
 					NotificationPopup(main, window_type='window', displayText="Settings stashed").show()
 			Action:
 				text = "Pop stashed settings"
-				enabled = False;
+				enabled = False
 				triggered ::
 					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
 			Action:
