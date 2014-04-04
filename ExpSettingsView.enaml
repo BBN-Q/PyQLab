@@ -25,12 +25,15 @@ def get_update_script_file_callback(expSettings):
 			expSettings.curFileName = dlg.path
 	return update_script_file_callback
 
-enamldef QuickPickMenu(Menu): 
+enamldef QuickPickMenu(Menu):
+	attr expSettings  
 	Looper:
 		iterable << quickpickList
 		Action:
 			text = loop_item
-			triggered :: print loop_item + " selected"
+			triggered ::
+				print loop_item + " selected"
+				expSettings.apply_quickpick(loop_item)
 	
 enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
@@ -104,7 +107,7 @@ enamldef ExpSettingsView(MainWindow): main:
 					sweepLib := expSettings.sweeps
 		PushButton: quickPick:
 			text = "QuickPick"
-			clicked :: QuickPickMenu().popup()
+			clicked :: QuickPickMenu(expSettings=expSettings).popup()
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::

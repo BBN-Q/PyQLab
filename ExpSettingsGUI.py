@@ -63,9 +63,9 @@ class ExpSettings(Atom):
 
         #Apply sequence name
         if 'seqFile' in quickPick and 'seqDir' in quickPick:
-            for awg in self.instruments.AWGs:
-                awg.seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
-                                 '{}-{}{}'.format(quickPick['seqFile'], awg.name, awg.seqFileExt)))
+            for awgName in self.instruments.AWGs.displayList:
+                self.instruments[awgName].seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
+                                 '{}-{}{}'.format(quickPick['seqFile'], awgName, self.instruments[awgName].seqFileExt)))
 
         #Apply sweep info
         if 'sweeps' in quickPick:
