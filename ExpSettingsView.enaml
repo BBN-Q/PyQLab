@@ -78,9 +78,15 @@ enamldef ExpSettingsView(MainWindow): main:
 			Action:
 				text = 'Store to quick pick\tCtrl+O'
 				triggered :: print 'clicked store to quick pick'
-			Action:
-				text = 'Load from quick pick\tCtrl+L'
-				triggered :: QuickPickView(main)
+			Menu:
+				title = 'Load from quick pick'
+				Looper:
+					iterable << quickpickList
+					Action:
+						text = loop_item
+						triggered ::
+							chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
+							expSettings.apply_quickpick(loop_item)
 			Action:
 				text = 'Quit\tCtrl+Q'
 				triggered :: main.close()
