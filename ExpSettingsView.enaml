@@ -76,7 +76,18 @@ enamldef ExpSettingsView(MainWindow): main:
 						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
 					dlg.open()
 			Action:
+				text = "Stash current settings"
+				enabled = False;
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Settings stashed").show()
+			Action:
+				text = "Pop stashed settings"
+				enabled = False;
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
+			Action:
 				text = 'Store to quick pick\tCtrl+O'
+				enabled = False
 				triggered :: print 'clicked store to quick pick'
 			Menu:
 				title = 'Load from quick pick'

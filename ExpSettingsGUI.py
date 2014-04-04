@@ -26,6 +26,7 @@ class ExpSettings(Atom):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
 
+    # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
         if self.sweeps:
