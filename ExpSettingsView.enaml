@@ -46,8 +46,8 @@ enamldef NotificationPopup(PopupView):
 	anchor = (1.0, 1.0)
 	offset = (-10, -10)
 	timeout = 1
-	fade_in_duration = 500
-	fade_out_duration = 500
+	fade_in_duration = 200
+	fade_out_duration = 200
 	Container:
 		Label:
 			foreground = 'white'
