@@ -67,6 +67,7 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered :: 
 					expSettings.write_to_file()
 					expSettings.write_libraries()
+					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
 			Action:
 				text = 'Save As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
@@ -134,6 +135,8 @@ enamldef ExpSettingsView(MainWindow): main:
 			clicked ::
 				expSettings.write_to_file()
 				expSettings.write_libraries()
+				NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+
 
 
 
