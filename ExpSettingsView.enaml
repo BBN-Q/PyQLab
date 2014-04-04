@@ -1,5 +1,5 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
-					 Menu, Action, FileDialog, ComboBox, PushButton
+					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer
 
@@ -25,6 +25,8 @@ def get_update_script_file_callback(expSettings):
 			expSettings.curFileName = dlg.path
 	return update_script_file_callback
 
+chosenQuickPick = bytearray("")
+
 enamldef QuickPickMenu(Menu):
 	attr expSettings  
 	Looper:
@@ -32,9 +34,26 @@ enamldef QuickPickMenu(Menu):
 		Action:
 			text = loop_item
 			triggered ::
-				print loop_item + " selected"
+				chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
 				expSettings.apply_quickpick(loop_item)
-	
+
+enamldef NotificationPopup(PopupView):
+	attr displayText = ''
+	foreground = 'white'
+	background = 'rgba(30, 30, 30, 0.85)'
+	window_type = 'tool_tip'
+	parent_anchor = (1.0, 1.0)
+	anchor = (1.0, 1.0)
+	offset = (-10, -10)
+	timeout = 1
+	fade_in_duration = 500
+	fade_out_duration = 500
+	Container:
+		Label:
+			foreground = 'white'
+			text = displayText
+			align = 'center'
+
 enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
 	attr curFileName := expSettings.curFileName
@@ -107,7 +126,9 @@ enamldef ExpSettingsView(MainWindow): main:
 					sweepLib := expSettings.sweeps
 		PushButton: quickPick:
 			text = "QuickPick"
-			clicked :: QuickPickMenu(expSettings=expSettings).popup()
+			clicked ::
+				QuickPickMenu(expSettings=expSettings).popup()
+				NotificationPopup(main, window_type='window', parent_anchor = (-1.0, 1.0), displayText="{} applied".format(str(chosenQuickPick))).show()
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::
