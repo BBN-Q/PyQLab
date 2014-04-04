@@ -1,6 +1,6 @@
-from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, GroupBox, Label, MenuBar, \
+from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
 					 Menu, Action, FileDialog, ComboBox, PushButton
-
+from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer
 
 from QGL.ChannelsViews import ChannelLibraryView
@@ -19,14 +19,19 @@ except IOError:
     print('No quick pick file found.')
     quickpickList = []
 
-
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
 	return update_script_file_callback
 
-
+enamldef QuickPickMenu(Menu): 
+	Looper:
+		iterable << quickpickList
+		Action:
+			text = loop_item
+			triggered :: print loop_item + " selected"
+	
 enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
 	attr curFileName := expSettings.curFileName
@@ -70,7 +75,7 @@ enamldef ExpSettingsView(MainWindow): main:
 	Container:
 		constraints = [
 			vbox(tabs,
-				hbox(spacer, settingsApply),
+				hbox(quickPick, spacer, settingsApply),
 				spacer)
 		]
 		padding = 5
@@ -97,31 +102,14 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
+		PushButton: quickPick:
+			text = "QuickPick"
+			clicked :: QuickPickMenu().popup()
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
 				expSettings.write_libraries()
 
-enamldef QuickPickView(Window): dlg:
-	title = 'Quick Picker'
-	Container:
-		constraints = [
-			vbox(
-				quickpickCombo,
-				spacer,
-				hbox(spacer.flex(), cancel, load))
-			]
-		ComboBox: quickpickCombo:
-			items << quickpickList
-			hug_width = 'medium'
-		PushButton: cancel:
-			text = 'Cancel'
-			clicked :: dlg.close()
-		PushButton: load:
-			text = 'Load'
-			clicked ::
-				expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
-				dlg.close()
-			hug_width = 'medium'
+
 

@@ -91,7 +91,7 @@ if __name__ == '__main__':
     expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
                      measurements=Libraries.measLib,  channels=Libraries.channelLib)
 
-    #If we were passed a scripter file to write to the use it
+    #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
     parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)    
     options =  parser.parse_args(sys.argv[1:])
