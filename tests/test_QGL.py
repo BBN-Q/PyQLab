@@ -21,7 +21,7 @@ class SingleQubit(unittest.TestCase):
     
     def test_compile(self):
         seqs = self.test_Ramsey()
-        LL, wfLib = Compiler.compile_sequences([Compiler.normalize(s) for s in seqs])
+        LL, wfLib = Compiler.compile_sequences(seqs)
         assert(len(LL[self.q1]) == 11)
         assert(len(LL[self.q1][0]) == 2)
         assert( all([len(miniLL) == 3 for miniLL in LL[self.q1][1:]]) )
@@ -44,7 +44,7 @@ class MultiQubit(unittest.TestCase):
     
     def test_compile(self):
         seq = self.test_Operators()
-        LL, wfLib = Compiler.compile_sequences(Compiler.normalize(seq))
+        LL, wfLib = Compiler.compile_sequences(seq)
         assert(len(LL[self.q1]) == 1)
         assert(len(LL[self.q1][0]) == 5)
         assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
