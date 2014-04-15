@@ -17,8 +17,8 @@ class ControlFlow(unittest.TestCase):
         label(seq1)
         label(seq2)
         # print qif(0, seq1, seq2)
-        # print ([CmpEq(0), Goto(label(seq1))] + seq2, seq1 + [Goto(endlabel(seq2))])
-        assert( qif(0, seq1, seq2) == [CmpEq(0), Goto(label(seq1)), (seq2, seq1 + [ Goto(endlabel(seq2)) ])] )
+        # print ([CmpEq(0), Goto(label(seq1))] + seq2 + [Goto(endlabel(seq1))] + seq1
+        assert( qif(0, seq1, seq2) == [CmpEq(0), Goto(label(seq1))] + seq2 + [Goto(endlabel(seq1))] + seq1 )
 
     def test_qwhile(self):
         q1 = self.q1
@@ -69,10 +69,10 @@ class ControlFlow(unittest.TestCase):
         seq2 = [X(q1), Y(q1), Z(q1)]
         label(seq1)
         label(seq2)
-        mainLL, branchLL, wfs1 = Compiler.compile_control_flow_sequence(seq1 + seq2)
-        mainLL, branchLL, wfs2 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1), Y(q1)])
+        mainLL, wfs1 = Compiler.compile_sequence(seq1 + seq2)
+        mainLL, wfs2 = Compiler.compile_sequence([X(q1), qif(0, seq1), Y(q1)])
         assert(wfs1 == wfs2)
-        mainLL, branchLL, wfs3 = Compiler.compile_control_flow_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
+        mainLL, wfs3 = Compiler.compile_sequence([X(q1), qif(0, seq1, seq2), Y(q1)])
         assert(wfs1 == wfs3)
 
 
