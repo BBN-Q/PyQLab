@@ -1,6 +1,6 @@
-from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, GroupBox, Label, MenuBar, \
-					 Menu, Action, FileDialog, ComboBox, PushButton
-
+from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
+					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label
+from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer
 
 from QGL.ChannelsViews import ChannelLibraryView
@@ -19,13 +19,40 @@ except IOError:
     print('No quick pick file found.')
     quickpickList = []
 
-
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
 	return update_script_file_callback
 
+chosenQuickPick = bytearray("")
+
+enamldef QuickPickMenu(Menu):
+	attr expSettings  
+	Looper:
+		iterable << quickpickList
+		Action:
+			text = loop_item
+			triggered ::
+				chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
+				expSettings.apply_quickpick(loop_item)
+
+enamldef NotificationPopup(PopupView):
+	attr displayText = ''
+	foreground = 'white'
+	background = 'rgba(30, 30, 30, 0.85)'
+	window_type = 'tool_tip'
+	parent_anchor = (1.0, 1.0)
+	anchor = (1.0, 1.0)
+	offset = (-10, -10)
+	timeout = 1
+	fade_in_duration = 200
+	fade_out_duration = 200
+	Container:
+		Label:
+			foreground = 'white'
+			text = displayText
+			align = 'center'
 
 enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
@@ -40,6 +67,7 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered :: 
 					expSettings.write_to_file()
 					expSettings.write_libraries()
+					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
 			Action:
 				text = 'Save As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
@@ -48,11 +76,28 @@ enamldef ExpSettingsView(MainWindow): main:
 						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
 					dlg.open()
 			Action:
-				text = 'Store to quick pick\tCtrl+O'
-				triggered :: print 'clicked store to quick pick'
+				text = "Stash current settings"
+				enabled = False
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Settings stashed").show()
 			Action:
-				text = 'Load from quick pick\tCtrl+L'
-				triggered :: QuickPickView(main)
+				text = "Pop stashed settings"
+				enabled = False
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
+			Action:
+				text = 'Store to quick pick\tCtrl+O'
+				enabled = False
+				triggered :: print 'clicked store to quick pick'
+			Menu:
+				title = 'Load from quick pick'
+				Looper:
+					iterable << quickpickList
+					Action:
+						text = loop_item
+						triggered ::
+							chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
+							expSettings.apply_quickpick(loop_item)
 			Action:
 				text = 'Quit\tCtrl+Q'
 				triggered :: main.close()
@@ -70,7 +115,7 @@ enamldef ExpSettingsView(MainWindow): main:
 	Container:
 		constraints = [
 			vbox(tabs,
-				hbox(spacer, settingsApply),
+				hbox(quickPick, spacer, settingsApply),
 				spacer)
 		]
 		padding = 5
@@ -97,31 +142,18 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
+		PushButton: quickPick:
+			text = "QuickPick"
+			clicked ::
+				QuickPickMenu(expSettings=expSettings).popup()
+				NotificationPopup(main, window_type='window', parent_anchor = (-1.0, 1.0), displayText="{} applied".format(str(chosenQuickPick))).show()
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
 				expSettings.write_libraries()
+				NotificationPopup(main, window_type='window', displayText="Settings saved").show()
 
-enamldef QuickPickView(Window): dlg:
-	title = 'Quick Picker'
-	Container:
-		constraints = [
-			vbox(
-				quickpickCombo,
-				spacer,
-				hbox(spacer.flex(), cancel, load))
-			]
-		ComboBox: quickpickCombo:
-			items << quickpickList
-			hug_width = 'medium'
-		PushButton: cancel:
-			text = 'Cancel'
-			clicked :: dlg.close()
-		PushButton: load:
-			text = 'Load'
-			clicked ::
-				expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
-				dlg.close()
-			hug_width = 'medium'
+
+
 

@@ -26,6 +26,7 @@ class ExpSettings(Atom):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
 
+    # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
         if self.sweeps:
@@ -63,9 +64,9 @@ class ExpSettings(Atom):
 
         #Apply sequence name
         if 'seqFile' in quickPick and 'seqDir' in quickPick:
-            for awg in self.instruments.AWGs:
-                awg.seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
-                                 '{}-{}{}'.format(quickPick['seqFile'], awg.name, awg.seqFileExt)))
+            for awgName in self.instruments.AWGs.displayList:
+                self.instruments[awgName].seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
+                                 '{}-{}{}'.format(quickPick['seqFile'], awgName, self.instruments[awgName].seqFileExt)))
 
         #Apply sweep info
         if 'sweeps' in quickPick:
@@ -91,7 +92,7 @@ if __name__ == '__main__':
     expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
                      measurements=Libraries.measLib,  channels=Libraries.channelLib)
 
-    #If we were passed a scripter file to write to the use it
+    #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
     parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)    
     options =  parser.parse_args(sys.argv[1:])
