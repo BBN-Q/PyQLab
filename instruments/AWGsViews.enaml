@@ -4,13 +4,12 @@ from enaml.layout.api import hbox, vbox, spacer
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Looper, Include, Conditional
 
-from EnamlHelpers import EnumComboBox
+from widgets import EnumComboBox
 
 import AWGs
 import config
 
-enamldef ChannelView(GroupBox):
-	id: myChanView
+enamldef ChannelView(GroupBox): 
 	attr chan
 	attr number
 	share_layout=True
@@ -26,21 +25,21 @@ enamldef ChannelView(GroupBox):
 			constraints = [width == 50]
 			maximum = 4.0
 			minimum = 0.0
-			value := myChanView.chan.amplitude
-			tool_tip = myChanView.chan.trait('amplitude').desc
+			value := chan.amplitude
+			tool_tip = chan.get_member('amplitude').metadata["desc"]
 		Label: 
 			text = 'Offset'
 		FloatField:
 			constraints = [width == 50]
 			maximum = 1.0
 			minimum = -1.0
-			value := myChanView.chan.offset
-			tool_tip = myChanView.chan.trait('offset').desc
+			value := chan.offset
+			tool_tip = chan.get_member('offset').metadata["desc"]
 		Label:
 			text = 'Enabled'
 		CheckBox:
-			checked := myChanView.chan.enabled
-			tool_tip = myChanView.chan.trait('enabled').desc
+			checked := chan.enabled
+			tool_tip = chan.get_member('enabled').metadata["desc"]
 
 
 def get_seq_file_callback(awg):
@@ -49,11 +48,10 @@ def get_seq_file_callback(awg):
 			awg.seqFile = dlg.path
 	return seq_file_callback
 
-enamldef AWGForm(GroupBox):
-	id: myAWGForm
+enamldef AWGForm(GroupBox): myAWGForm:
 	attr awg
 	padding = 5
-	title = '{} ({})'.format(awg.name, awg.__class__.__name__)
+	title = '{} ({})'.format(awg.label, awg.__class__.__name__)
 	constraints = [vbox(hbox(formItems1, formItems2, spacer), channels)]
 	Form: formItems1:
 		hug_width = 'medium'
@@ -68,15 +66,15 @@ enamldef AWGForm(GroupBox):
 		Label:
 			text = 'Trigger Interval'
 		FloatField:
-			maximum = 15
+			maximum = 15.0
 			minimum = 10e-9
 			value := myAWGForm.awg.triggerInterval
-			tool_tip = myAWGForm.awg.trait('triggerInterval').desc
+			tool_tip = myAWGForm.awg.get_member('triggerInterval').metadata["desc"]
 		Label:
 			text = "Trigger Source"
 		EnumComboBox:
-			myObj := myAWGForm.awg
-			traitName = 'triggerSource'
+			obj := myAWGForm.awg
+			enumName = 'triggerSource'
 
 	Form: formItems2:
 		Label:
@@ -98,19 +96,18 @@ enamldef AWGForm(GroupBox):
 				text = 'Mini LL Repeat'
 			IntField:
 				value := myAWGForm.awg.miniLLRepeat
-				tool_tip = myAWGForm.awg.trait('miniLLRepeat').desc
+				tool_tip = myAWGForm.awg.get_member('miniLLRepeat').metadata["desc"]
 		Label:
 			text = 'Delay'
 		FloatField:
 			value := myAWGForm.awg.delay
-			tool_tip = myAWGForm.awg.trait('delay').desc
+			tool_tip = myAWGForm.awg.get_member('delay').metadata["desc"]
 	Container: channels:
 		constraints = [hbox(hbox(*inc.objects), spacer)]
 		Include: inc:
 			objects << [ChannelView(chan=chan, number=ct+1) for ct,chan in enumerate(myAWGForm.awg.channels)]
 
-enamldef AWGView(Window):
-	id: main
+enamldef AWGView(Window): main:
 	attr awg
 	title = awg.name
 	Container:

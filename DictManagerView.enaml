@@ -1,0 +1,53 @@
+"""
+Reusable widgets for handling lists and dictionaries
+"""
+
+from widgets import QtListStrWidget
+from enaml.widgets.api import Window, Container, PushButton, Form, Label, Field, ComboBox
+from enaml.stdlib.mapped_view import MappedView
+from enaml.core.declarative import d_
+
+from enaml.layout.api import hbox, vbox, spacer
+
+
+enamldef DictManagerView(Container): dictView:
+	"""
+	Display a list of items on the left; a view of the selected item on the right and some add/delete buttons.
+	"""
+	attr dictManager
+	attr viewMap # dictionary mapping classes to views
+	attr viewkwargs # extra parameters to pass to the model view
+	attr modelName # attr name for the model in the view
+
+	constraints = [
+		hbox(
+			vbox(
+				itemList,
+				hbox(addButton, removeButton, spacer),
+				spacer
+				),
+			selectedItemView,
+			spacer
+			)
+		]
+
+	QtListStrWidget: itemList:
+		items := dictManager.displayList
+		checked_states = [dictManager.itemDict[i].enabled for i in dictManager.displayList]
+		initialized :: 
+			itemList.item_changed.connect(dictManager.name_changed)
+			itemList.enable_changed.connect(dictManager.update_enable)
+
+	PushButton: addButton:
+		text = "Add"
+		clicked :: dictManager.add_item(self)
+	PushButton: removeButton:
+		text = "Remove"
+		clicked :: dictManager.remove_item(itemList.selected_item)
+	Container: selectedItemView:
+		MappedView: 
+			model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
+			typemap = dictView.viewMap
+			modelkey = dictView.modelName
+			kwargs = dictView.viewkwargs if dictView.viewkwargs else {}
+

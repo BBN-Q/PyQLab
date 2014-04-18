@@ -5,7 +5,8 @@ from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
 
 
-from EnamlHelpers import DictManagerView, DictManager, AddDialog, EnumComboBox
+from widgets import EnumComboBox
+from DictManagerView import DictManagerView
 
 import MeasFilters
 
@@ -14,37 +15,37 @@ from numpy import pi
 enamldef DigitalHomodyneForm(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     hug_width = 'medium'
     Form:
         Label:
             text = 'Box Car Start'
         IntField:
             value := myFilter.boxCarStart
-            tool_tip = myFilter.trait('boxCarStart').desc
+            tool_tip = myFilter.get_member('boxCarStart').metadata['desc']
         Label:
             text = 'Box Car Stop'
         IntField:
             value := myFilter.boxCarStop
-            tool_tip = myFilter.trait('boxCarStop').desc
+            tool_tip = myFilter.get_member('boxCarStop').metadata['desc']
         Label:
             text = 'I.F. Freq (MHz)'
         FloatField:
             value << myFilter.IFfreq/1e6
             value :: myFilter.IFfreq = value*1e6
-            tool_tip = myFilter.trait('IFfreq').desc
+            tool_tip = myFilter.get_member('IFfreq').metadata['desc']
         Label:
             text = 'Bandwidth (MHz)'
         FloatField:
             value << myFilter.bandwidth/1e6
             value :: myFilter.bandwidth = value*1e6
-            tool_tip = myFilter.trait('bandwidth').desc
+            tool_tip = myFilter.get_member('bandwidth').metadata['desc']
         Label:
             text = 'Sampling Rate (MS/s)'
         FloatField:
             value << myFilter.samplingRate/1e6
             value :: myFilter.samplingRate = value*1e6
-            tool_tip = myFilter.trait('samplingRate').desc
+            tool_tip = myFilter.get_member('samplingRate').metadata['desc']
         Label:
             text = "Phase (deg.)"
         FloatField:
@@ -63,18 +64,18 @@ enamldef DigitalHomodyneForm(GroupBox):
         Label:
             text = "Plot mode"
         EnumComboBox:
-            myObj := myFilter
-            traitName = 'plotMode'
+            obj := myFilter
+            enumName = 'plotMode'
         Label:
             text = 'Filter File Path'
         Field:
             text := myFilter.filterFilePath
-            tool_tip = myFilter.trait('filterFilePath').desc
+            tool_tip = myFilter.get_member('filterFilePath').metadata['desc']
         Label:
             text = 'Records File'
         Field:
             text := myFilter.recordsFilePath
-            tool_tip = myFilter.trait('recordsFilePath').desc
+            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
         Label: 
             text = "Save records"
         CheckBox:
@@ -84,41 +85,36 @@ enamldef DigitalHomodyneForm(GroupBox):
         CheckBox:
             checked := myFilter.dependent
 
-def update_filter_list(correlatorFilter, filterLib, objs):
-    del correlatorFilter.filters[:]
-    for obj in objs:
-        comboBoxIdx = obj[0].children[1].index
-        if comboBoxIdx>-1:
-            filterName = obj[0].children[1].items[comboBoxIdx]
-            correlatorFilter.filters.append(filterLib[filterName])
-
 enamldef CorrelatorView(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
             text = 'Num. Channels'
-        SpinBox:
-            id: numFiltersBox
+        SpinBox: numFiltersBox:
             minimum = 2
             value = len(myFilter.filters) if myFilter.filters and (len(myFilter.filters) > 0) else 2
         Looper: filterLooper:
             iterable << range(numFiltersBox.value)
+            iterable ::
+                if len(myFilter.filters) > len(iterable):
+                    myFilter.filters = myFilter.filters[:numSweepsBox.value]
+                elif len(myFilter.filters) < len(iterable):
+                    myFilter.filters += [None]
             Form:
-                #Should work but trashes the filter list
-                # initialized :: update_filter_list(myFilter, filterLib, filterLooper.items)
                 Label:
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
                     items << filterLib.filterDict.keys()
-                    index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if myFilter.filters and loop_index < len(myFilter.filters) else -1
-                    index :: update_filter_list(myFilter, filterLib, filterLooper.items)
+                    index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if loop_index < len(myFilter.filters) and myFilter.filters[loop_index] else -1
+                    index ::
+                        myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
 
 enamldef StateComparatorView(GroupBox):
     attr myFilter
     attr filterLib
-    title := '{} ({})'.format(myFilter.name, myFilter.__class__.__name__)
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
             text = 'Threshold'
@@ -128,12 +124,12 @@ enamldef StateComparatorView(GroupBox):
             text = 'Integration time (samples)'
         IntField:
             value := myFilter.integrationTime
-            tool_tip = myFilter.trait('integrationTime').desc
+            tool_tip = myFilter.get_member('integrationTime').metadata['desc']
         Label:
             text = "Plot mode"
         EnumComboBox:
-            myObj := myFilter
-            traitName = 'plotMode'
+            obj := myFilter
+            enumName = 'plotMode'
         Label:
             text = 'Child filter'
         ComboBox:
@@ -141,8 +137,7 @@ enamldef StateComparatorView(GroupBox):
             index << filterLib.filterDict.keys().index(myFilter.childFilter) if myFilter.childFilter else -1
             index :: myFilter.childFilter = filterLib.filterDict.keys()[index]
 
-enamldef MeasFilterWindow(Window):
-    id: filterTest
+enamldef MeasFilterWindow(Window): filterTest:
     attr myFilter
     DigitalHomodyneForm:
         myFilter := filterTest.myFilter
@@ -156,19 +151,15 @@ enamldef EmptyMeasFilterForm(Container):
 filterViewMap = {type(None):EmptyMeasFilterForm, MeasFilters.DigitalHomodyne:DigitalHomodyneForm, MeasFilters.DigitalHomodyneSS:DigitalHomodyneForm,
                     MeasFilters.Correlator:CorrelatorView, MeasFilters.StateComparator:StateComparatorView}
 
-enamldef MeasFilterManager(Container):
-    id: measFilterManager
+enamldef MeasFilterManager(Container): measFilterManager: 
     attr filterLib
     DictManagerView:
-        myDict = filterLib.filterDict
+        dictManager = filterLib.filterManager
         modelName = 'myFilter'
         viewMap = filterViewMap
         viewkwargs = {'filterLib':filterLib}
-        addDialog = lambda root, filterDict=filterLib.filterDict, filterList=filterLib.filterList : \
-            AddDialog(root, itemDict=filterDict, newClassList=filterList, objText='Filter')
 
-enamldef MeasFilterManagerWindow(Window):
-    id: measFilterManagerTest
+enamldef MeasFilterManagerWindow(Window): measFilterManagerTest:
     attr filterLib
     title = 'Filter Manager'
     MeasFilterManager:

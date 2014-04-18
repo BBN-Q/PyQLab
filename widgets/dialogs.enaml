@@ -1,0 +1,76 @@
+from enaml.widgets.api import Dialog, Label, Field, ComboBox
+
+from enaml.layout.api import hbox, vbox, spacer
+
+from enaml.stdlib.dialog_buttons import DialogButtonBox, DialogButton
+from enaml.stdlib.task_dialog import (TaskDialogBody, TaskDialogCommandArea,
+    TaskDialogContentArea, TaskDialogInstructionArea)
+
+enamldef ItemSelector(TaskDialogContentArea):
+	alias newLabel: newLabelField.text
+	alias newModelNum: newModelBox.index
+	attr modelNames
+	Label:
+		text = "New Label"
+	Field: newLabelField:
+		pass
+	Label:
+		text = "New Model"
+	ComboBox: newModelBox:
+		index = 0
+		items = modelNames
+
+enamldef DialogBody(TaskDialogBody):
+	alias itemSelector: itemSelector
+	attr objText 
+	attr modelNames
+	ItemSelector: itemSelector:
+		newLabel = "New"+objText
+		modelNames = parent.modelNames
+	TaskDialogCommandArea:
+		constraints = [ hbox(spacer, bbox) ]
+		DialogButtonBox: bbox:
+			buttons = [
+				DialogButton('OK', 'accept'),
+				DialogButton('Cancel', 'reject'),
+			]
+
+enamldef AddItemDialog(Dialog):
+	attr modelNames
+	attr objText
+	alias newLabel: dialogBody.itemSelector.newLabel
+	alias newModelNum: dialogBody.itemSelector.newModelNum
+	# alias newLabel: dialogBody.contentArea.newLabelField
+	title = 'Add a new {}...'.format(objText)
+	DialogBody: dialogBody:
+		objText = parent.objText
+		modelNames = parent.modelNames
+
+
+
+# enamldef AddDialog(Window):
+# 	attr newClassList
+# 	attr objText
+# 	title = 'Add a new {}...'.format(objText)
+# 	modality = 'window_modal'
+# 	Container:
+# 		constraints = [vbox(myForm, hbox(spacer, cancelButton, okButton))]
+# 		Form: myForm:
+# 			Label:
+# 				text = 'New Label'
+# 			Field: newLabel:
+# 				text = 'New'+objText
+# 			Label:
+# 				text = 'New {} Model'.format(objText)
+# 			ComboBox: modelChoice:
+# 				index = 0
+# 				items = [f.__name__ for f in newClassList]
+# 		PushButton: cancelButton:
+# 			text = 'Cancel'
+# 			clicked ::
+# 				close()
+# 		PushButton: okButton:
+# 			text = 'OK'
+# 			clicked ::
+# 				dictManager.add(newLabel.text, newClassList[modelChoice.index](label=newLabel.text))
+# 				close()

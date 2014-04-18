@@ -1,22 +1,28 @@
-from traits.api import HasTraits, List, Instance, Float, Dict, Str, Property, on_trait_change, Any
-
-import json
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced)
+import json, enaml
+from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 import MicrowaveSources
 import AWGs
 import FileWatcher
 
-class InstrumentLibrary(HasTraits):
+from DictManager import DictManager
+
+import Digitizers, Analysers, DCSources, Attenuators
+newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
+
+class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
-    instrDict = Dict(Str, Instrument)
-    libFile = Str(transient=True)
+    instrDict = Dict()
+    libFile = Str().tag(transient=True)
 
-    #Some helpers to pull out certain types of instruments
-    AWGs = Property(List, depends_on='instrDict[]')
-    sources = Property(List, depends_on='instrDict[]')
+    #Some helpers to manage types of instruments
+    AWGs = Typed(DictManager)
+    sources = Typed(DictManager)
+    others = Typed(DictManager)
 
-    fileWatcher = Any(None, transient=True)
+    fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
     def __init__(self, **kwargs):
         super(InstrumentLibrary, self).__init__(**kwargs)
@@ -24,16 +30,28 @@ class InstrumentLibrary(HasTraits):
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
-    #Overload [] to allow direct pulling of channel info
+        #Setup the dictionary managers for the different instrument types
+        self.AWGs = DictManager(itemDict=self.instrDict,
+                                displayFilter=lambda x: isinstance(x, AWGs.AWG),
+                                possibleItems=AWGs.AWGList)
+        
+        self.sources = DictManager(itemDict=self.instrDict,
+                                   displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
+                                   possibleItems=MicrowaveSources.MicrowaveSourceList)
+
+        self.others = DictManager(itemDict=self.instrDict,
+                                  displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
+                                  possibleItems=newOtherInstrs)
+
+    #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
-    @on_trait_change('instrDict.anytrait')
-    def write_to_library(self):
+    def write_to_file(self):
         #Move import here to avoid circular import
         import JSONHelpers
         if self.libFile:
-            #Pause the file watcher to stop cicular updating insanity
+            #Pause the file watcher to stop circular updating insanity
             if self.fileWatcher:
                 self.fileWatcher.pause()
             with open(self.libFile,'w') as FID:
@@ -75,30 +93,23 @@ class InstrumentLibrary(HasTraits):
                             for ct in range(self.instrDict[instrName].numChannels):
                                 self.instrDict[instrName].channels[ct].offset = instrParams['channels'][ct]['offset']
 
+    def json_encode(self, matlabCompatible=False):
+        #When serializing for matlab return only enabled instruments, otherwise all
+        if matlabCompatible:
+            return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
+        else:
+            return {"instrDict":{label:instr for label,instr in self.instrDict.items()}}
 
-    #Getter for AWG list
-    def _get_AWGs(self):
-        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, AWGs.AWG)], key = lambda instr : instr.name)
-
-    #Getter for microwave source list
-    def _get_sources(self):
-        return sorted([instr for instr in self.instrDict.values() if isinstance(instr, MicrowaveSources.MicrowaveSource)], key = lambda instr : instr.name)
 
 if __name__ == '__main__':
-    import enaml
-    from enaml.stdlib.sessions import show_simple_view
 
-    from Libraries import instrumentLib
+    
+    from MicrowaveSources import AgilentN5183A
+    instrLib = InstrumentLibrary(instrDict={'Agilent1':AgilentN5183A(label='Agilent1'), 'Agilent2':AgilentN5183A(label='Agilent2')})
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
-    show_simple_view(InstrumentManagerWindow(instrLib=instrumentLib))
 
-
-
-
-
-
-
-
-    
-    
+    app = QtApplication()
+    view = InstrumentManagerWindow(instrLib=instrLib)
+    view.show()
+    app.start()

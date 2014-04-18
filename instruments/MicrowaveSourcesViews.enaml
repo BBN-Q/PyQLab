@@ -6,73 +6,74 @@ from enaml.core.api import Conditional
 
 import MicrowaveSources
 
-from EnamlHelpers import EnumComboBox
+from widgets.enum_combos import EnumComboBox
 
 enamldef MicrowaveSourceForm(GroupBox):
 	attr uwSource
-	title := '{} ({})'.format(uwSource.name, uwSource.__class__.__name__)
+	title := "{} ({})".format(uwSource.label, uwSource.__class__.__name__)
+	hug_width = "strong"
+	hug_height = "strong"
 	padding = 5
 	Form:
 		padding = 2
 		Label: 
-			text = 'Address'
+			text = "Address"
 		Field: 
 			text := uwSource.address
-			tool_tip = uwSource.trait('address').desc
+			tool_tip = uwSource.get_member("address").metadata["desc"]
 		Label:
-			text = 'Power'
+			text = "Power"
 		FloatField:
-			maximum = 25
+			maximum = 25.0
 			value := uwSource.power
-			tool_tip = uwSource.trait('power').desc
+			tool_tip = uwSource.get_member("power").metadata["desc"]
 		Label:
-			text = 'Frequency'
+			text = "Frequency"
 		FloatField:
-			maximum = 20
-			minimum = 0
+			maximum = 20.0
+			minimum = 0.0
 			value := uwSource.frequency
-			tool_tip = uwSource.trait('frequency').desc
+			tool_tip = uwSource.get_member("frequency").metadata["desc"]
 		Label:
-			text = 'Output'
+			text = "Output"
 		CheckBox:
 			checked := uwSource.output
-			tool_tip = uwSource.trait('output').desc
+			tool_tip = uwSource.get_member("output").metadata["desc"]
 		Label:
-			text = 'ALC'
+			text = "ALC"
 		CheckBox:
 			checked := uwSource.alc
 			enabled << not modOn.checked
-			tool_tip = uwSource.trait('alc').desc
+			tool_tip = uwSource.get_member("alc").metadata["desc"]
 		Label: 
-			text = 'Modulation'
+			text = "Modulation"
 		CheckBox: modOn:
 			checked := uwSource.mod
-			tool_tip = uwSource.trait('mod').desc
+			tool_tip = uwSource.get_member("mod").metadata["desc"]
 		Label:
-			text = 'Pulse Modulate'
+			text = "Pulse Modulate"
 		CheckBox:
 			checked := uwSource.pulse
-			tool_tip = uwSource.trait('pulse').desc
+			tool_tip = uwSource.get_member("pulse").metadata["desc"]
 		Label:
-			text = 'Pulse Source'
+			text = "Pulse Source"
 		EnumComboBox:
-			myObj := uwSource
-			traitName = 'pulseSource'
+			obj := uwSource
+			enumName = "pulseSource"
 		Conditional:
-			condition = hasattr(uwSource, 'refSource')
+			condition = hasattr(uwSource, "refSource")
 			Label:
-				text = 'Ref. Source'
+				text = "Ref. Source"
 			EnumComboBox:
-				myObj := uwSource
-				traitName = 'refSource'
+				obj := uwSource
+				enumName = "refSource"
 
-enamldef MicrowaveSourceView(Window):
-	id: main
+enamldef MicrowaveSourceView(Window): sourceWindow:
 	attr uwSource
-	title = uwSource.name
+	title = uwSource.label
 	Container:
 		MicrowaveSourceForm:
-			uwSource := main.uwSource
+			uwSource := sourceWindow.uwSource
 
 enamldef EmptySourceView(Container):
 	attr uwSource

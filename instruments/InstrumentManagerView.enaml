@@ -1,25 +1,16 @@
-from enaml.widgets.api import Window, Container, Notebook, Page, ListControl, ListItem,\
-							 Stack, StackItem, PushButton, GroupBox, Form, Label, Field
+from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, GroupBox, Form, Label, Field
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
-import MicrowaveSources, AWGs
-
-from EnamlHelpers import DictManagerView, DictManager, AddDialog
+import MicrowaveSources, AWGs, Digitizers, Analysers, DCSources, Attenuators
 
 from AWGsViews import AWGViewMap
 from MicrowaveSourcesViews import MicrowaveSourceViewMap
-
 from DigitizersViews import DigitizerViewMap
-import Digitizers
-
 from DCSourcesViews import DCSourcesViewMap
-import DCSources
-
 from AttenuatorsViews import AttenuatorsViewMap
-import Attenuators
 
-import Analysers
+from DictManagerView import DictManagerView
 
 enamldef EmptyInstrView(Container):
 	attr instr
@@ -40,8 +31,6 @@ otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
 
-newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
-
 enamldef InstrumentManagerView(Container):
 	attr instrLib
 	Notebook:
@@ -50,41 +39,30 @@ enamldef InstrumentManagerView(Container):
 			title = 'uwSources'
 			closable = False
 			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : isinstance(x, MicrowaveSources.MicrowaveSource)
-				modelName = 'uwSource'
+				dictManager = instrLib.sources
 				viewMap = MicrowaveSourceViewMap
-				addDialog = lambda root, itemDict : \
-			AddDialog(root, itemDict=itemDict, newClassList=MicrowaveSources.MicrowaveSourceList, objText='uwSource')
-
+				modelName = 'uwSource'
+		
 		Page:
 			title = "AWG's"
 			closable = False
 			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : isinstance(x, AWGs.AWG)
-				modelName = 'awg'
+				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
-				addDialog = lambda root, itemDict : \
-					AddDialog(root, itemDict=itemDict, newClassList=AWGs.AWGList, objText='AWG')
-
+				modelName = 'awg'
+		
 		Page:
 			title = "Other"
 			closable = False
 			DictManagerView:
-				myDict = instrLib.instrDict
-				displayFilter = lambda x : not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource)
-				modelName = 'instr'
+				dictManager = instrLib.others
 				viewMap = otherViewMap
-				addDialog = lambda root, itemDict : \
-					AddDialog(root, itemDict=itemDict, newClassList=newOtherInstrs, objText='Instr')
+				modelName = 'instr'
 
-enamldef InstrumentManagerWindow(Window):
-	id: instrLibWin
+enamldef InstrumentManagerWindow(Window): 
 	attr instrLib
 	title = 'Instrument Library'
-	Container:
-		InstrumentManagerView:
-			instrLib = instrLibWin.instrLib
+	InstrumentManagerView:
+		instrLib = parent.instrLib
 
 

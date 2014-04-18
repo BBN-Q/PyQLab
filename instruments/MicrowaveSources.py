@@ -1,24 +1,23 @@
-from traits.api import Str, Int, Float, Bool, Enum
+from atom.api import Atom, Float, Enum, Bool
 
 import enaml
-from enaml.stdlib.sessions import show_simple_view
+from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 
 class MicrowaveSource(Instrument):
-    address = Str('', desc='Address of unit as GPIB or I.P.')
-    power = Float(0.0, desc='Output power in dBm')
-    frequency = Float(5.0, desc='Frequency in GHz')
-    output = Bool(False, desc='Whether the output is on.')
-    mod = Bool(False, desc='Whether output is modulated')
-    alc = Bool(False, desc='Whether automatic level control is on')
-    pulse = Bool(False, desc='Whether pulse modulation is on')
-    pulseSource = Enum('Internal', 'External', desc='Source of pulse modulation')
+    power = Float(0.0).tag(desc="Output power in dBm")
+    frequency = Float(5.0).tag(desc="Frequency in GHz")
+    output = Bool(False).tag(desc="Whether the output is on")
+    mod = Bool(False).tag(desc="Whether output is modulated")
+    alc = Bool(False).tag(desc="Whether automatic level control is on")
+    pulse = Bool(False).tag(desc="Whether pulse modulation is on")
+    pulseSource = Enum("Internal", "External").tag(desc="Source of pulse modulation")
 
     #For blanking the source we need to know the maximum rate and the delay
-    gateBuffer = Float(0.0)
-    gateMinWidth = Float(0.0)
-    gateDelay = Float(0.0)
+    gateBuffer = Float(0.0).tag(desc="How much extra time should be added onto the beginning of the gating pulse")
+    gateMinWidth = Float(0.0).tag(desc="The minimum gating pulse width")
+    gateDelay = Float(0.0).tag(desc="How the gating pulse should be shifted")
 
 class AgilentN5183A(MicrowaveSource):
     gateBuffer = Float(20e-9)
@@ -31,13 +30,19 @@ class HolzworthHS9000(MicrowaveSource):
     gateDelay = Float(-60e-9)
 
 class Labbrick(MicrowaveSource):
-    refSource = Enum('Internal' , 'External', desc='Source of 10MHz ref.')
+    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
 
     gateBuffer = Float(20e-9)
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
 class Labbrick64(MicrowaveSource):
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
+
+class RhodeSchwarzSMIQ03(MicrowaveSource):
+    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
     gateBuffer = Float(20e-9)
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
@@ -49,12 +54,16 @@ class HP8340B(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, Labbrick64, HP8673B, HP8340B]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
-    uwSource = AgilentN5183A(name='Agilent1')
+    mySource = AgilentN5183A(label="Agilent1")
     with enaml.imports():
-        from MicrowaveSourcesView import MicrowaveSourceView
+        from MicrowaveSourcesViews import MicrowaveSourceView
 
-    session = show_simple_view(MicrowaveSourceView(uwSource=uwSource))
+    #TODO: hook into iPython's event loop
+    app = QtApplication()
+    view = MicrowaveSourceView(uwSource=mySource)
+    view.show()
+    app.start()

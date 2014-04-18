@@ -1,8 +1,7 @@
-from enaml.widgets.api import MainWindow, Container, Notebook, Page, GroupBox, Label, ToolBar, \
-					 Action, FileDialog, ComboBox, PushButton
-from enaml.widgets.include import Include
+from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
+					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label
+from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer
-from enaml.core.api import Looper, Include
 
 from QGL.ChannelsViews import ChannelLibraryView
 from instruments.InstrumentManagerView import InstrumentManagerView
@@ -20,44 +19,107 @@ except IOError:
     print('No quick pick file found.')
     quickpickList = []
 
-
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
 	return update_script_file_callback
 
+chosenQuickPick = bytearray("")
 
-enamldef ExpSettingsView(MainWindow):
-	id: main
+enamldef QuickPickMenu(Menu):
+	attr expSettings  
+	Looper:
+		iterable << quickpickList
+		Action:
+			text = loop_item
+			triggered ::
+				chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
+				expSettings.apply_quickpick(loop_item)
+
+enamldef NotificationPopup(PopupView):
+	attr displayText = ''
+	foreground = 'white'
+	background = 'rgba(30, 30, 30, 0.85)'
+	window_type = 'tool_tip'
+	parent_anchor = (1.0, 1.0)
+	anchor = (1.0, 1.0)
+	offset = (-10, -10)
+	timeout = 1
+	fade_in_duration = 200
+	fade_out_duration = 200
+	Container:
+		Label:
+			foreground = 'white'
+			text = displayText
+			align = 'center'
+
+enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
 	attr curFileName := expSettings.curFileName
 	title = 'Experiment Settings'
-	ToolBar:
-		Action:
-			text = 'Save'
-			tool_tip << 'Save to {}'.format(curFileName)
-			triggered :: expSettings.write_to_file()
-		Action:
-			text = 'Change File'
-			tool_tip = 'Update script file output location.'
-			triggered ::
+	MenuBar:
+		Menu:
+			title = '&File'
+			Action:
+				text = 'Save\tCtrl+S'
+				tool_tip << 'Save to {}'.format(curFileName)
+				triggered :: 
+					expSettings.write_to_file()
+					expSettings.write_libraries()
+					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+			Action:
+				text = 'Save As\tCtrl+Shift+S'
+				tool_tip = 'Save to a new setting file'
+				triggered ::
 					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file', 
 						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
 					dlg.open()
-		Action:
-			text = 'CW Mode'
-			checkable = True
-			checked := expSettings.CWMode
-
-		Action:
-			text = 'Debug'
-			tool_tip << 'Start debugger console'
-			triggered :: import pdb; pdb.set_trace()
-
+			Action:
+				text = "Stash current settings"
+				enabled = False
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Settings stashed").show()
+			Action:
+				text = "Pop stashed settings"
+				enabled = False
+				triggered ::
+					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
+			Action:
+				text = 'Store to quick pick\tCtrl+O'
+				enabled = False
+				triggered :: print 'clicked store to quick pick'
+			Menu:
+				title = 'Load from quick pick'
+				Looper:
+					iterable << quickpickList
+					Action:
+						text = loop_item
+						triggered ::
+							chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
+							expSettings.apply_quickpick(loop_item)
+			Action:
+				text = 'Quit\tCtrl+Q'
+				triggered :: main.close()
+		Menu:
+			title = '&Mode'
+			Action:
+				text = 'CW Mode'
+				checkable = True
+				checked := expSettings.CWMode
+			Action:
+				text = 'Debug\tCtrl+D'
+				tool_tip = 'Start debugger console'
+				checkable = True
+				toggled :: import pdb; pdb.set_trace()
 	Container:
+		constraints = [
+			vbox(tabs,
+				hbox(quickPick, spacer, settingsApply),
+				spacer)
+		]
 		padding = 5
-		Notebook:
+		Notebook: tabs:
 			tab_style = 'preferences'
 			Page:
 				title = 'Channels'
@@ -80,14 +142,18 @@ enamldef ExpSettingsView(MainWindow):
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
-		GroupBox:
-			title = 'Quick Picker'
-			constraints = [hbox(quickpickCombo, quickpickApply, spacer.flex())]
-			ComboBox: quickpickCombo:
-				items << quickpickList
-				hug_width = 'medium'
-			PushButton: quickpickApply:
-				text = 'Apply'
-				clicked ::
-					expSettings.apply_quickpick(quickpickList[quickpickCombo.index])
-				hug_width = 'medium'
+		PushButton: quickPick:
+			text = "QuickPick"
+			clicked ::
+				QuickPickMenu(expSettings=expSettings).popup()
+				NotificationPopup(main, window_type='window', parent_anchor = (-1.0, 1.0), displayText="{} applied".format(str(chosenQuickPick))).show()
+		PushButton: settingsApply:
+			text = 'Apply'
+			clicked ::
+				expSettings.write_to_file()
+				expSettings.write_libraries()
+				NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+
+
+
+
