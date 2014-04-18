@@ -7,8 +7,8 @@ from QGL.BlockLabel import label, endlabel
 
 class ControlFlow(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit(name='q1')
-        self.q2 = Qubit(name='q2')
+        self.q1 = Qubit(label='q1')
+        self.q2 = Qubit(label='q2')
 
     def test_qif(self):
         q1 = self.q1

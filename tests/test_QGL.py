@@ -7,8 +7,8 @@ from QGL import *
 
 class SingleQubit(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit(name='q1')
-        self.q1.pulseParams.length = 30e-9
+        self.q1 = Qubit(label='q1')
+        self.q1.pulseParams['length'] = 30e-9
 
     def test_Ramsey(self):
         '''
@@ -23,16 +23,17 @@ class SingleQubit(unittest.TestCase):
         seqs = self.test_Ramsey()
         LL, wfLib = Compiler.compile_sequences(seqs)
         assert(len(LL[self.q1]) == 11)
-        assert(len(LL[self.q1][0]) == 2)
-        assert( all([len(miniLL) == 3 for miniLL in LL[self.q1][1:]]) )
+        assert(len(LL[self.q1][0]) == 3)
+        assert( all([len(miniLL) == 4 for miniLL in LL[self.q1][1:-1]]) )
+        assert(len(LL[self.q1][-1]) == 5)
         assert(len(wfLib[self.q1]) == 2) # just X90 + TAZ
 
 class MultiQubit(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit(name='q1')
-        self.q1.pulseParams.length = 30e-9
-        self.q2 = Qubit(name='q2')
-        self.q2.pulseParams.length = 30e-9
+        self.q1 = Qubit(label='q1')
+        self.q1.pulseParams['length'] = 30e-9
+        self.q2 = Qubit(label='q2')
+        self.q2.pulseParams['length'] = 30e-9
 
     def test_Operators(self):
         q1 = self.q1
@@ -46,7 +47,7 @@ class MultiQubit(unittest.TestCase):
         seq = self.test_Operators()
         LL, wfLib = Compiler.compile_sequences(seq)
         assert(len(LL[self.q1]) == 1)
-        assert(len(LL[self.q1][0]) == 5)
+        assert(len(LL[self.q1][0]) == 7)
         assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
         assert(len(wfLib[self.q2]) == 4) # Y, X, Xm, TAZ
     
