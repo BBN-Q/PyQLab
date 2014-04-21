@@ -50,6 +50,10 @@ class APS(AWG):
     miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
     seqFileExt = Constant('.h5')
 
+class APS2(AWG):
+    numChannels = Int(default=2)
+    seqFileExt = Constant('.h5')
+
 class Tek5014(AWG):
     numChannels = Int(default=4)
     seqFileExt = Constant('.awg')
@@ -58,7 +62,7 @@ class Tek7000(AWG):
     numChannels = Int(default=2)
     seqFileExt = Constant('.awg')
 
-AWGList = [APS, Tek5014, Tek7000]
+AWGList = [APS, APS2, Tek5014, Tek7000]
 
 if __name__ == "__main__":
 
@@ -82,6 +86,8 @@ def get_empty_channel_set(AWG):
         return {'ch12':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}}
     elif isinstance(AWG, APS):
         return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch2m1':{}, 'ch3m1':{}, 'ch4m1':{}}
+    elif isinstance(AWG, APS2):
+        return {'ch12':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}}
     else:
         raise NameError('Unknown AWG type')             
 
