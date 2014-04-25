@@ -20,9 +20,8 @@ class CompileUtils(unittest.TestCase):
 
     def test_add_digitizer_trigger(self):
         q1 = self.q1
-        # seq = [X90(q1), MEAS(q1), Y(q1), MEAS(q1)]
-        meas = PulseSequencer.TAPulse("MEAS", self.measq1, 100, 1, 0, 0)
-        seq = [X90(q1), meas, Y(q1), meas]
+        seq = [X90(q1), MEAS(q1), Y(q1), MEAS(q1)]
+
         PatternUtils.add_digitizer_trigger([seq], self.trigger)
         assert(self.trigger in seq[1].pulses.keys())
         assert(self.trigger in seq[3].pulses.keys())
