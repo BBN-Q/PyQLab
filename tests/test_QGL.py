@@ -7,8 +7,8 @@ from QGL import *
 
 class SingleQubit(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit(name='q1')
-        self.q1.pulseParams.length = 30e-9
+        self.q1 = Qubit(label='q1')
+        self.q1.pulseParams['length'] = 30e-9
 
     def test_Ramsey(self):
         '''
@@ -18,6 +18,12 @@ class SingleQubit(unittest.TestCase):
         ramsey = [[X90(q1), Id(q1, delay), X90(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
         show(ramsey[2])
         return ramsey
+
+    def test_repeat(self):
+        q1 = self.q1
+        seq = [X90(q1), repeat(Y(q1), 5), X90(q1)]
+        show(seq)
+        return seq
     
     def test_compile(self):
         seqs = self.test_Ramsey()
@@ -29,10 +35,10 @@ class SingleQubit(unittest.TestCase):
 
 class MultiQubit(unittest.TestCase):
     def setUp(self):
-        self.q1 = Qubit(name='q1')
-        self.q1.pulseParams.length = 30e-9
-        self.q2 = Qubit(name='q2')
-        self.q2.pulseParams.length = 30e-9
+        self.q1 = Qubit(label='q1')
+        self.q1.pulseParams['length'] = 30e-9
+        self.q2 = Qubit(label='q2')
+        self.q2.pulseParams['length'] = 30e-9
 
     def test_Operators(self):
         q1 = self.q1
