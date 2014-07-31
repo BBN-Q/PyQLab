@@ -87,7 +87,7 @@ def get_empty_channel_set(AWG):
     elif isinstance(AWG, APS):
         return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch2m1':{}, 'ch3m1':{}, 'ch4m1':{}}
     elif isinstance(AWG, APS2):
-        return {'ch12':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}}
+        return {'ch12':{}, 'ch12m1':{}, 'ch12m2':{}, 'ch12m3':{}, 'ch12m4':{}}
     else:
         raise NameError('Unknown AWG type')             
 
