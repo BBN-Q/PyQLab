@@ -1,6 +1,7 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, \
  ComboBox, PushButton, ToolBar, Action, FlowArea, FlowItem, ScrollArea
 from enaml.stdlib.fields import FloatField, IntField, Field
+from enaml.core.api import Include
 from enaml.layout.api import hbox, vbox, spacer
 
 from widgets import EnumComboBox
@@ -151,4 +152,88 @@ enamldef TestAlazarWindow(Window): tester:
 	AlazarView:
 		instr := tester.instr
 
-DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView}
+enamldef X6ChannelView(GroupBox): 
+	attr chan
+	attr label
+	share_layout=True
+	title = 'Ch. {}'.format(label)
+	padding = 0
+	Form:
+		hug_width = 'medium'
+		Label:
+			text = 'Enable'
+		CheckBox:
+			checked := chan.enabled
+		Label:
+			text = 'Enable Demodulated Stream'
+		CheckBox:
+			checked := chan.enableDemodStream
+			tool_tip = chan.get_member('enableDemodStream').metadata["desc"]
+		Label:
+			text = 'Enable Result Stream'
+		CheckBox:
+			checked := chan.enableResultStream
+			tool_tip = chan.get_member('enableResultStream').metadata["desc"]
+		Label:
+			text = 'IF Frequency'
+		FloatField:
+			value := chan.IFfreq
+			tool_tip = chan.get_member('IFfreq').metadata["desc"]
+		# Label:
+		# 	text = 'Kernel'
+		# Field:
+		# 	text := chan.kernel
+		# 	tool_tip = chan.get_member('kernel').metadata["desc"]
+		Label:
+			text = 'Threshold'
+		FloatField:
+			value := chan.threshold
+			tool_tip = chan.get_member('threshold').metadata["desc"]
+
+enamldef X6View(GroupBox):
+	attr instr
+	title = '{} ({})'.format(instr.label, instr.__class__.__name__)
+	ScrollArea:
+		Container:
+			hug_width = 'medium'
+			GroupBox: 
+				title = 'Averager'
+				Form:
+					Label:
+						text = 'Samples'
+					IntField:
+						validator = RecordLengthValidator(lengthMult=16)
+						value := instr.recordLength
+						tool_tip = instr.get_member('recordLength').metadata['desc']
+					Label: 
+						text = 'Segments'
+					IntField:
+						value := instr.nbrSegments
+						tool_tip = instr.get_member('nbrSegments').metadata['desc']
+					Label:
+						text = 'Waveforms'
+					IntField:
+						value := instr.nbrWaveforms
+						tool_tip = instr.get_member('nbrWaveforms').metadata['desc']
+					Label:
+						text = 'Round Robins:'
+					IntField:
+						value := instr.nbrRoundRobins
+						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
+			GroupBox: 
+				title = 'Streams'
+				Form:
+					Label:
+						text = 'Enable Raw Streams'
+					CheckBox:
+						checked := instr.enableRawStreams
+				Include:
+					objects = [X6ChannelView(chan=chan, label=ct+1) for ct,chan in enumerate(instr.channels)]
+
+enamldef TestX6Window(Window): tester:
+	attr instr
+	title = 'Test X6 Window'
+	X6View:
+		instr := tester.instr
+
+DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView, Digitizers.X6:X6View}

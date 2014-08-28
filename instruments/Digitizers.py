@@ -3,7 +3,8 @@ For now just Alazar cards but should also support Acquiris.
 """
 from Instrument import Instrument
 
-from atom.api import Str, Int, Float, Bool, Enum
+from atom.api import Atom, Str, Int, Float, Bool, Enum, List
+import itertools
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -45,14 +46,37 @@ class AlazarATS9870(Instrument):
 
 		return jsonDict
 
+class X6VirtualChannel(Atom):
+	label = Str()
+	enabled = Bool(True)
+	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
+	enableResultStream = Bool(True).tag(desc='Enable result data stream')
+	IFfreq = Float(10e6).tag(desc='IF Frequency')
+	kernel = List(Float).tag(desc='Integration kernel vector')
+	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
+
+class X6(Instrument):
+	recordLength = Int(1024).tag(desc='Number of samples in each record')
+	nbrSegments = Int(1).tag(desc='Number of segments in memory')
+	nbrWaveforms = Int(1).tag(desc='Number of times each segment is repeated')
+	nbrRoundRobins = Int(1).tag(desc='Number of times entire memory is looped')
+	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
+	channels = List(X6VirtualChannel)
+
+	def __init__(self, **traits):
+		super(X6, self).__init__(**traits)
+		if not self.channels:
+			for a, b in itertools.product(range(2), range(2)):
+				self.channels.append(X6VirtualChannel())
+
 if __name__ == "__main__":
-	from Digitizers import AlazarATS9870
-	digitizer = AlazarATS9870(name='scope')
+	from Digitizers import X6
+	digitizer = X6(label='scope')
 	with enaml.imports():
-		from DigitizersViews import TestAlazarWindow
+		from DigitizersViews import TestX6Window
 
 		app = QtApplication()
-	view = TestAlazarWindow(instr=digitizer)
+	view = TestX6Window(instr=digitizer)
 	view.show()
 	app.start()
 	
