@@ -10,7 +10,12 @@ import FileWatcher
 from DictManager import DictManager
 
 import Digitizers, Analysers, DCSources, Attenuators
-newOtherInstrs = [Digitizers.AlazarATS9870, Analysers.HP71000, Analysers.SpectrumAnalyzer, DCSources.YokoGS200, Attenuators.DigitalAttenuator]
+newOtherInstrs = [Digitizers.AlazarATS9870,
+    Digitizers.X6,
+    Analysers.HP71000,
+    Analysers.SpectrumAnalyzer,
+    DCSources.YokoGS200,
+    Attenuators.DigitalAttenuator]
 
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name

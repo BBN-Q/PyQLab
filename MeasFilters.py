@@ -65,6 +65,9 @@ class StateComparator(MeasFilter):
     threshold = Float(0.0)
     integrationTime = Int(-1).tag(desc='Comparator integration time in decimated samples, use -1 for the entire record')
 
+class StreamSelector(MeasFilter):
+    stream = Str()
+
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
@@ -112,7 +115,7 @@ class MeasFilterLibrary(Atom):
             return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
-measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]
+measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS, StreamSelector]
 
 if __name__ == "__main__":
 

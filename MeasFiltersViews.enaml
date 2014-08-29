@@ -137,6 +137,21 @@ enamldef StateComparatorView(GroupBox):
             index << filterLib.filterDict.keys().index(myFilter.childFilter) if myFilter.childFilter else -1
             index :: myFilter.childFilter = filterLib.filterDict.keys()[index]
 
+enamldef StreamSelectorView(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
+        Label:
+            text = 'Stream'
+        Field:
+            text := myFilter.stream
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
+
 enamldef MeasFilterWindow(Window): filterTest:
     attr myFilter
     DigitalHomodyneForm:
@@ -148,8 +163,12 @@ enamldef EmptyMeasFilterForm(Container):
     attr filterLib
 
 #Map filters to views
-filterViewMap = {type(None):EmptyMeasFilterForm, MeasFilters.DigitalHomodyne:DigitalHomodyneForm, MeasFilters.DigitalHomodyneSS:DigitalHomodyneForm,
-                    MeasFilters.Correlator:CorrelatorView, MeasFilters.StateComparator:StateComparatorView}
+filterViewMap = {type(None): EmptyMeasFilterForm,
+    MeasFilters.DigitalHomodyne: DigitalHomodyneForm,
+    MeasFilters.DigitalHomodyneSS: DigitalHomodyneForm,
+    MeasFilters.Correlator: CorrelatorView,
+    MeasFilters.StateComparator: StateComparatorView,
+    MeasFilters.StreamSelector: StreamSelectorView}
 
 enamldef MeasFilterManager(Container): measFilterManager: 
     attr filterLib
