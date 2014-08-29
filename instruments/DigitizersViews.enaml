@@ -155,9 +155,8 @@ enamldef TestAlazarWindow(Window): tester:
 
 enamldef X6ChannelView(GroupBox): 
 	attr chan
-	attr label
 	share_layout=True
-	title = 'Ch. {}'.format(label)
+	title = 'Ch. {}'.format(chan.label)
 	padding = 0
 	Form:
 		hug_width = 'medium'
@@ -199,6 +198,11 @@ enamldef X6View(GroupBox):
 	ScrollArea:
 		Container:
 			hug_width = 'medium'
+			Form:
+				Label:
+					text = 'Device ID'
+				Field:
+					text := instr.address
 			GroupBox: 
 				title = 'Averager'
 				Form:
@@ -231,12 +235,17 @@ enamldef X6View(GroupBox):
 					CheckBox:
 						checked := instr.enableRawStreams
 				Include:
-					objects = [X6ChannelView(chan=chan, label=ct+1) for ct,chan in enumerate(instr.channels)]
+					objects = [X6ChannelView(chan=instr.channels[k]) for k in sorted(instr.channels.keys())]
 
 enamldef TestX6Window(Window): tester:
 	attr instr
 	title = 'Test X6 Window'
-	X6View:
-		instr := tester.instr
+	Container:
+		X6View:
+			instr := tester.instr
+		PushButton:
+			text = 'Test'
+			clicked ::
+				import ipdb; ipdb.set_trace()
 
 DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView, Digitizers.X6:X6View}

@@ -3,7 +3,7 @@ For now just Alazar cards but should also support Acquiris.
 """
 from Instrument import Instrument
 
-from atom.api import Atom, Str, Int, Float, Bool, Enum, List
+from atom.api import Atom, Str, Int, Float, Bool, Enum, List, Dict, Coerced
 import itertools
 
 import enaml
@@ -60,13 +60,24 @@ class X6(Instrument):
 	nbrWaveforms = Int(1).tag(desc='Number of times each segment is repeated')
 	nbrRoundRobins = Int(1).tag(desc='Number of times entire memory is looped')
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
-	channels = List(X6VirtualChannel)
+	# channels = Dict(None, X6VirtualChannel)
+	channels = Coerced(dict)
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
 		if not self.channels:
-			for a, b in itertools.product(range(2), range(2)):
-				self.channels.append(X6VirtualChannel())
+			for a, b in itertools.product(range(1,3), range(1,3)):
+				label = str((a,b))
+				self.channels[label] = X6VirtualChannel(label=label)
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = super(X6, self).json_encode(matlabCompatible)
+		if matlabCompatible:
+			"For the Matlab experiment manager we nest averager settings"
+			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
+			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+
+		return jsonDict
 
 if __name__ == "__main__":
 	from Digitizers import X6
