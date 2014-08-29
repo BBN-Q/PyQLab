@@ -48,11 +48,10 @@ class AlazarATS9870(Instrument):
 
 class X6VirtualChannel(Atom):
 	label = Str()
-	enabled = Bool(True)
 	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
 	enableResultStream = Bool(True).tag(desc='Enable result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	kernel = List(Float).tag(desc='Integration kernel vector')
+	kernel = List().tag(desc='Integration kernel vector')
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
 
 class X6(Instrument):

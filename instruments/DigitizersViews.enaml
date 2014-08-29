@@ -8,6 +8,7 @@ from widgets import EnumComboBox
 
 from enaml.validator import Validator
 from atom.api import Int
+import ast
 
 import Digitizers
 
@@ -161,29 +162,31 @@ enamldef X6ChannelView(GroupBox):
 	Form:
 		hug_width = 'medium'
 		Label:
-			text = 'Enable'
-		CheckBox:
-			checked := chan.enabled
-		Label:
-			text = 'Enable Demodulated Stream'
+			text = 'Demod Stream'
 		CheckBox:
 			checked := chan.enableDemodStream
 			tool_tip = chan.get_member('enableDemodStream').metadata["desc"]
 		Label:
-			text = 'Enable Result Stream'
+			text = 'Result Stream'
 		CheckBox:
 			checked := chan.enableResultStream
 			tool_tip = chan.get_member('enableResultStream').metadata["desc"]
 		Label:
-			text = 'IF Frequency'
+			text = 'IF Frequency (MHz)'
 		FloatField:
-			value := chan.IFfreq
+			value << chan.IFfreq/1e6
+			value :: chan.IFfreq = value*1e6
 			tool_tip = chan.get_member('IFfreq').metadata["desc"]
-		# Label:
-		# 	text = 'Kernel'
-		# Field:
-		# 	text := chan.kernel
-		# 	tool_tip = chan.get_member('kernel').metadata["desc"]
+		Label:
+			text = 'Kernel'
+		Field:
+			text << str(chan.kernel)
+			text ::
+				try:
+					chan.kernel = ast.literal_eval(text)
+				except:
+					pass
+			tool_tip = chan.get_member('kernel').metadata["desc"]
 		Label:
 			text = 'Threshold'
 		FloatField:
