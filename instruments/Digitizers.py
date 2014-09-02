@@ -4,7 +4,7 @@ For now just Alazar cards but should also support Acquiris.
 from Instrument import Instrument
 
 from atom.api import Atom, Str, Int, Float, Bool, Enum, List, Dict, Coerced
-import itertools
+import itertools, ast
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -73,9 +73,16 @@ class X6(Instrument):
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
 		if matlabCompatible:
-			"For the Matlab experiment manager we nest averager settings"
+			# For the Matlab experiment manager we nest averager settings
 			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
 			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+			# re-write channel labels into matlab-compatible names
+			# need to copy otherwise we'll mutate the object's channel dict
+			jsonDict['channels'] = jsonDict['channels'].copy()
+			for chan in jsonDict['channels'].keys():
+				settings = jsonDict['channels'].pop(chan)
+				a, b = ast.literal_eval(chan)
+				jsonDict['channels']["s{0}{1}".format(a, b)] = settings
 
 		return jsonDict
 
