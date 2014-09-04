@@ -151,6 +151,10 @@ enamldef StreamSelectorView(GroupBox):
         EnumComboBox:
             obj := myFilter
             enumName = 'plotMode'
+        Label:
+            text = 'Saved'
+        CheckBox:
+            checked := myFilter.saved
 
 enamldef MeasFilterWindow(Window): filterTest:
     attr myFilter

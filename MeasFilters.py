@@ -17,6 +17,7 @@ class MeasFilter(Atom):
     plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
     childFilter = Str()
     dependent = Bool(False).tag(desc='Whether this filter is a child of another filter.')
+    saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
