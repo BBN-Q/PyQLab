@@ -340,7 +340,7 @@ enamldef SweepManager(Container): sweepManager:
             SpinBox: numSweepsBox:
                 minimum = 1
                 maximum = 3
-                value = len(sweepLib.sweepOrder) if len(sweepLib.sweepOrder) > 0 else 1
+                value << len(sweepLib.sweepOrder) if len(sweepLib.sweepOrder) > 0 else 1
         Form: sweepOrderForm:
             hug_width = 'medium'
             Looper: sweepLooper:

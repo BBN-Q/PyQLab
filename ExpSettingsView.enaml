@@ -146,7 +146,7 @@ enamldef ExpSettingsView(MainWindow): main:
 			text = "QuickPick"
 			clicked ::
 				QuickPickMenu(expSettings=expSettings).popup()
-				NotificationPopup(main, window_type='window', parent_anchor = (-1.0, 1.0), displayText="{} applied".format(str(chosenQuickPick))).show()
+				NotificationPopup(main, window_type='window', parent_anchor=(0, 1.0), anchor=(0,1), offset=(10,-10), displayText="{} applied".format(str(chosenQuickPick))).show()
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::

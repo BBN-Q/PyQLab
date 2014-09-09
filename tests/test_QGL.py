@@ -18,6 +18,12 @@ class SingleQubit(unittest.TestCase):
         ramsey = [[X90(q1), Id(q1, delay), X90(q1)] for delay in np.linspace(0.0, 1e-6, 11)]
         show(ramsey[2])
         return ramsey
+
+    def test_repeat(self):
+        q1 = self.q1
+        seq = [X90(q1), repeat(Y(q1), 5), X90(q1)]
+        show(seq)
+        return seq
     
     def test_compile(self):
         seqs = self.test_Ramsey()
