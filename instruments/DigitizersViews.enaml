@@ -179,12 +179,7 @@ enamldef X6ChannelView(GroupBox):
 		Label:
 			text = 'Kernel'
 		Field:
-			text << str(chan.kernel)
-			text ::
-				try:
-					chan.kernel = ast.literal_eval(text)
-				except:
-					pass
+			text := chan.kernel
 			tool_tip = chan.get_member('kernel').metadata["desc"]
 		Label:
 			text = 'Threshold'

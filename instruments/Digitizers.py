@@ -51,8 +51,18 @@ class X6VirtualChannel(Atom):
 	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
 	enableResultStream = Bool(True).tag(desc='Enable result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	kernel = List().tag(desc='Integration kernel vector')
+	kernel = Str().tag(desc='Integration kernel vector')
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = self.__getstate__()
+		if matlabCompatible:
+			import numpy as np
+			try:
+				jsonDict['kernel'] = list(eval(self.kernel))
+			except:
+				jsonDict['kernel'] = []
+		return jsonDict
 
 class X6(Instrument):
 	recordLength = Int(1024).tag(desc='Number of samples in each record')
