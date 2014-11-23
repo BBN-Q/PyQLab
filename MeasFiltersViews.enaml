@@ -12,22 +12,41 @@ import MeasFilters
 
 from numpy import pi
 
-enamldef DigitalHomodyneForm(GroupBox):
+enamldef RawStreamForm(GroupBox):
     attr myFilter
     attr filterLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     hug_width = 'medium'
     Form:
         Label:
-            text = 'Box Car Start'
-        IntField:
-            value := myFilter.boxCarStart
-            tool_tip = myFilter.get_member('boxCarStart').metadata['desc']
+            text = "Data source"
+        Field:
+            value := myFilter.dataSource
         Label:
-            text = 'Box Car Stop'
-        IntField:
-            value := myFilter.boxCarStop
-            tool_tip = myFilter.get_member('boxCarStop').metadata['desc']
+            text = 'Records File'
+        Field:
+            text := myFilter.recordsFilePath
+            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
+        Label: 
+            text = "Save records"
+        CheckBox:
+            checked := myFilter.saveRecords
+        Label: 
+            text = "Plot scope"
+        CheckBox:
+            checked := myFilter.plotScope
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
+
+enamldef DigitalDemodForm(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    hug_width = 'medium'
+    Form:
         Label:
             text = 'I.F. Freq (MHz)'
         FloatField:
@@ -52,11 +71,9 @@ enamldef DigitalHomodyneForm(GroupBox):
             value << (180/pi)*myFilter.phase
             value :: myFilter.phase = (pi/180)*value
         Label:
-            text = "Source Channel"
-        SpinBox:
-            minimum = 1
-            maximum = 2
-            value := myFilter.channel
+            text = "Data source"
+        Field:
+            value := myFilter.dataSource
         Label: 
             text = "Plot scope"
         CheckBox:
@@ -66,24 +83,30 @@ enamldef DigitalHomodyneForm(GroupBox):
         EnumComboBox:
             obj := myFilter
             enumName = 'plotMode'
+
+enamldef KernelIntegrationForm(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
         Label:
-            text = 'Filter File Path'
+            text = "Data source"
         Field:
-            text := myFilter.filterFilePath
-            tool_tip = myFilter.get_member('filterFilePath').metadata['desc']
+            value := myFilter.dataSource
         Label:
-            text = 'Records File'
+            text = 'Kernel'
         Field:
-            text := myFilter.recordsFilePath
-            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
+            text := chan.kernel
+            tool_tip = chan.get_member('kernel').metadata["desc"]
         Label: 
-            text = "Save records"
+            text = "Plot scope"
         CheckBox:
-            checked := myFilter.saveRecords
+            checked := myFilter.plotScope
         Label:
-            text = 'Dependent'
-        CheckBox:
-            checked := myFilter.dependent
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
 
 enamldef CorrelatorView(GroupBox):
     attr myFilter
@@ -168,8 +191,7 @@ enamldef EmptyMeasFilterForm(Container):
 
 #Map filters to views
 filterViewMap = {type(None): EmptyMeasFilterForm,
-    MeasFilters.DigitalHomodyne: DigitalHomodyneForm,
-    MeasFilters.DigitalHomodyneSS: DigitalHomodyneForm,
+    MeasFilters.DigitalDemod: DigitalDemodForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.StreamSelector: StreamSelectorView}
