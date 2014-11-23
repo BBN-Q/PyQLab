@@ -15,9 +15,8 @@ class MeasFilter(Atom):
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
     plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
-    childFilter = Str()
-    dependent = Bool(False).tag(desc='Whether this filter is a child of another filter.')
     saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
+    dataSource = Str()
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
@@ -30,21 +29,19 @@ class MeasFilter(Atom):
             jsonDict['x__module__'] = self.__class__.__module__
         return jsonDict
 
-class DigitalHomodyne(MeasFilter):
-    boxCarStart = Int(0).tag(desc='The start index of the integration window in pts.')
-    boxCarStop = Int(0).tag(desc='The stop index of the integration window in pts.')
+class RawStream(MeasFilter):
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+
+class DigitalDemod(MeasFilter):
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
     phase = Float(0.0).tag(desc='Phase rotation to apply in rad.')
-    filterFilePath = Str('').tag(desc='Path to a .mat file containing the measurement filter and bias')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
 
-# ignore the difference between DigitalHomodyneSS and DigitalHomodyne
-class DigitalHomodyneSS(DigitalHomodyne):
-    pass
-    
+class KernelIntegration(MeasFilter):
+    kernel = Str('').tag(desc="Integration kernel vector")
+
 class Correlator(MeasFilter):
     filters = List()
 
@@ -116,7 +113,7 @@ class MeasFilterLibrary(Atom):
             return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
-measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS, StreamSelector]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector]
 
 if __name__ == "__main__":
 
