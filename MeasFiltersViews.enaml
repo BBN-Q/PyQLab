@@ -37,6 +37,7 @@ enamldef RawStreamForm(GroupBox):
             text = "Save records"
         CheckBox:
             checked := myFilter.saveRecords
+            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
         Label: 
             text = "Plot scope"
         CheckBox:
@@ -104,6 +105,16 @@ enamldef DigitalDemodForm(GroupBox):
         EnumComboBox:
             obj := myFilter
             enumName = 'plotMode'
+        Label:
+            text = 'Records File'
+        Field:
+            text := myFilter.recordsFilePath
+            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
+        Label: 
+            text = "Save records"
+        CheckBox:
+            checked := myFilter.saveRecords
+            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
 
 enamldef KernelIntegrationForm(GroupBox):
     attr myFilter

@@ -35,11 +35,13 @@ class MeasFilter(Atom):
         return jsonDict
 
 class RawStream(MeasFilter):
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     channel = Str().tag(desc="The channel on the digitizer to pull data from.")
 
 class DigitalDemod(MeasFilter):
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
