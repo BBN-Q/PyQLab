@@ -58,8 +58,9 @@ class X6VirtualChannel(Atom):
 		jsonDict = self.__getstate__()
 		if matlabCompatible:
 			import numpy as np
+			import base64
 			try:
-				jsonDict['kernel'] = list(eval(self.kernel))
+				jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
 			except:
 				jsonDict['kernel'] = []
 		return jsonDict
