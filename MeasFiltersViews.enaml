@@ -96,8 +96,8 @@ enamldef KernelIntegrationForm(GroupBox):
         Label:
             text = 'Kernel'
         Field:
-            text := chan.kernel
-            tool_tip = chan.get_member('kernel').metadata["desc"]
+            text := myFilter.kernel
+            tool_tip = myFilter.get_member('kernel').metadata["desc"]
         Label: 
             text = "Plot scope"
         CheckBox:
