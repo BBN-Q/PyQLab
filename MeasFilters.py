@@ -49,7 +49,8 @@ class DigitalDemod(MeasFilter):
     decimFactor3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
 
 class KernelIntegration(MeasFilter):
-    kernel = Str('').tag(desc="Integration kernel vector")
+    kernel = Str('').tag(desc="Integration kernel vector.")
+    bias = Float(0.0).tag(desc="Bias after integration.")
 
 class Correlator(MeasFilter):
     filters = List()
