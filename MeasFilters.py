@@ -24,6 +24,12 @@ class MeasFilter(Atom):
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
             jsonDict.pop('label', None)
+            import numpy as np
+            import base64
+            try:
+                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+            except:
+                jsonDict['kernel'] = []
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
