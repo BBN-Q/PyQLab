@@ -72,6 +72,21 @@ enamldef DigitalDemodForm(GroupBox):
             value :: myFilter.samplingRate = value*1e6
             tool_tip = myFilter.get_member('samplingRate').metadata['desc']
         Label:
+            text = "First Stage Decimation"
+        IntField:
+            value := myFilter.decimFactor1
+            tool_tip = myFilter.get_member('decimFactor1').metadata['desc']
+        Label:
+            text = "Second Stage Decimation"
+        IntField:
+            value := myFilter.decimFactor2
+            tool_tip = myFilter.get_member('decimFactor2').metadata['desc']
+        Label:
+            text = "Third Stage Decimation"
+        IntField:
+            value := myFilter.decimFactor3
+            tool_tip = myFilter.get_member('decimFactor3').metadata['desc']
+        Label:
             text = "Phase (deg.)"
         FloatField:
             value << (180/pi)*myFilter.phase

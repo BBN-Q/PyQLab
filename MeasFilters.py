@@ -44,6 +44,9 @@ class DigitalDemod(MeasFilter):
     bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
     phase = Float(0.0).tag(desc='Phase rotation to apply in rad.')
+    decimFactor1 = Int(1).tag(desc="First stage polyphase decimation (before multiplication with reference).")
+    decimFactor2 = Int(1).tag(desc="Second stage polyphase decimation (before IIR filter).")
+    decimFactor3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
 
 class KernelIntegration(MeasFilter):
     kernel = Str('').tag(desc="Integration kernel vector")
