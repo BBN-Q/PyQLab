@@ -22,6 +22,12 @@ enamldef RawStreamForm(GroupBox):
             text = "Data source"
         Field:
             text := myFilter.dataSource
+            tool_tip = myFilter.get_member('dataSource').metadata['desc']
+        Label:
+            text = "Channel"
+        Field:
+            text := myFilter.channel
+            tool_tip = myFilter.get_member('channel').metadata['desc']
         Label:
             text = 'Records File'
         Field:

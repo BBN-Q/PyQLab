@@ -11,12 +11,11 @@ import json
 
 class MeasFilter(Atom):
     label = Str()
-    channel = Int(1)
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
     plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
     saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
-    dataSource = Str()
+    dataSource = Str().tag(desc="Where the measurement data is pushed from.")
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
@@ -38,6 +37,7 @@ class MeasFilter(Atom):
 class RawStream(MeasFilter):
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    channel = Str().tag(desc="The channel on the digitizer to pull data from.")
 
 class DigitalDemod(MeasFilter):
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
