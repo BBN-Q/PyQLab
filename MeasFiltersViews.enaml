@@ -21,7 +21,7 @@ enamldef RawStreamForm(GroupBox):
         Label:
             text = "Data source"
         Field:
-            value := myFilter.dataSource
+            text := myFilter.dataSource
         Label:
             text = 'Records File'
         Field:
@@ -73,7 +73,7 @@ enamldef DigitalDemodForm(GroupBox):
         Label:
             text = "Data source"
         Field:
-            value := myFilter.dataSource
+            text := myFilter.dataSource
         Label: 
             text = "Plot scope"
         CheckBox:
@@ -92,7 +92,7 @@ enamldef KernelIntegrationForm(GroupBox):
         Label:
             text = "Data source"
         Field:
-            value := myFilter.dataSource
+            text := myFilter.dataSource
         Label:
             text = 'Kernel'
         Field:
@@ -179,11 +179,6 @@ enamldef StreamSelectorView(GroupBox):
         CheckBox:
             checked := myFilter.saved
 
-enamldef MeasFilterWindow(Window): filterTest:
-    attr myFilter
-    DigitalHomodyneForm:
-        myFilter := filterTest.myFilter
-
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
     attr myFilter
@@ -191,7 +186,9 @@ enamldef EmptyMeasFilterForm(Container):
 
 #Map filters to views
 filterViewMap = {type(None): EmptyMeasFilterForm,
+    MeasFilters.RawStream: RawStreamForm,
     MeasFilters.DigitalDemod: DigitalDemodForm,
+    MeasFilters.KernelIntegration: KernelIntegrationForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.StreamSelector: StreamSelectorView}
