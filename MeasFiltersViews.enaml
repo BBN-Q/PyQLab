@@ -203,9 +203,17 @@ enamldef StreamSelectorView(GroupBox):
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
+        Label:
             text = 'Stream'
         Field:
             text := myFilter.stream
+        Label: 
+            text = "Plot scope"
+        CheckBox:
+            checked := myFilter.plotScope
         Label:
             text = "Plot mode"
         EnumComboBox:
