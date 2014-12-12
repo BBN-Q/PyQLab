@@ -77,6 +77,8 @@ class StateComparator(MeasFilter):
 
 class StreamSelector(MeasFilter):
     stream = Str()
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
 
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)

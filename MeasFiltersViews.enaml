@@ -223,6 +223,17 @@ enamldef StreamSelectorView(GroupBox):
             text = 'Saved'
         CheckBox:
             checked := myFilter.saved
+        Label:
+            text = 'Records File'
+        Field:
+            text := myFilter.recordsFilePath
+            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
+        Label: 
+            text = "Save records"
+        CheckBox:
+            checked := myFilter.saveRecords
+            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
+
 
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
