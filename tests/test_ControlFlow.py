@@ -55,7 +55,7 @@ class ControlFlow(unittest.TestCase):
         q1 = self.q1
         seq1 = [X90(q1), Y90(q1)]
         label(seq1)
-        assert( qrepeat(5, seq1) == [LoadRepeat(4)] + seq1 + [Repeat(label(seq1))] )
+        assert( qrepeat(5, seq1) == [LoadRepeat(5)] + seq1 + [Repeat(label(seq1))] )
 
     def test_flatten_and_separate(self):
         seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]
