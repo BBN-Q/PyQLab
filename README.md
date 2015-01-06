@@ -5,6 +5,8 @@ Contents:
 * Quantum Gate Language (QGL) for specifying pulse sequences
 * Instrument settings GUIs
 
+See example usage in this ipython [notebook](http://nbviewer.ipython.org/github/BBN-Q/PyQLab/blob/develop/doc/QGL-demo.ipynb).
+
 ##Setup instructions
 
 The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies (although you may have to `conda update`) except for watchdog which can be installed with `pip install watchdog`.  Until an issue is fixed upstream you need to either use PyQt (set environment variable `QT_API=pyqt`) or install a patched version of enaml (`pip install git+git://github.com/caryan/enaml-nucleic.git@fix/pyside-dialogs`) and set `QT_API=pyside`. 
