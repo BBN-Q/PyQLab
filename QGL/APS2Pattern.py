@@ -129,11 +129,55 @@ class Instruction(object):
 		return self.__str__()
 
 	def __str__(self):
+
+		opCodes = ["WFM", "MARKER", "WAIT", "LOAD", "REPEAT", "CMP", "GOTO", "CALL", "RET", "SYNC", "PFETCH", "WAITCMP"]
+
+
 		labelPart = "{0}: ".format(self.label) if self.label else ""
-		out = labelPart + "Instruction(" + str(hex(self.header)) + ", "
+
+		instrOpCode = (self.header >> 4) & 0xf
+		out = labelPart + "Instruction(" + opCodes[instrOpCode] + '|'
+		if self.header & 0x1:
+			out += "WRITEFLAG=1"
+		else:
+			out += "WRITEFLAG=0"
+
+		if instrOpCode == 0x1:
+			out += ", ENGINESELECT={}".format((self.header >> 2) & 0x3)
+
+		out += "; "
+
 		if self.target:
 			out += str(self.target) + "/"
-		return out + str(hex(self.payload)) + ")"
+		
+		if instrOpCode == 0x0:
+			wfOpCode = (self.payload >> 46) & 0x3
+			wfOpCodes = ["PLAY", "TRIG", "SYNC"]
+			out += wfOpCodes[wfOpCode]
+			out += ", TA bit={}".format((self.payload >> 45) & 0x1)
+			out += ", count = {}".format((self.payload >> 24) & 2**21-1)
+			out += ", addr = {}".format(self.payload & 2**24-1)
+
+		elif instrOpCode == 0x1:
+			mrkOpCode = (self.payload >> 46) & 0x3
+			mrkOpCodes = ["PLAY", "TRIG", "SYNC"]
+			out += mrkOpCodes[mrkOpCode]
+			out += ", state={}".format((self.payload >> 32) & 0x1)
+			out += ", count = {}".format(self.payload & 2**32-1)
+
+		elif instrOpCode == 0x5:
+			cmpCodes = ["EQUAL", "NOTEQUAL", "GREATERTHAN", "LESSTHAN"]
+			cmpCode = (self.payload >> 8) & 0x3
+			out += ", " + cmpCodes[cmpCode]
+			out += ", mask = {}".format(self.payload & 0xff)
+
+		elif instrOpCode == 0x6 or instrOpCode == 0x7 or instrOpCode == 0x8:
+			out += ", target addr = {}".format(self.payload & 2**26-1)
+
+		out += ')'
+
+		return out
+
 
 	@property
 	def address(self):
@@ -241,9 +285,14 @@ def create_seq_instructions(seqs, offsets):
 	# filter out sequencing instructions from the waveform and marker lists, so that seqs becomes:
 	# [control-flow, wfs, m1, m2, m3, m4]
 	controlInstrs = filter(lambda s: isinstance(s, ControlFlow.ControlInstruction), seqs[0])
-	seqs.insert(0, controlInstrs)
-	for ct in range(1, len(seqs)):
+	for ct in range(len(seqs)):
+		localControl = filter(lambda s: isinstance(s, ControlFlow.ControlInstruction), seqs[ct])
 		seqs[ct] = filter(lambda s: isinstance(s, Compiler.LLWaveform), seqs[ct])
+		# update control instructions to have the earliest time stamp of any occurence on wfs, m1, m2, m3, or m4
+		if ct > 0:
+			for ct, (a, b) in enumerate(zip(controlInstrs, localControl)):
+				controlInstrs[ct].startTime = min(a.startTime, b.startTime)
+	seqs.insert(0, controlInstrs)
 
 	# create (seq, startTime) pairs over all sequences
 	timeTuples = []
@@ -309,6 +358,7 @@ def create_seq_instructions(seqs, offsets):
 				instructions.append(Load(entry.value-1, label=entry.label))
 			elif entry.instruction == 'CMP':
 				instructions.append(Cmp(cmpTable[entry.operator], entry.mask, label=entry.label))
+    
 
 	return instructions
 

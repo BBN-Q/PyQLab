@@ -9,7 +9,14 @@ See example usage in this ipython [notebook](http://nbviewer.ipython.org/github/
 
 ##Setup instructions
 
-The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies (although you may have to `conda update`) except for watchdog which can be installed with `pip install watchdog`.  Until an issue is fixed upstream you need to either use PyQt (set environment variable `QT_API=pyqt`) or install a patched version of enaml (`pip install git+git://github.com/caryan/enaml-nucleic.git@fix/pyside-dialogs`) and set `QT_API=pyside`. 
+The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies except for watchdog which can be installed with `pip install watchdog`.  You may have to update Bokeh using ``conda upate bokeh``. 
+
+There is a known issue on Windows and Linux Anaconda distributions which causes h5py to throw errors.  The errors are benign but they can be avoided using an updated version of h5py from ``binstar/caryan``
+
+```bash
+conda remove h5py
+conda install -c caryan h5py
+```
 
 Use of the `QGL` module requires the PyQLab folder to be included in `PYTHONPATH`. On windows machines, you add/modify this environment variable by going to System -> Advanced Settings -> Environment variables. On Mac/Linux machines add the following line to your .bashrc or .bash_profile:
 ```
@@ -23,8 +30,8 @@ The PyQLab config file will be created the first time you run `startup.py` or `c
 * Numpy/Scipy
 * Nucleic enaml/atom
 * Matplotlib
-* PySide
 * h5py
-* watchdog 
+* watchdog
+* Bokeh 0.7
 
 
