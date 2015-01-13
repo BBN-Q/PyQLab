@@ -1,4 +1,11 @@
-from watchdog.observers import Observer
+import sys
+
+# FSEvents observer in watchdog cannot have multiple watchers of the same path
+# use kqueue instead
+if sys.platform == 'darwin':
+    from watchdog.observers.kqueue import KqueueObserver as Observer
+else:
+    from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import os
 import time
