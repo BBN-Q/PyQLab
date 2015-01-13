@@ -92,11 +92,16 @@ class InstrumentLibrary(Atom):
                     print('Failed to update instrument library from file.  Probably just half-written.')
                     return
                 for instrName, instrParams in allParams.items():
-                    if instrName in self.instrDict:
-                        #Update AWG offsets'
-                        if isinstance(self.instrDict[instrName], AWGs.AWG):
-                            for ct in range(self.instrDict[instrName].numChannels):
-                                self.instrDict[instrName].channels[ct].offset = instrParams['channels'][ct]['offset']
+                    if instrName not in self.instrDict:
+                        continue
+                    #Update AWG offsets'
+                    # if isinstance(self.instrDict[instrName], AWGs.AWG):
+                    #     for ct in range(self.instrDict[instrName].numChannels):
+                    #         self.instrDict[instrName].channels[ct].offset = instrParams['channels'][ct]['offset']
+                    # update parameters rather than replacing objects
+                    # Re-encode the strings as ascii (this should go away in Python 3)
+                    instrParams = {k.encode('ascii'):v for k,v in instrParams.items()}
+                    self.instrDict[instrName].update_from_jsondict(instrParams)
 
     def json_encode(self, matlabCompatible=False):
         #When serializing for matlab return only enabled instruments, otherwise all

@@ -45,6 +45,16 @@ class AWG(Instrument):
                 jsonDict['chan_{}'.format(ct+1)] = chan
         return jsonDict
 
+    def update_from_jsondict(self, params):
+        for ct in range(self.numChannels):
+            self.channels[ct].label = params['channels'][ct].label
+            self.channels[ct].amplitude = params['channels'][ct].amplitude
+            self.channels[ct].offset = params['channels'][ct].offset
+            self.channels[ct].enabled = params['channels'][ct].enabled
+
+        for p in ['label', 'enabled', 'address', 'isMaster', 'triggerSource', 'triggerInterval', 'samplingRate', 'seqFile', 'seqForce', 'delay']:
+            setattr(self, p, params[p])
+
 class APS(AWG):
     numChannels = Int(default=4)
     miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
