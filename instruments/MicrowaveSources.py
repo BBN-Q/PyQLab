@@ -47,7 +47,7 @@ class RhodeSchwarzSMIQ03(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
-class BNC845M(MicrowaveSource):
+class BNC845(MicrowaveSource):
     refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
     gateBuffer = Float(20e-9)
     gateMinWidth = Float(100e-9)
@@ -60,7 +60,7 @@ class HP8340B(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845M]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
