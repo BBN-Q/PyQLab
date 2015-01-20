@@ -19,7 +19,7 @@ enamldef EmptyInstrView(Container):
 enamldef DefaultInstrView(GroupBox):
 	hug_width = 'medium'
 	attr instr
-	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	Form:
 		Label:
 			text = 'Address'
