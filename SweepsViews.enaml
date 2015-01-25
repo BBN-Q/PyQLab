@@ -78,8 +78,8 @@ enamldef AttenuationSweepForm(GroupBox):
             text = 'Channel'
         ComboBox:
             items = ['1','2','3']
-            index << sweep.channel - 1
-            index :: sweep.channel = index + 1
+            index << sweep.channel
+            #index :: sweep.stream = index 
 
 enamldef SegmentNumForm(GroupBox):
     attr sweep
@@ -304,6 +304,39 @@ enamldef HeterodyneSweepForm(GroupBox):
             index :: sweep.instr2 = possibleInstrs[index]
             items << [item for item in possibleInstrs]
 
+enamldef ThresholdSweepForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label: 
+            text = 'Stream'
+        EnumComboBox:
+            items = ['(1,1)','(1,2)','(2,1)','(2,2)']
+            obj := sweep
+            enumName = 'stream'
+
+
 enamldef EmptySweepForm(Container):
     attr sweep
     attr possibleInstrs
@@ -318,7 +351,8 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.Power:PowerSweepForm,
                     Sweeps.Repeat:RepeatForm,
                     Sweeps.DC:PointsSweepForm,
-                    Sweeps.HeterodyneFrequency:HeterodyneSweepForm}
+                    Sweeps.HeterodyneFrequency:HeterodyneSweepForm,
+                    Sweeps.Threshold:ThresholdSweepForm}
 
 enamldef SweepManager(Container): sweepManager:
     attr sweepLib

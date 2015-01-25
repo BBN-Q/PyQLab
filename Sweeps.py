@@ -113,7 +113,12 @@ class DC(PointsSweep):
     label = Str(default='DC')
     instr = Str()
 
-newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
+class Threshold(PointsSweep):
+    label = Str(default="Threshold")
+    instr = Str()
+    stream = Enum('(1,1)','(1,2)','(2,1)','(2,2)').tag(desc='which stream to set threshold')
+
+newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat, Threshold]
 
 class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
