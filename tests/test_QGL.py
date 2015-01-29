@@ -51,7 +51,7 @@ class MultiQubit(unittest.TestCase):
     
     def test_compile(self):
         seq = self.test_Operators()
-        LL, wfLib = Compiler.compile_sequences(seq)
+        LL, wfLib = Compiler.compile_sequences([seq])
         assert(len(LL[self.q1]) == 1)
         assert(len(LL[self.q1][0]) == 7)
         assert(len(wfLib[self.q1]) == 4) # X90, X, Y, TAZ
