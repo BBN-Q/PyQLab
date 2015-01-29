@@ -124,11 +124,6 @@ class ScripterEncoder(json.JSONEncoder):
 				raise 
 
 			#Patch up some issues on the JSON dictionary
-
-			#If in CWMode, add the run method to AWGs
-			if self.CWMode and isinstance(obj, instruments.AWGs.AWG):
-				jsonDict['run'] = '{}'
-
 			#Matlab doesn't use the label
 			jsonDict.pop('label', None)
 
