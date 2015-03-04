@@ -79,7 +79,8 @@ class X6(Instrument):
 		if not self.channels:
 			for a, b in itertools.product(range(1,3), range(1,3)):
 				label = str((a,b))
-				self.channels[label] = X6VirtualChannel(label=label)
+				key = "s{0}{1}".format(a, b)
+				self.channels[key] = X6VirtualChannel(label=label)
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
@@ -87,13 +88,6 @@ class X6(Instrument):
 			# For the Matlab experiment manager we nest averager settings
 			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
 			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
-			# re-write channel labels into matlab-compatible names
-			# need to copy otherwise we'll mutate the object's channel dict
-			jsonDict['channels'] = jsonDict['channels'].copy()
-			for chan in jsonDict['channels'].keys():
-				settings = jsonDict['channels'].pop(chan)
-				a, b = ast.literal_eval(chan)
-				jsonDict['channels']["s{0}{1}".format(a, b)] = settings
 
 		return jsonDict
 
