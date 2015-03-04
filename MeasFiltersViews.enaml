@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    CheckBox, PushButton, SpinBox 
+    CheckBox, PushButton, SpinBox, RadioButton
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
@@ -126,10 +126,42 @@ enamldef KernelIntegrationForm(GroupBox):
         Field:
             text := myFilter.dataSource
         Label:
-            text = 'Kernel'
+            text = 'Arbitrary kernel'
         Field:
             text := myFilter.kernel
             tool_tip = myFilter.get_member('kernel').metadata["desc"]
+        Label:
+            text = 'Simple kernel'
+        GroupBox:
+            Form:
+                Label:
+                    text = 'Box car start'
+                IntField:
+                    value := myFilter.boxCarStart
+                Label:
+                    text = 'Box car stop'
+                IntField:
+                    value := myFilter.boxCarStop
+                Label:
+                    text = 'IF frequency (MHz)'
+                FloatField:
+                    value << myFilter.IFfreq / 1e6
+                    value :: myFilter.IFfreq = value * 1e6
+                Label:
+                    text = 'Sampling rate (MS/s)'
+                FloatField:
+                    value << myFilter.samplingRate / 1e6
+                    value :: myFilter.samplingRate = value * 1e6
+        Label:
+            text = ''
+        Container:
+            constraints = [hbox(rb1, rb2, spacer)]
+            RadioButton: rb1:
+                text = 'arbitrary'
+                checked << not myFilter.simpleKernel
+            RadioButton: rb2:
+                text = 'simple'
+                checked := myFilter.simpleKernel
         Label:
             text = 'Bias'
         FloatField:

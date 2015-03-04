@@ -23,12 +23,6 @@ class MeasFilter(Atom):
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
             jsonDict.pop('label', None)
-            import numpy as np
-            import base64
-            try:
-                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
-            except:
-                jsonDict['kernel'] = []
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
@@ -53,6 +47,31 @@ class DigitalDemod(MeasFilter):
 class KernelIntegration(MeasFilter):
     kernel = Str('').tag(desc="Integration kernel vector.")
     bias = Float(0.0).tag(desc="Bias after integration.")
+    simpleKernel = Bool(True)
+    boxCarStart = Int(1)
+    boxCarStop = Int(1)
+    IFfreq = Float(10e6)
+    samplingRate = Float(250e6)
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = super(KernelIntegration, self).json_encode(matlabCompatible)
+        if matlabCompatible:
+            # re-encode kernel in base64
+            jsonDict.pop('kernel')
+
+            import numpy as np
+            import base64
+            try:
+                if self.simpleKernel:
+                    kernel = np.hstack((np.zeros(self.boxCarStart, dtype=np.complex), np.ones(self.boxCarStop-self.boxCarStart)))
+                    kernel *= np.exp(1j*2*np.pi*self.IFfreq*np.arange(self.boxCarStop))
+                    kernel = base64.b64encode(kernel)
+                else:
+                    kernel = base64.b64encode(eval(self.kernel))
+            except:
+                kernel = []
+            jsonDict['kernel'] = kernel
+        return jsonDict
 
 class Correlator(MeasFilter):
     filters = List()
