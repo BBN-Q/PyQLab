@@ -64,7 +64,7 @@ class KernelIntegration(MeasFilter):
             try:
                 if self.simpleKernel:
                     kernel = np.hstack((np.zeros(self.boxCarStart, dtype=np.complex), np.ones(self.boxCarStop-self.boxCarStart)))
-                    kernel *= np.exp(1j*2*np.pi*self.IFfreq*np.arange(self.boxCarStop))
+                    kernel *= np.exp(1j*2*np.pi*self.IFfreq*np.arange(self.boxCarStop)/self.samplingRate)
                     kernel = base64.b64encode(kernel)
                 else:
                     kernel = base64.b64encode(eval(self.kernel))
