@@ -191,7 +191,7 @@ enamldef CorrelatorView(GroupBox):
             iterable << range(numFiltersBox.value)
             iterable ::
                 if len(myFilter.filters) > len(iterable):
-                    myFilter.filters = myFilter.filters[:numSweepsBox.value]
+                    myFilter.filters = myFilter.filters[:numFiltersBox.value]
                 elif len(myFilter.filters) < len(iterable):
                     myFilter.filters += [None]
             Form:

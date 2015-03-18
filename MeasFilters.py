@@ -86,8 +86,6 @@ class Correlator(MeasFilter):
         #For correlation filters return the filter list as a list of filter names
         filterList = jsonDict.pop('filters')
         jsonDict['filters'] = [item.label for item in filterList] if filterList else []
-        jsonDict.pop('channel')
-        jsonDict.pop('plotScope')
         return jsonDict
 
 class StateComparator(MeasFilter):
