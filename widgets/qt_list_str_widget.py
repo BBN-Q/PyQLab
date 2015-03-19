@@ -134,7 +134,7 @@ class QtListStrWidget(RawWidget):
 
         """
         # The superclass handler implementation is sufficient.
-        if self.get_widget():
+        if self.get_widget() != None:
             if change["name"] == "items":
                 if change["type"] == "update":
                     if len(change["oldvalue"]) > len(change["value"]):
