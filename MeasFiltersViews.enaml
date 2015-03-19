@@ -202,6 +202,17 @@ enamldef CorrelatorView(GroupBox):
                     index << filterLib.filterDict.values().index(myFilter.filters[loop_index]) if loop_index < len(myFilter.filters) and myFilter.filters[loop_index] else -1
                     index ::
                         myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
+        Label: 
+            text = "Plot scope"
+        CheckBox:
+            checked := myFilter.plotScope
+
+
 
 enamldef StateComparatorView(GroupBox):
     attr myFilter
