@@ -2,7 +2,7 @@
 Measurement filters
 """
 
-from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typed, observe
+from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typed, observe, Instance
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -86,6 +86,7 @@ class Correlator(MeasFilter):
         #For correlation filters return the filter list as a list of filter names
         filterList = jsonDict.pop('filters')
         jsonDict['filters'] = [item.label for item in filterList] if filterList else []
+        jsonDict['dataSource'] = ','.join(jsonDict['filters']) # correlator has mulitple data sources which are one and the same as the filter list
         return jsonDict
 
 class StateComparator(MeasFilter):
