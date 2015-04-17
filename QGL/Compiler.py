@@ -65,8 +65,8 @@ def setup_awg_channels(logicalChannels):
 def map_logical_to_physical(linkLists, wfLib):
     physicalChannels = {chan: channelLib[get_channel_label(chan)].physChan.label for chan in linkLists.keys()}
     awgData = setup_awg_channels(linkLists.keys())
-
     for chan in linkLists.keys():
+        # gets awgName from physical channel label rather than from AWG.label
         awgName, awgChan = physicalChannels[chan].split('-')
         awgData[awgName]['ch'+awgChan] = {'linkList': linkLists[chan], 'wfLib': wfLib[chan]}
 
@@ -103,6 +103,10 @@ def compile_to_hardware(seqs, fileName, suffix='', alignMode="right"):
 
     #Compile all the pulses/pulseblocks to linklists and waveform libraries
     linkLists, wfLib = compile_sequences(seqs, channels)
+
+    if not validate_linklist_channels(linkLists.keys()):
+        print "Compile to hardware failed"
+        return        
 
     # apply gating constraints
     for chan, LL in linkLists.items():
@@ -501,3 +505,15 @@ def resolve_offsets(seqs):
                     assert targetidx[0] < len(seqs), "invalid target"
                 entry.target = label(seqs[targetidx[0]][targetidx[1]:])
 
+def validate_linklist_channels(linklistChannels):
+    errors = []
+    channels = channelLib.channelDict
+    for channel in linklistChannels:
+        if channel.label not in channels.keys() and channel.label not in errors:
+            print "{0} not found in channel library".format(repr(channel))
+            errors.append(channel.label)
+
+    if errors != []:
+        return False
+    return True
+        
