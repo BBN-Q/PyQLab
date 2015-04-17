@@ -1,5 +1,7 @@
 '''
-ExpSettingsValidator
+ExpSettingsVal - 
+Validates Experimental Settings against a set of rules known to cause 
+the Compiler (Compiler.py) to fail if they are not followed
 
 Created on April 17, 2015
 
@@ -36,6 +38,7 @@ measurements = Libraries.measLib.filterDict
 sweeps = Libraries.sweepLib.sweepDict
 
 
+## Helper functions for list comprehension 
 def is_logicalmarker_channel(name):
 	return is_channel_type(name, QGL.Channels.LogicalMarkerChannel)	
 
@@ -57,7 +60,38 @@ def is_channel_type(name, channelType):
 	channels = Libraries.channelLib.channelDict
 	return isinstance(channels[name], channelType)	
 
+### Apply global rules
+
+def test_require_physical():
+	"""Enforces rule requiring physical channels for certain logical channels
+
+	   See requires_physical_channel() for list of Channel types requiring a
+	   Physical channel.
+	"""
+	errors = []
+	channels = Libraries.channelLib.channelDict
+	testChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
+
+	for channel in testChannels:
+		physicalChannel = channels[channel].physChan
+
+		if physicalChannel is None:
+			print '"{0}" channel "{1}" Physical Channel is not defined'.format(channels[channel].__class__.__name__, channel)
+			errors.append(channel)
+
+	return errors
+
+## Apply invidual test based on channel type
 def test_logical_channels():
+	"""
+		Enforces rules applied against logical channels
+
+		These are rules in addition to those applied at the global level.
+
+		Rules:
+		PhysicalChannel but be in library
+		PhysicalChannel class must be PhysicalMarkerChannel
+	"""
 	errors = []
 	channels = Libraries.channelLib.channelDict
 	logicalChannels = [channelName for channelName in channels.keys() if is_logicalmarker_channel(channelName)]
@@ -79,6 +113,14 @@ def test_logical_channels():
 	return errors
 
 def test_physical_channels():
+	"""
+		Enforces rules applied against physical channels
+
+		Rules:
+		PhysicalChannel must have an AWG assigned
+		The assigned AWG must exist in the library
+		The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
+	"""
 	errors = []
 	channels = Libraries.channelLib.channelDict
 	physicalChannels = [channelName for channelName in channels.keys() if is_physicalmarker_channel(channelName)]
@@ -109,33 +151,7 @@ def test_physical_channels():
 
 	return errors
 
-def test_require_physical():
-	errors = []
-	channels = Libraries.channelLib.channelDict
-	testChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
-
-	for channel in testChannels:
-		physicalChannel = channels[channel].physChan
-		if physicalChannel is None:
-			print '"{0}" channel "{1}" Physical Channel is not defined'.format(channels[channel].__class__.__name__, channel)
-			errors.append(channel)
-
-	return errors
-
-def test_measurement_channels():
-	errors = []
-	channels = Libraries.channelLib.channelDict
-	measurementChannels = [channelName for channelName in channels.keys() if is_measurement_channel(channelName)]
-
-	for channel in measurementChannels:
-		physicalChannel = channels[channel].physChan
-		if physicalChannel is None:
-			print 'Measurement channel "{0}" Physical Channel is not defined'.format(channel)
-			errors.append(channel)
-
-	return errors	
-
-def lint_channelLib():
+def validate_channelLib():
 	errors = []
 	if 'digitizerTrig' not in channels.keys():
 		print 'A LogicalMarkerChannel named digitizerTrig is required'
@@ -163,7 +179,7 @@ def lint_channelLib():
 	return errors
 
 def validate_lib():
-	if lint_channelLib() != []:
+	if validate_channelLib() != []:
 		return False
 	return True
 
@@ -201,5 +217,4 @@ def list_config():
 	list_sweeps()
 
 if __name__ == '__main__':
-	list_config()
 	validate_lib()
