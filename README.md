@@ -9,7 +9,13 @@ See example usage in this ipython [notebook](http://nbviewer.ipython.org/github/
 
 ##Setup instructions
 
-The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes all the dependencies except for watchdog which can be installed with `pip install watchdog`.  You may have to update Bokeh using ``conda update bokeh``. 
+The most straightforward way to get up and running is to use the [Anaconda Python distribution](http://continuum.io/downloads). This includes nearly the dependencies. The few remaining can be installed from the termminal or Anaconda Command Prompt on Windows
+
+```bash
+conda install atom
+conda install enaml
+pip install watchdog
+```
 
 There is a known issue on Windows and Linux Anaconda distributions which causes h5py to throw errors.  The errors are benign but they can be avoided using an updated version of h5py from ``binstar/caryan``
 

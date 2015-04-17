@@ -63,14 +63,70 @@ def setup_awg_channels(logicalChannels):
     return data
 
 def map_logical_to_physical(linkLists, wfLib):
-    physicalChannels = {chan: channelLib[get_channel_label(chan)].physChan.label for chan in linkLists.keys()}
-    awgData = setup_awg_channels(linkLists.keys())
-    for chan in linkLists.keys():
-        # gets awgName from physical channel label rather than from AWG.label
-        awgName, awgChan = physicalChannels[chan].split('-')
-        awgData[awgName]['ch'+awgChan] = {'linkList': linkLists[chan], 'wfLib': wfLib[chan]}
+    awgData = setup_awg_channels(linkLists.keys())   
+
+    # construct a mapping of physical channels to a list of logical channels
+    # (there may be more than one if multiple logical channels share a
+    # physical channel)
+    physicalChannels = {}
+    for logicalChan in linkLists.keys():
+        physChan = channelLib[get_channel_label(logicalChan)].physChan.label
+        physicalChannels[physChan] = physicalChannels.get(physChan, [])
+        physicalChannels[physChan].append(logicalChan)
+
+    # loop through the physical channels
+    for physChan, channels in physicalChannels.iteritems():
+        if len(channels)>1:
+            linkLists, wfLib = merge_waveforms(linkLists, wfLib, channels)
+
+        awgName, awgChan = physChan.split('-')
+        awgData[awgName]['ch'+awgChan] = {'linkList': linkLists[channels[0]], 'wfLib': wfLib[channels[0]]}
 
     return awgData
+
+def merge_waveforms(linkLists, wfLib, chanList):
+    #chanlist: list of logical channels using the same physical channel
+    wfsum = {} #dictionary with position:pulse sum
+    for count, chan in enumerate(chanList):
+        curpos = 0
+        linkList = linkLists[chan]
+        for segment in linkList:
+            for LL in segment:
+                if isinstance(LL, LLWaveform) and not LL.isTimeAmp: #need to check for timing, not done yet!
+                    wf = wfLib[chan][LL.key]
+                    if curpos in wfsum.keys():
+                        if len(wfsum[curpos]) < len(wf): #pad with zero if different lengths
+                            wfsum[curpos] = np.array(wfsum[curpos].tolist()+[0]*(len(wf)-len(wfsum[curpos])))
+                        elif len(wfsum[curpos]) > len(wf):
+                            wf = np.array(wf.tolist()+[0]*(len(wfsum[curpos])-len(wf)))
+                        wfsum[curpos] = wfsum[curpos]+wf #sum new waveforms. Dictionaries can't do +=
+                    elif count == 0:
+                        wfsum[curpos] = wf
+                    else:
+                        warn("Pulses to be combined are not simultaneous")
+                    #delete all channels except one
+                    curpos += LL.length
+        if (count > 0):
+            del wfLib[chan]
+            del linkLists[chan]
+    numChans = len(chanList)
+    wfsum.update((x,y/numChans) for x,y in wfsum.items())
+
+    #then replace original linkLists and wfs with the new ones
+    curpos = 0
+    chan = chanList[0] #to start, replace only one of the channels
+    linkList = linkLists[chan] 
+    for kk in range(len(linkList)):
+        for LL in linkList[kk]:
+            if isinstance(LL,LLWaveform) and not LL.isTimeAmp: 
+                wfnew = wfsum[curpos]
+                curpos+=LL.length
+                wfLib[chan][PatternUtils.hash_pulse(wfnew)]=wfnew
+                if LL.key in wfLib[chan].keys(): 
+                    del wfLib[chan][LL.key] #delete original pulse
+                LL.key = PatternUtils.hash_pulse(wfnew) #update key
+                LL.length = len(wfnew) #update length
+    return linkLists, wfLib
 
 def channel_delay_map(awgData):
     chanDelays = {}
@@ -112,10 +168,8 @@ def compile_to_hardware(seqs, fileName, suffix='', alignMode="right"):
     for chan, LL in linkLists.items():
         if isinstance(chan, Channels.LogicalMarkerChannel):
             linkLists[chan] = PatternUtils.apply_gating_constraints(chan.physChan, LL)
-
     # map logical to physical channels
     awgData = map_logical_to_physical(linkLists, wfLib)
-
     # construct channel delay map
     chanDelays = channel_delay_map(awgData)
 
@@ -158,7 +212,6 @@ def compile_to_hardware(seqs, fileName, suffix='', alignMode="right"):
         if not os.path.exists(targetFolder):
             os.mkdir(targetFolder)
         fullFileName = os.path.normpath(os.path.join(config.AWGDir, fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt))
-
         write_sequence_file(instrumentLib[awgName], data, fullFileName)
 
         fileList.append(fullFileName)
