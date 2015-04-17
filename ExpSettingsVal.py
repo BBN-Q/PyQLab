@@ -26,12 +26,6 @@ import h5py
 import Libraries
 import QGL.Channels
 
-channels = None
-instruments = None
-measurements = None
-sweeps = None
-
-
 channels = Libraries.channelLib.channelDict
 instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
@@ -44,6 +38,9 @@ def is_logicalmarker_channel(name):
 
 def is_physicalmarker_channel(name):
 	return is_channel_type(name, QGL.Channels.PhysicalMarkerChannel)	
+
+def is_physicalIQ_channel(name):
+	return is_channel_type(name, QGL.Channels.PhysicalQuadratureChannel)	
 
 def is_qubit_channel(name):
 	return is_channel_type(name, QGL.Channels.Qubit)	
@@ -216,5 +213,55 @@ def list_config():
 	print
 	list_sweeps()
 
+def draw_wiring_digram():
+
+	topLevelChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
+
+	print "digraph Exp {"
+
+	for channel in topLevelChannels:
+		print '"{0}"'.format(channel), 
+		if channels[channel].physChan is not None:
+			print ' -> "{0}"'.format(channels[channel].physChan.label),
+			if channels[channel].physChan.AWG is not None:
+				print ' -> "{0}"'.format(channels[channel].physChan.AWG.label),
+		print
+
+	typeMap = (
+		(is_logicalmarker_channel,"lightblue"),
+		(is_physicalmarker_channel,"red"),
+		(is_physicalIQ_channel,"blue"),
+		(is_qubit_channel,"yellow"),
+		)
+
+	for type in typeMap:
+		lookup, color = type
+		names = [channelName for channelName in channels.keys() if lookup(channelName)]
+		for channel in names:
+			print '"{0}" [color={1},style=filled];'.format(channel, color)
+
+	instrumentNames = [channelName for channelName in instruments.keys()]
+	for channel in instrumentNames:
+		print '"{0}" [color=green,style=filled];'.format(channel)		
+
+	print "}"
+
+
 if __name__ == '__main__':
-	validate_lib()
+	import argparse
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-d', dest='draw_digram', action='store_true')
+	parser.add_argument('-v', dest='validate', action='store_true')
+	parser.add_argument('-l', dest='list', action='store_true')
+
+	args = parser.parse_args()
+	
+	if args.draw_digram:
+		draw_wiring_digram()
+
+	if args.validate:
+		validate_lib()
+
+	if args.list:
+		list_config()
