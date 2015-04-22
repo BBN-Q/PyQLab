@@ -60,5 +60,18 @@ class CompileUtils(unittest.TestCase):
         assert all(len(e) == blocklen for e in entries)
         self.assertRaises(StopIteration, entryIterators[0].next)
 
+    def test_merge_channels(self):
+        q1 = Qubit(label='q1')
+        q1.pulseParams['length'] = 20e-9
+        q2 = Qubit(label='q2')
+        q2.pulseParams['length'] = 60e-9
+        seqs = [[(X90(q1)+Y90(q1)+X90(q1)) * X(q2)]]
+        ll, wflib = Compiler.compile_sequences(seqs)
+
+        chLL, chWf = Compiler.merge_channels(ll, wflib, [q1, q2])
+        assert len(chLL[0]) == len(ll[q1][0]) - 2
+        assert len(chLL[0]) == len(ll[q2][0])
+        assert len(chWf.keys()) == 1
+
 if __name__ == "__main__":    
     unittest.main()
