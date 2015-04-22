@@ -38,5 +38,27 @@ class CompileUtils(unittest.TestCase):
         assert([self.q1gate in entry.pulses.keys() for entry in seq] == [True, False, True])
         assert([self.q2gate in entry.pulses.keys() for entry in seq] == [False, True, True])
 
+    def test_concatenate_entries(self):
+        q1 = Qubit(label='q1')
+        seq = [X90(q1, length=20e-9), Y90(q1, length=40e-9)]
+        ll, wflib = Compiler.compile_sequence(seq)
+        entry = Compiler.concatenate_entries(ll[q1][0], ll[q1][1], wflib[q1])
+        assert len(entry) == seq[0].length + seq[1].length
+        wf = np.hstack((seq[0].shape, 1j*seq[1].shape))
+        assert all(abs(wflib[q1][entry.key] - wf) < 1e-16)
+
+    def test_pull_uniform_entries(self):
+        q1 = Qubit(label='q1')
+        q1.pulseParams['length'] = 20e-9
+        q2 = Qubit(label='q2')
+        q2.pulseParams['length'] = 60e-9
+        seq = [(X90(q1)+Y90(q1)+X90(q1)) * X(q2)]
+        ll, wflib = Compiler.compile_sequence(seq)
+        entryIterators = [iter(ll[q1]), iter(ll[q2])]
+        entries = [e.next() for e in entryIterators]
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, wflib, [q1, q2])
+        assert all(len(e) == blocklen for e in entries)
+        self.assertRaises(StopIteration, entryIterators[0].next)
+
 if __name__ == "__main__":    
     unittest.main()
