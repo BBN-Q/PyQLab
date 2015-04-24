@@ -6,6 +6,7 @@ from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
 from Instrument import Instrument
 
+
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -46,11 +47,21 @@ class AWG(Instrument):
         return jsonDict
 
     def update_from_jsondict(self, params):
+
+        import JSONHelpers # get around circular import
+        decoder = JSONHelpers.LibraryDecoder()
+
         for ct in range(self.numChannels):
-            self.channels[ct].label = params['channels'][ct].label
-            self.channels[ct].amplitude = params['channels'][ct].amplitude
-            self.channels[ct].offset = params['channels'][ct].offset
-            self.channels[ct].enabled = params['channels'][ct].enabled
+            channelParams = params['channels'][ct]
+
+            # if this is still a raw dictionary convert to object
+            if isinstance(channelParams, dict):
+                channelParams = decoder.dict_to_obj(channelParams)
+
+            self.channels[ct].label = channelParams.label
+            self.channels[ct].amplitude = channelParams.amplitude
+            self.channels[ct].offset = channelParams.offset
+            self.channels[ct].enabled = channelParams.enabled
 
         for p in ['label', 'enabled', 'address', 'isMaster', 'triggerSource', 'triggerInterval', 'samplingRate', 'seqFile', 'seqForce', 'delay']:
             setattr(self, p, params[p])
