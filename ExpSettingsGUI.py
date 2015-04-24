@@ -1,3 +1,4 @@
+import h5py
 from atom.api import Atom, Typed, Str, Bool
 
 import enaml
@@ -91,6 +92,11 @@ if __name__ == '__main__':
     from ExpSettingsGUI import ExpSettings
     expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
                      measurements=Libraries.measLib,  channels=Libraries.channelLib)
+
+    # setup on change AWG
+    expSettings.channels
+    expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
+    
 
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
