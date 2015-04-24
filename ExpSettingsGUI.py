@@ -94,7 +94,6 @@ if __name__ == '__main__':
                      measurements=Libraries.measLib,  channels=Libraries.channelLib)
 
     # setup on change AWG
-    expSettings.channels
     expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
     
 
