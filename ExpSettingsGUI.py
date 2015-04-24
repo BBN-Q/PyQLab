@@ -55,6 +55,10 @@ class ExpSettings(Atom):
             self.instruments.write_to_file()
             self.measurements.write_to_file()
             self.sweeps.write_to_file()
+        else:
+            print "JSON Files did not validate"
+            return False
+        return True
 
     def apply_quickpick(self, name):
         try:
