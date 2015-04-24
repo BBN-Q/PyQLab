@@ -35,8 +35,18 @@ class DictManager(Atom):
 		self.displayList.pop(self.displayList.index(itemLabel))
 
 	def name_changed(self, oldLabel, newLabel):
-		self.itemDict[newLabel] = self.itemDict.pop(oldLabel)
-		self.itemDict[newLabel].label = newLabel
+		# Add copy of changing item
+		self.itemDict[newLabel] = self.itemDict[oldLabel]
+
+		# update display list
+		idx = self.displayList.index(oldLabel)
+		self.displayList[idx] = newLabel
+
+		# remove old label from itemDict list
+		self.itemDict.pop(oldLabel)
+
+		# update label to new label list
+		self.itemDict[newLabel].label = newLabel		
 
 	def update_enable(self, itemLabel, checkState):
 		self.itemDict[itemLabel].enabled = checkState
