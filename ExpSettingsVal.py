@@ -26,13 +26,43 @@ import h5py
 import Libraries
 import QGL.Channels
 
+from QGL.mm import multimethod
+from instruments.AWGs import APS, APS2, Tek5014
+
+from atom.api import Str
+
 channels = Libraries.channelLib.channelDict
 instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
 sweeps = Libraries.sweepLib.sweepDict
 
+# The following naming conventions are currently enforced
+# See: https://github.com/BBN-Q/PyQLab/wiki
+#
+# Two LogicalMarkerChannels are required:
+#   1 digitizerTrig
+#   2 slaveTrig
+#
+# Logical Channels: 
+#   1 PhysicalChannel but be in library
+#	2 LogicalMarkerChannel must map to PhysicalMarkerChannel
+#
+# Physical Channels:
+#   1 PhysicalChannel must have an AWG assigned
+# 	2 The assigned AWG must exist in the library
+#	3 The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
+#   4 Device specific naming conventions
+#     APS: 12, 34, 1m1, 2m1, 3m1, 4m1
+#     APS2: 12, 12m1, 12m2, 12m3, 12m4
+#     Tek5014: 12, 34, 1m1, 1m2, 2m1, 2m2, 3m1, 3m2, 4m1, 4m2
 
+# Conventions to be added
+# 
+#
+
+#####################################################################################
 ## Helper functions for list comprehension 
+
 def is_logicalmarker_channel(name):
 	return is_channel_type(name, QGL.Channels.LogicalMarkerChannel)	
 
@@ -57,6 +87,7 @@ def is_channel_type(name, channelType):
 	channels = Libraries.channelLib.channelDict
 	return isinstance(channels[name], channelType)	
 
+#####################################################################################
 ### Apply global rules
 
 def test_require_physical():
@@ -87,7 +118,7 @@ def test_logical_channels():
 
 		Rules:
 		PhysicalChannel but be in library
-		PhysicalChannel class must be PhysicalMarkerChannel
+		LogicalMarkerChannel must map to PhysicalMarkerChannel
 	"""
 	errors = []
 	channels = Libraries.channelLib.channelDict
@@ -117,6 +148,7 @@ def test_physical_channels():
 		PhysicalChannel must have an AWG assigned
 		The assigned AWG must exist in the library
 		The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
+		Device channels have model specific naming conventions
 	"""
 	errors = []
 	channels = Libraries.channelLib.channelDict
@@ -142,11 +174,43 @@ def test_physical_channels():
 			if awgName != awg:
 				print 'Physical Channel "{0}" Label AWGName {1} != AWG.label {2}'.format(channel, awgName, awg)
 				errors.append(channel)
+			
+			# apply device specific channel namming conventions
+			# force converions of awgChan to unicode so multimethod dispatch will
+			# work with str or unicode
+			if invalid_awg_name_convention(channels[channel].AWG, unicode(awgChan)):
+				errors.append(channel)
 		else:
 			print 'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
 			errors.append(channel)
 
 	return errors
+
+#####################################################################################
+## AWG Model Type naming conventions
+def invalid_awg_name_convention_common(label, channelName, conventionList):
+	errorStr =  'AWG {0} channel name {1} not in convention list {2}'
+	if channelName not in conventionList:
+		print errorStr.format(label, channelName, conventionList)
+		return True
+	return False
+
+@multimethod(APS, unicode)
+def invalid_awg_name_convention(AWG, channelName):
+	convention = ['12', '34', '1m1', '2m1', '3m1', '4m1']
+	return invalid_awg_name_convention_common(AWG.label, channelName,convention)
+
+@multimethod(APS2, unicode)
+def invalid_awg_name_convention(AWG, channelName):
+	convention = ['12', '12m1', '12m2', '12m3', '12m4']
+	return invalid_awg_name_convention_common(AWG.label, channelName,convention)
+
+@multimethod(Tek5014, unicode)
+def invalid_awg_name_convention(AWG, channelName):
+	convention = ['12', '34', '1m1', '1m2', '2m1', '2m2', '3m1', '3m2', '4m1', '4m2']
+	return invalid_awg_name_convention_common(AWG.label, channelName,convention)
+
+#####################################################################################
 
 def validate_channelLib():
 	errors = []
