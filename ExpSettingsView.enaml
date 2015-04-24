@@ -151,8 +151,11 @@ enamldef ExpSettingsView(MainWindow): main:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
-				expSettings.write_libraries()
-				NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+				message = "Settings saved"
+				if not expSettings.write_libraries():
+					message = "Error validaing libraries.\nFiles not saved.\nSee console."
+				NotificationPopup(main, window_type='window', displayText=message).show()
+
 
 
 
