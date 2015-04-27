@@ -12,6 +12,7 @@ class DictManager(Atom):
 	displayFilter = Callable() # filter which items to display later
 	possibleItems = List() # a list of classes that can possibly be added to this list
 	displayList = ContainerList()
+	onChangeDelegate = Callable()
 
 	def __init__(self, itemDict={}, displayFilter=lambda x: True, **kwargs):
 		self.displayFilter = displayFilter
@@ -35,8 +36,21 @@ class DictManager(Atom):
 		self.displayList.pop(self.displayList.index(itemLabel))
 
 	def name_changed(self, oldLabel, newLabel):
-		self.itemDict[newLabel] = self.itemDict.pop(oldLabel)
-		self.itemDict[newLabel].label = newLabel
+		# Add copy of changing item
+		self.itemDict[newLabel] = self.itemDict[oldLabel]
+
+		# update display list
+		idx = self.displayList.index(oldLabel)
+		self.displayList[idx] = newLabel
+
+		# remove old label from itemDict list
+		self.itemDict.pop(oldLabel)
+
+		# update label to new label list
+		self.itemDict[newLabel].label = newLabel	
+
+		if self.onChangeDelegate:
+			self.onChangeDelegate(oldLabel, newLabel)
 
 	def update_enable(self, itemLabel, checkState):
 		self.itemDict[itemLabel].enabled = checkState

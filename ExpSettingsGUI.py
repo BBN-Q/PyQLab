@@ -28,6 +28,9 @@ class ExpSettings(Atom):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
 
+        # setup on change AWG
+        self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
+
     # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
@@ -99,6 +102,10 @@ if __name__ == '__main__':
     from ExpSettingsGUI import ExpSettings
     expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
                      measurements=Libraries.measLib,  channels=Libraries.channelLib)
+
+    # setup on change AWG
+    expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
+    
 
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
