@@ -91,6 +91,21 @@ class X6(Instrument):
 
 		return jsonDict
 
+	def update_from_jsondict(self, params):
+
+		for chName, chParams in params['channels'].items():
+			# if this is still a raw dictionary convert to object
+			if isinstance(chParams, dict):
+				chParams.pop('x__class__', None)
+				chParams.pop('x__module__', None)
+				chParams = X6VirtualChannel(**chParams)
+
+			for paramName in chParams.__getstate__().keys():
+				setattr(self.channels[chName], paramName, getattr(chParams, paramName))
+
+		params.pop('channels')
+		super(X6, self).update_from_jsondict(params)
+
 if __name__ == "__main__":
 	from Digitizers import X6
 	digitizer = X6(label='scope')
