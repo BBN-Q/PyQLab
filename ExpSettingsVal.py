@@ -105,6 +105,11 @@ def test_require_physical():
 		if physicalChannel is None:
 			print '"{0}" channel "{1}" Physical Channel is not defined'.format(channels[channel].__class__.__name__, channel)
 			errors.append(channel)
+		else:
+			physicalChannelName = channels[channel].physChan.label
+			if physicalChannelName not in channels.keys():
+				print 'Physical Channel "{0}" not found'.format(physicalChannelName)
+				errors.append(physicalChannelName)
 
 	return errors
 
@@ -129,11 +134,7 @@ def test_logical_channels():
 		errorHeader = 'LogicalMarkerChannel "{0}" requires a Physical Marker Channel'.format(channel)
 		if channels[channel].physChan is not None:
 			physicalChannelName = channels[channel].physChan.label
-			if physicalChannelName not in channels.keys():
-				print errorHeader
-				print '\tPhysical Channel "{0}" not found'.format(physicalChannelName)
-				errors.append(physicalChannelName)
-			elif not is_physicalmarker_channel(physicalChannelName):
+			if physicalChannelName in channels.keys() and not is_physicalmarker_channel(physicalChannelName):
 				print channels[channel].physChan
 				print '\tChannel "{0}" is not a Physical Marker Channel'.format(physicalChannelName)
 				errors.append(physicalChannelName)
@@ -146,7 +147,7 @@ def test_logical_channels():
 		errorHeader = '{0} "{1}" can not map to a Physical Marker Channel {2}'
 		if hasattr(channels[channel], 'physChan') and channels[channel].physChan is not None:
 			physicalChannelName = channels[channel].physChan.label
-			if is_physicalmarker_channel(physicalChannelName):
+			if physicalChannelName in channels.keys() and is_physicalmarker_channel(physicalChannelName):
 				print errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
 				errors.append(channel)
 
@@ -165,7 +166,6 @@ def test_physical_channels():
 	errors = []
 
 	channels = Libraries.channelLib
-
 	physicalChannels = [channelName for channelName in channels.keys() if is_physicalmarker_channel(channelName)]
 
 	for channel in physicalChannels:
