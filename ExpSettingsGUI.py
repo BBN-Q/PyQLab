@@ -1,3 +1,4 @@
+import h5py
 from atom.api import Atom, Typed, Str, Bool
 
 import enaml
@@ -12,6 +13,7 @@ import QGL.Channels
 import json
 import os
 import config
+import ExpSettingsVal
 
 class ExpSettings(Atom):
 
@@ -47,10 +49,16 @@ class ExpSettings(Atom):
         """Write all the libraries to their files.
 
         """
-        self.channels.write_to_file()
-        self.instruments.write_to_file()
-        self.measurements.write_to_file()
-        self.sweeps.write_to_file()
+        
+        if ExpSettingsVal.validate_lib():
+            self.channels.write_to_file()
+            self.instruments.write_to_file()
+            self.measurements.write_to_file()
+            self.sweeps.write_to_file()
+        else:
+            print "JSON Files did not validate"
+            return False
+        return True
 
     def apply_quickpick(self, name):
         try:
