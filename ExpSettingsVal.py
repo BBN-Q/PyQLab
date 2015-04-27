@@ -79,9 +79,7 @@ def is_measurement_channel(name):
 	return is_channel_type(name, QGL.Channels.Measurement)	
 
 def requires_physical_channel(name):
-	return (is_channel_type(name, QGL.Channels.Qubit) or
-	        is_channel_type(name, QGL.Channels.LogicalMarkerChannel) or
-	        is_channel_type(name, QGL.Channels.Measurement))
+	return is_channel_type(name, QGL.Channels.LogicalChannel) 
 
 def is_channel_type(name, channelType):
 	channels = Libraries.channelLib.channelDict
