@@ -6,6 +6,7 @@ from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
 from Instrument import Instrument
 
+
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -44,6 +45,25 @@ class AWG(Instrument):
             for ct,chan in enumerate(channels):
                 jsonDict['chan_{}'.format(ct+1)] = chan
         return jsonDict
+
+    def update_from_jsondict(self, params):
+
+        for ct in range(self.numChannels):
+            channelParams = params['channels'][ct]
+
+            # if this is still a raw dictionary convert to object
+            if isinstance(channelParams, dict):
+                channelParams.pop('x__class__', None)
+                channelParams.pop('x__module__', None)
+                channelParams = AWGChannel(**channelParams)
+
+            self.channels[ct].label = channelParams.label
+            self.channels[ct].amplitude = channelParams.amplitude
+            self.channels[ct].offset = channelParams.offset
+            self.channels[ct].enabled = channelParams.enabled
+
+        for p in ['label', 'enabled', 'address', 'isMaster', 'triggerSource', 'triggerInterval', 'samplingRate', 'seqFile', 'seqForce', 'delay']:
+            setattr(self, p, params[p])
 
 class APS(AWG):
     numChannels = Int(default=4)
