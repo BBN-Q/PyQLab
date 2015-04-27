@@ -31,7 +31,7 @@ from instruments.AWGs import APS, APS2, Tek5014
 
 from atom.api import Str
 
-channels = Libraries.channelLib.channelDict
+channels = Libraries.channelLib
 instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
 sweeps = Libraries.sweepLib.sweepDict
@@ -82,8 +82,7 @@ def requires_physical_channel(name):
 	return is_channel_type(name, QGL.Channels.LogicalChannel) 
 
 def is_channel_type(name, channelType):
-	channels = Libraries.channelLib.channelDict
-	return isinstance(channels[name], channelType)	
+	return isinstance(Libraries.channelLib[name], channelType)	
 
 #####################################################################################
 ### Apply global rules
@@ -95,7 +94,7 @@ def test_require_physical():
 	   Physical channel.
 	"""
 	errors = []
-	channels = Libraries.channelLib.channelDict
+	channels = Libraries.channelLib
 	testChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
 
 	for channel in testChannels:
@@ -119,7 +118,7 @@ def test_logical_channels():
 		LogicalMarkerChannel must map to PhysicalMarkerChannel
 	"""
 	errors = []
-	channels = Libraries.channelLib.channelDict
+	channels = Libraries.channelLib
 	logicalChannels = [channelName for channelName in channels.keys() if is_logicalmarker_channel(channelName)]
 	
 	for channel in logicalChannels:
@@ -149,7 +148,7 @@ def test_physical_channels():
 		Device channels have model specific naming conventions
 	"""
 	errors = []
-	channels = Libraries.channelLib.channelDict
+	channels = Libraries.channelLib
 	physicalChannels = [channelName for channelName in channels.keys() if is_physicalmarker_channel(channelName)]
 
 	for channel in physicalChannels:
