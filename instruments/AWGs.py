@@ -48,15 +48,14 @@ class AWG(Instrument):
 
     def update_from_jsondict(self, params):
 
-        import JSONHelpers # get around circular import
-        decoder = JSONHelpers.LibraryDecoder()
-
         for ct in range(self.numChannels):
             channelParams = params['channels'][ct]
 
             # if this is still a raw dictionary convert to object
             if isinstance(channelParams, dict):
-                channelParams = decoder.dict_to_obj(channelParams)
+                channelParams.pop('x__class__', None)
+                channelParams.pop('x__module__', None)
+                channelParams = AWGChannel(**channelParams)
 
             self.channels[ct].label = channelParams.label
             self.channels[ct].amplitude = channelParams.amplitude

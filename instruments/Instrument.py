@@ -22,5 +22,7 @@ class Instrument(Atom):
 		return jsonDict
 
 	def update_from_jsondict(self, jsonDict):
+		jsonDict.pop('x__class__', None)
+		jsonDict.pop('x__module__', None)
 		for label,value in jsonDict.items():
 			setattr(self, label, value)
