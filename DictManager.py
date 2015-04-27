@@ -49,7 +49,7 @@ class DictManager(Atom):
 		# update label to new label list
 		self.itemDict[newLabel].label = newLabel	
 
-		if self.onChangeDelegate is not None:
+		if self.onChangeDelegate:
 			self.onChangeDelegate(oldLabel, newLabel)
 
 	def update_enable(self, itemLabel, checkState):
