@@ -85,6 +85,7 @@ def requires_physical_channel(name):
 def is_channel_type(name, channelType):
 	return isinstance(Libraries.channelLib[name], channelType)	
 
+
 #####################################################################################
 ### Apply global rules
 
@@ -162,7 +163,9 @@ def test_physical_channels():
 		Device channels have model specific naming conventions
 	"""
 	errors = []
+
 	channels = Libraries.channelLib
+
 	physicalChannels = [channelName for channelName in channels.keys() if is_physicalmarker_channel(channelName)]
 
 	for channel in physicalChannels:
