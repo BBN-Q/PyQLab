@@ -122,8 +122,6 @@ def test_logical_channels():
 	logicalChannels = [channelName for channelName in channels.keys() if is_logicalmarker_channel(channelName)]
 	
 	for channel in logicalChannels:
-		if not is_logicalmarker_channel(channel):
-			continue
 		errorHeader = 'LogicalMarkerChannel "{0}" requires a Physical Marker Channel'.format(channel)
 		if channels[channel].physChan is not None:
 			physicalChannelName = channels[channel].physChan.label
