@@ -46,6 +46,7 @@ sweeps = Libraries.sweepLib.sweepDict
 # Logical Channels: 
 #   1 PhysicalChannel but be in library
 #	2 LogicalMarkerChannel must map to PhysicalMarkerChannel
+#   3 Not LogicalMarkerChannel not map to PhysicalMarkerChannel
 #
 # Physical Channels:
 #   1 PhysicalChannel must have an AWG assigned
@@ -119,6 +120,8 @@ def test_logical_channels():
 	"""
 	errors = []
 	channels = Libraries.channelLib
+
+	# require LogicalMarkerChannel -> PhysicalMarker Channel
 	logicalChannels = [channelName for channelName in channels.keys() if is_logicalmarker_channel(channelName)]
 	
 	for channel in logicalChannels:
@@ -133,6 +136,19 @@ def test_logical_channels():
 				print channels[channel].physChan
 				print '\tChannel "{0}" is not a Physical Marker Channel'.format(physicalChannelName)
 				errors.append(physicalChannelName)
+
+	# reject not LogicalMarkerChannel -> PhysicalMarker Channel
+
+	logicalChannels = [channelName for channelName in channels.keys() if not is_logicalmarker_channel(channelName)]
+
+	for channel in logicalChannels:
+		errorHeader = '{0} "{1}" can not map to a Physical Marker Channel {2}'
+		if hasattr(channels[channel], 'physChan') and channels[channel].physChan is not None:
+			physicalChannelName = channels[channel].physChan.label
+			if is_physicalmarker_channel(physicalChannelName):
+				print errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
+				errors.append(channel)
+
 	return errors
 
 def test_physical_channels():
