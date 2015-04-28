@@ -122,34 +122,26 @@ def test_logical_channels():
 
 		Rules:
 		PhysicalChannel but be in library
-		LogicalMarkerChannel must map to PhysicalMarkerChannel
+		"Markerness" of logical and physical channels must match, i.e.
+		LogicalMarkerChannel must map to PhysicalMarkerChannel.
 	"""
 	errors = []
 	channels = Libraries.channelLib
 
-	# require LogicalMarkerChannel -> PhysicalMarker Channel
-	logicalChannels = [channelName for channelName in channels.keys() if is_logicalmarker_channel(channelName)]
+	# require all LogicalMarkerChannels to map to PhysicalMarkerChannels
+	# and require all not LogicalMarkerChannels to map to not PhysicalMarkerChannels
+	logicalChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
 	
 	for channel in logicalChannels:
-		errorHeader = 'LogicalMarkerChannel "{0}" requires a Physical Marker Channel'.format(channel)
-		if channels[channel].physChan is not None:
-			physicalChannelName = channels[channel].physChan.label
-			if physicalChannelName in channels.keys() and not is_physicalmarker_channel(physicalChannelName):
-				print channels[channel].physChan
-				print '\tChannel "{0}" is not a Physical Marker Channel'.format(physicalChannelName)
-				errors.append(physicalChannelName)
-
-	# reject not LogicalMarkerChannel -> PhysicalMarker Channel
-
-	logicalChannels = [channelName for channelName in channels.keys() if not is_logicalmarker_channel(channelName)]
-
-	for channel in logicalChannels:
-		errorHeader = '{0} "{1}" can not map to a Physical Marker Channel {2}'
-		if hasattr(channels[channel], 'physChan') and channels[channel].physChan is not None:
-			physicalChannelName = channels[channel].physChan.label
-			if physicalChannelName in channels.keys() and is_physicalmarker_channel(physicalChannelName):
-				print errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
-				errors.append(channel)
+		errorHeader = '{0} Markerness of {1} and {2} do not match'
+		if not channels[channel].physChan:
+			continue
+		physicalChannelName = channels[channel].physChan.label
+		if physicalChannelName not in channels.keys():
+			continue
+		if is_logicalmarker_channel(channel) != is_physicalmarker_channel(physicalChannelName):
+			print errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
+			errors.append(channel)
 
 	return errors
 
