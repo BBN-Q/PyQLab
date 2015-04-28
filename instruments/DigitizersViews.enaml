@@ -54,6 +54,11 @@ enamldef AlazarView(GroupBox):
 	ScrollArea:
 		Container:
 			hug_width = 'medium'
+			Form:
+				Label:
+					text = 'Address:'
+				Field:
+					text := instr.address
 			GroupBox: 
 				title = 'Horizontal'
 				Form:
