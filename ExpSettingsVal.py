@@ -67,6 +67,9 @@ sweeps = Libraries.sweepLib.sweepDict
 def is_logicalmarker_channel(name):
 	return is_channel_type(name, QGL.Channels.LogicalMarkerChannel)	
 
+def is_physical_channel(name):
+	return is_channel_type(name, QGL.Channels.PhysicalChannel)
+
 def is_physicalmarker_channel(name):
 	return is_channel_type(name, QGL.Channels.PhysicalMarkerChannel)	
 
@@ -158,7 +161,7 @@ def test_physical_channels():
 	errors = []
 
 	channels = Libraries.channelLib
-	physicalChannels = [channelName for channelName in channels.keys() if is_physicalmarker_channel(channelName)]
+	physicalChannels = [channelName for channelName in channels.keys() if is_physical_channel(channelName)]
 
 	for channel in physicalChannels:
 		awg = channels[channel].AWG.label
