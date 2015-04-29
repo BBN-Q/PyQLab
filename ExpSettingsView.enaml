@@ -1,5 +1,5 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
-					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label
+					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label, CheckBox
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer
 
@@ -115,7 +115,7 @@ enamldef ExpSettingsView(MainWindow): main:
 	Container:
 		constraints = [
 			vbox(tabs,
-				hbox(quickPick, spacer, settingsApply),
+				hbox(quickPick, spacer, lblValidate, cbValidate, settingsApply),
 				spacer)
 		]
 		padding = 5
@@ -147,6 +147,10 @@ enamldef ExpSettingsView(MainWindow): main:
 			clicked ::
 				QuickPickMenu(expSettings=expSettings).popup()
 				NotificationPopup(main, window_type='window', parent_anchor=(0, 1.0), anchor=(0,1), offset=(10,-10), displayText="{} applied".format(str(chosenQuickPick))).show()
+		Label: lblValidate:
+			text = "Validate"
+		CheckBox: cbValidate:
+			checked := expSettings.validate
 		PushButton: settingsApply:
 			text = 'Apply'
 			clicked ::

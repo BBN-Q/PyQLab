@@ -22,6 +22,7 @@ class ExpSettings(Atom):
     measurements = Typed(MeasFilters.MeasFilterLibrary)
     channels = Typed(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
+    validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
 
     def __init__(self, **kwargs):
@@ -53,14 +54,17 @@ class ExpSettings(Atom):
 
         """
         
-        if ExpSettingsVal.validate_lib():
-            self.channels.write_to_file()
-            self.instruments.write_to_file()
-            self.measurements.write_to_file()
-            self.sweeps.write_to_file()
-        else:
+        if self.validate and not ExpSettingsVal.validate_lib():
             print "JSON Files did not validate"
             return False
+        elif not self.validate:
+            print "JSON Files validation disabled"
+            
+        self.channels.write_to_file()
+        self.instruments.write_to_file()
+        self.measurements.write_to_file()
+        self.sweeps.write_to_file()
+
         return True
 
     def apply_quickpick(self, name):
