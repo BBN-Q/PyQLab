@@ -4,11 +4,11 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from atom.api import (Bool, List, ContainerList, observe, set_default, Unicode, Enum, Int, Signal)
+from atom.api import (Bool, List, ContainerList, observe, set_default, Unicode, Enum, Int, Signal, Callable)
 
 from enaml.widgets.api import RawWidget
 from enaml.core.declarative import d_
-from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView
+from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView, QColor
 from enaml.qt.QtCore import Qt
 
 class QtListStrWidget(RawWidget):
@@ -34,6 +34,9 @@ class QtListStrWidget(RawWidget):
 
     #: Whether or not the items should be editable
     editable = d_(Bool(True))
+
+    #
+    validator = d_(Callable())
 
     #: .
     hug_width = set_default('weak')
@@ -99,6 +102,11 @@ class QtListStrWidget(RawWidget):
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
             self.items[itemRow] = item.text()
+            if self.validator and  not self.validator(newLabel):
+                item.setTextColor(QColor(255,0,0))
+            else:
+                item.setTextColor(QColor(0,0,0))
+            
         else:
             self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
             self.enable_changed(item.text(), self.checked_states[itemRow])

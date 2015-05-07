@@ -18,6 +18,7 @@ enamldef DictManagerView(Container): dictView:
 	attr viewMap # dictionary mapping classes to views
 	attr viewkwargs # extra parameters to pass to the model view
 	attr modelName # attr name for the model in the view
+	attr labelValidator # callable validator for QtListStrWidget labels
 
 	constraints = [
 		hbox(
@@ -33,6 +34,7 @@ enamldef DictManagerView(Container): dictView:
 
 	QtListStrWidget: itemList:
 		items := dictManager.displayList
+		validator = labelValidator
 		checked_states = [dictManager.itemDict[i].enabled for i in dictManager.displayList]
 		initialized :: 
 			itemList.item_changed.connect(dictManager.name_changed)
