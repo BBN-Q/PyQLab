@@ -1,6 +1,6 @@
 #PyQLab Instrument and Qubit Control Software
 
-[![Build Status](https://travis-ci.org/BBN-Q/PyQLab.svg?branch=feature%2Ftravisci)](https://travis-ci.org/BBN-Q/PyQLab)
+[![Build Status](https://travis-ci.org/BBN-Q/PyQLab.svg?branch=develop)](https://travis-ci.org/BBN-Q/PyQLab)
 
 This is a python package for simulating and experimentally implementing control of superconducting qubit systems.  It complements and sometimes overlaps with the [Qlab](https://github.com/BBN-Q/Qlab) repository.
 
