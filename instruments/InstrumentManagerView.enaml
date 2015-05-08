@@ -12,6 +12,8 @@ from AttenuatorsViews import AttenuatorsViewMap
 
 from DictManagerView import DictManagerView
 
+from ExpSettingsVal import is_valid_instrument_name
+
 enamldef EmptyInstrView(Container):
 	attr instr
 
@@ -42,6 +44,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.sources
 				viewMap = MicrowaveSourceViewMap
 				modelName = 'uwSource'
+				labelValidator = is_valid_instrument_name
 		
 		Page:
 			title = "AWG's"
@@ -50,6 +53,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
 				modelName = 'awg'
+				labelValidator = is_valid_instrument_name
 		
 		Page:
 			title = "Other"
@@ -58,6 +62,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.others
 				viewMap = otherViewMap
 				modelName = 'instr'
+				labelValidator = is_valid_instrument_name
 
 enamldef InstrumentManagerWindow(Window): 
 	attr instrLib

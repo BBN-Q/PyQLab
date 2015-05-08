@@ -31,6 +31,8 @@ from instruments.AWGs import APS, APS2, Tek5014
 
 from atom.api import Str
 
+import re
+
 channels = Libraries.channelLib
 instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
@@ -56,10 +58,23 @@ sweeps = Libraries.sweepLib.sweepDict
 #     APS: 12, 34, 1m1, 2m1, 3m1, 4m1
 #     APS2: 12, 12m1, 12m2, 12m3, 12m4
 #     Tek5014: 12, 34, 1m1, 1m2, 2m1, 2m2, 3m1, 3m2, 4m1, 4m2
+#
+# Instruments Names:
+#   1 Instrument names must be valid Matlab Identifiers
 
 # Conventions to be added
 # 
 #
+
+#####################################################################################
+## Program Constants
+
+# Matlab valid identifier -- Starts with a letter, followed by letters, digits, or underscores.
+# Maximum length is the return value from the namelengthmax function
+# namelengthmax returned 63 on Matlab 2015a 64-bit linux 
+MATLAB_NAME_LENGTH_MAX = 63
+MATLAB_FORMAT_STRING = "\A[a-zA-Z]\w{0,%i}?\Z" % (MATLAB_NAME_LENGTH_MAX - 1)
+MATLAB_VALID_NAME_REGEX = re.compile(MATLAB_FORMAT_STRING)
 
 #####################################################################################
 ## Helper functions for list comprehension 
@@ -176,7 +191,7 @@ def test_physical_channels():
 		validName = True
 		validName &= '-' in channel
 		if validName:
-			awgName, awgChan = channel.split('-')
+			awgName, awgChan = channel.rsplit('-',1)
 			if awgName not in instruments.keys():
 				print 'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
 				errors.append(channel)
@@ -219,6 +234,34 @@ def invalid_awg_name_convention(AWG, channelName):
 	convention = ['12', '34', '1m1', '1m2', '2m1', '2m2', '3m1', '3m2', '4m1', '4m2']
 	return invalid_awg_name_convention_common(AWG.label, channelName,convention)
 
+# GUI validator
+def is_valid_awg_channel_name(channelName):
+	awgName, awgChan = channelName.rsplit('-',1)
+	if awgName not in instruments.keys():
+		return False
+	return not invalid_awg_name_convention(instruments[awgName], awgChan)
+
+#####################################################################################
+
+def is_valid_instrument_name(label):
+	# instrument must be a valid Matlab identifier
+	return (MATLAB_VALID_NAME_REGEX.match(label) is not None)
+
+def validate_instrumentLib(): 
+	
+	errors = []
+
+	invalidNames = [instrument for instrument in instruments.keys() if not is_valid_instrument_name(instrument)] 
+
+	if invalidNames != []:
+		for name in invalidNames:
+			print "Instrument name {0} is not a valid Matlab Name".format(name)
+		errors.append(invalidNames)
+	
+	print errors
+	return errors
+
+
 #####################################################################################
 
 def validate_channelLib():
@@ -249,9 +292,12 @@ def validate_channelLib():
 	return errors
 
 def validate_lib():
+	validates = True
 	if validate_channelLib() != []:
-		return False
-	return True
+		validates =  False
+	if validate_instrumentLib() != []:
+		validates = False
+	return validates
 
 def default_repr(items, item):
 	return '\t{0}: {1}'.format(item, 

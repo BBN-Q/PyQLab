@@ -4,11 +4,11 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from atom.api import (Bool, List, ContainerList, observe, set_default, Unicode, Enum, Int, Signal)
+from atom.api import (Bool, List, ContainerList, observe, set_default, Unicode, Enum, Int, Signal, Callable)
 
 from enaml.widgets.api import RawWidget
 from enaml.core.declarative import d_
-from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView
+from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView, QColor
 from enaml.qt.QtCore import Qt
 
 class QtListStrWidget(RawWidget):
@@ -34,6 +34,9 @@ class QtListStrWidget(RawWidget):
 
     #: Whether or not the items should be editable
     editable = d_(Bool(True))
+
+    #
+    validator = d_(Callable())
 
     #: .
     hug_width = set_default('weak')
@@ -75,6 +78,7 @@ class QtListStrWidget(RawWidget):
         if self.editable:
             _set_item_flag(itemWidget, Qt.ItemIsEditable, True)
         widget.addItem(itemWidget)
+        self.apply_validator(itemWidget, itemWidget.text())
 
     #--------------------------------------------------------------------------
     # Signal Handlers
@@ -99,6 +103,7 @@ class QtListStrWidget(RawWidget):
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
             self.items[itemRow] = item.text()
+            self.apply_validator(item, newLabel)
         else:
             self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
             self.enable_changed(item.text(), self.checked_states[itemRow])
@@ -118,12 +123,23 @@ class QtListStrWidget(RawWidget):
             #Update checked state before the text so that we can distinguish a checked state change from a label change
             itemWidget.setCheckState(Qt.Checked if self.checked_states[idx] else Qt.Unchecked)
             itemWidget.setText(item)
+            self.apply_validator(itemWidget, item)
         if nitems > count:
             for item in items[count:]:
                 self.add_item(widget, item)
         elif nitems < count:
             for idx in reversed(xrange(nitems, count)):
                 widget.takeItem(idx)
+
+    #--------------------------------------------------------------------------
+    # Utility methods
+    #--------------------------------------------------------------------------
+
+    def apply_validator(self, item, label):
+        if self.validator and  not self.validator(label):
+            item.setTextColor(QColor(255,0,0))
+        else:
+            item.setTextColor(QColor(0,0,0))
 
     #--------------------------------------------------------------------------
     # Observers
