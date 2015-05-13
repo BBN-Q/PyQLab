@@ -23,6 +23,12 @@ class MeasFilter(Atom):
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
             jsonDict.pop('label', None)
+            import numpy as np
+            import base64
+            try:
+                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+            except:
+                jsonDict['kernel'] = []
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
@@ -149,7 +155,7 @@ measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateC
 
 if __name__ == "__main__":
 
-    #Work around annoying problem with multiple class definitions 
+    #Work around annoying problem with multiple class definitions
     from MeasFilters import DigitalHomodyne, Correlator, MeasFilterLibrary
 
     testFilter1 = DigitalHomodyne(label='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
@@ -161,7 +167,7 @@ if __name__ == "__main__":
 
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow
-    
+
     app = QtApplication()
     view = MeasFilterManagerWindow(filterLib=testLib)
     view.show()

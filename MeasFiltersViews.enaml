@@ -33,12 +33,12 @@ enamldef RawStreamForm(GroupBox):
         Field:
             text := myFilter.recordsFilePath
             tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label: 
+        Label:
             text = "Save records"
         CheckBox:
             checked := myFilter.saveRecords
             tool_tip = myFilter.get_member('saveRecords').metadata['desc']
-        Label: 
+        Label:
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
@@ -96,7 +96,7 @@ enamldef DigitalDemodForm(GroupBox):
             text = "Data source"
         Field:
             text := myFilter.dataSource
-        Label: 
+        Label:
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
@@ -110,7 +110,7 @@ enamldef DigitalDemodForm(GroupBox):
         Field:
             text := myFilter.recordsFilePath
             tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label: 
+        Label:
             text = "Save records"
         CheckBox:
             checked := myFilter.saveRecords
@@ -167,7 +167,7 @@ enamldef KernelIntegrationForm(GroupBox):
         FloatField:
             value := myFilter.bias
             tool_tip = myFilter.get_member('bias').metadata["desc"]
-        Label: 
+        Label:
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
@@ -207,7 +207,7 @@ enamldef CorrelatorView(GroupBox):
         EnumComboBox:
             obj := myFilter
             enumName = 'plotMode'
-        Label: 
+        Label:
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
@@ -253,7 +253,7 @@ enamldef StreamSelectorView(GroupBox):
             text = 'Stream'
         Field:
             text := myFilter.stream
-        Label: 
+        Label:
             text = "Plot scope"
         CheckBox:
             checked := myFilter.plotScope
@@ -271,12 +271,11 @@ enamldef StreamSelectorView(GroupBox):
         Field:
             text := myFilter.recordsFilePath
             tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label: 
+        Label:
             text = "Save records"
         CheckBox:
             checked := myFilter.saveRecords
             tool_tip = myFilter.get_member('saveRecords').metadata['desc']
-
 
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
@@ -292,7 +291,7 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.StreamSelector: StreamSelectorView}
 
-enamldef MeasFilterManager(Container): measFilterManager: 
+enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib
     DictManagerView:
         dictManager = filterLib.filterManager
