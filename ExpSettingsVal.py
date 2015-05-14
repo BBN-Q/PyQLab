@@ -27,7 +27,7 @@ import Libraries
 import QGL.Channels
 
 from QGL.mm import multimethod
-from instruments.AWGs import APS, APS2, Tek5014
+from instruments.AWGs import APS, APS2, Tek5014, AWG
 
 from atom.api import Str
 
@@ -217,6 +217,11 @@ def invalid_awg_name_convention_common(label, channelName, conventionList):
 	if channelName not in conventionList:
 		print errorStr.format(label, channelName, conventionList)
 		return True
+	return False
+
+@multimethod(AWG, unicode)
+def invalid_awg_name_convention(AWG, channelName):
+	# there is no convention for a generic AWG
 	return False
 
 @multimethod(APS, unicode)
