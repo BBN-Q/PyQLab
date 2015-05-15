@@ -7,6 +7,8 @@ import MicrowaveSources
 import AWGs
 import FileWatcher
 
+import importlib
+
 from DictManager import DictManager
 
 import Digitizers, Analysers, DCSources, Attenuators
@@ -91,13 +93,28 @@ class InstrumentLibrary(Atom):
                 except ValueError:
                     print('Failed to update instrument library from file.  Probably just half-written.')
                     return
-                for instrName, instrParams in allParams.items():
-                    if instrName not in self.instrDict:
-                        continue
 
+                # update and add new items
+                for instrName, instrParams in allParams.items():
                     # Re-encode the strings as ascii (this should go away in Python 3)
                     instrParams = {k.encode('ascii'):v for k,v in instrParams.items()}
-                    self.instrDict[instrName].update_from_jsondict(instrParams)
+                    # update
+                    if instrName in self.instrDict:
+                        self.instrDict[instrName].update_from_jsondict(instrParams)
+                    else:
+                        # load class from name and update from json
+                        className = instrParams['x__class__']
+                        moduleName = instrParams['x__module__']
+
+                        mod = importlib.import_module(moduleName)
+                        cls = getattr(mod, className)
+                        self.instrDict[instrName]  = cls()
+                        self.instrDict[instrName].update_from_jsondict(instrParams)
+
+                # delete removed items
+                for instrName in self.instrDict.keys():
+                    if instrName not in allParams:
+                        del self.instrDict[instrName]
 
     def json_encode(self, matlabCompatible=False):
         #When serializing for matlab return only enabled instruments, otherwise all
