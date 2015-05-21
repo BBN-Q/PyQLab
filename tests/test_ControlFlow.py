@@ -79,7 +79,7 @@ class ControlFlow(unittest.TestCase):
         q1 = self.q1
         seq1 = [qwait(), qwait("CMP")]
         assert( seq1[0].instruction == "WAIT" )
-        assert( seq1[1].instruction == "WAITCMP" )
+        assert( seq1[1].instruction == "LOADCMP" )
 
     def test_flatten_and_separate(self):
         seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]
