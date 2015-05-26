@@ -21,7 +21,7 @@ class SingleQubit(unittest.TestCase):
 
     def test_repeat(self):
         q1 = self.q1
-        seq = [X90(q1), repeat(Y(q1), 5), X90(q1)]
+        seq = [X90(q1), repeat(5, Y(q1)), X90(q1)]
         show(seq)
         return seq
     

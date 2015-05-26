@@ -69,11 +69,11 @@ class ControlFlowTest(unittest.TestCase):
         # print seq2
         assert( Reset(q1) == (seq1, seq2) )
 
-    def test_qrepeat(self):
+    def test_repeat(self):
         q1 = self.q1
         seq1 = [X90(q1), Y90(q1)]
         label(seq1)
-        assert( qrepeat(5, seq1) == [LoadRepeat(5)] + seq1 + [Repeat(label(seq1))] )
+        assert( repeat(5, seq1) == [LoadRepeat(5)] + seq1 + [Repeat(label(seq1))] )
 
     def test_qwait(self):
         q1 = self.q1
