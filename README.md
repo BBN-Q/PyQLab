@@ -42,5 +42,4 @@ The PyQLab config file will be created the first time you run `startup.py` or `c
 * h5py
 * watchdog
 * Bokeh 0.7
-
-
+* iPython 3.0 (only for notebooks)
