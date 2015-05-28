@@ -5,7 +5,7 @@ from QGL.ControlFlow import CmpEq, CmpNeq, Goto, Call, Return, LoadRepeat, Repea
 from QGL.BlockLabel import label, endlabel
 
 
-class ControlFlow(unittest.TestCase):
+class ControlFlowTest(unittest.TestCase):
     def setUp(self):
         self.q1 = Qubit(label='q1')
         self.q2 = Qubit(label='q2')
@@ -69,17 +69,17 @@ class ControlFlow(unittest.TestCase):
         # print seq2
         assert( Reset(q1) == (seq1, seq2) )
 
-    def test_qrepeat(self):
+    def test_repeat(self):
         q1 = self.q1
         seq1 = [X90(q1), Y90(q1)]
         label(seq1)
-        assert( qrepeat(5, seq1) == [LoadRepeat(5)] + seq1 + [Repeat(label(seq1))] )
+        assert( repeat(5, seq1) == [LoadRepeat(5)] + seq1 + [Repeat(label(seq1))] )
 
     def test_qwait(self):
         q1 = self.q1
         seq1 = [qwait(), qwait("CMP")]
-        assert( seq1[0].instruction == "WAIT" )
-        assert( seq1[1].instruction == "WAITCMP" )
+        assert( isinstance(seq1[0], ControlFlow.Wait) )
+        assert( isinstance(seq1[1], ControlFlow.LoadCmp) )
 
     def test_flatten_and_separate(self):
         seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]

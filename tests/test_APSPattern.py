@@ -16,14 +16,14 @@ class APSPatternUtils(unittest.TestCase):
 
     def test_unroll_loops_simple(self):
         q1 = self.q1
-        seqs = [qrepeat(2, [qwait(), X(q1), Id(q1)]), qrepeat(2, [qwait(), Y(q1), Id(q1)])]
+        seqs = [repeat(2, [qwait(), X(q1), Id(q1)]), repeat(2, [qwait(), Y(q1), Id(q1)])]
         a, b = APSPattern.unroll_loops(seqs)
         assert(a == seqs)
         assert(b == 2)
 
     def test_unroll_loops(self):
         q1 = self.q1
-        seqs = [qrepeat(2, [qwait(), X(q1), Id(q1)]), qrepeat(3, [qwait(), Y(q1), Id(q1)])]
+        seqs = [repeat(2, [qwait(), X(q1), Id(q1)]), repeat(3, [qwait(), Y(q1), Id(q1)])]
         a, b = APSPattern.unroll_loops(seqs)
 
         seqUnrolled = [qwait(), X(q1), Id(q1)]*2
@@ -36,7 +36,7 @@ class APSPatternUtils(unittest.TestCase):
 
     def test_unroll_nested_loops(self):
         q1 = self.q1
-        seqs = [qrepeat(2, [X(q1),Y(q1)] + qrepeat(3, [Z(q1)]) + [Y(q1),X(q1)]), [X(q1), Y(q1)]]
+        seqs = [repeat(2, [X(q1),Y(q1)] + repeat(3, [Z(q1)]) + [Y(q1),X(q1)]), [X(q1), Y(q1)]]
         a, b = APSPattern.unroll_loops(seqs)
 
         seqUnrolled = ([X(q1).promote(),Y(q1)] + [Z(q1).promote()]*3 + [Y(q1),X(q1)])*2
