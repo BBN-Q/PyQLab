@@ -8,7 +8,7 @@ Contents:
 * Quantum Gate Language (QGL) for specifying pulse sequences
 * Instrument settings GUIs
 
-See example usage in this ipython [notebook](http://nbviewer.ipython.org/github/BBN-Q/PyQLab/blob/develop/doc/QGL-demo.ipynb).
+See example usage in this [Jupyter notebook](https://github.com/BBN-Q/PyQLab/blob/develop/doc/QGL-demo.ipynb).
 
 ##Setup instructions
 
@@ -42,4 +42,4 @@ The PyQLab config file will be created the first time you run `startup.py` or `c
 * h5py
 * watchdog
 * Bokeh 0.7
-* iPython 3.0 (only for notebooks)
+* iPython 3.0 (only for Jupyter notebooks)
