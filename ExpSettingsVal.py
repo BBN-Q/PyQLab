@@ -241,7 +241,11 @@ def invalid_awg_name_convention(AWG, channelName):
 
 # GUI validator
 def is_valid_awg_channel_name(channelName):
-	awgName, awgChan = channelName.rsplit('-',1)
+	if '-' in channelName:
+		awgName, awgChan = channelName.rsplit('-',1)
+	else:
+		awgName = channelName
+
 	if awgName not in instruments.keys():
 		return False
 	return not invalid_awg_name_convention(instruments[awgName], awgChan)
