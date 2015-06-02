@@ -20,13 +20,6 @@ conda install enaml
 pip install watchdog
 ```
 
-There is a known issue on Windows and Linux Anaconda distributions which causes h5py to throw errors.  The errors are benign but they can be avoided using an updated version of h5py from ``binstar/caryan``
-
-```bash
-conda remove h5py
-conda install -c caryan h5py
-```
-
 Use of the `QGL` module requires the PyQLab folder to be included in `PYTHONPATH`. On windows machines, you add/modify this environment variable by going to System -> Advanced Settings -> Environment variables. On Mac/Linux machines add the following line to your .bashrc or .bash_profile:
 ```
 export PYTHONPATH=/path/to/PyQlab:$PYTHONPATH
