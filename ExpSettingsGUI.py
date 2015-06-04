@@ -1,5 +1,5 @@
 import h5py
-from atom.api import Atom, Typed, Str, Bool
+from atom.api import Atom, Typed, Str, Bool, List
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -24,10 +24,12 @@ class ExpSettings(Atom):
     CWMode = Bool(False)
     validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
+    validation_errors = List()
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
+        self.validation_errors = []
 
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
@@ -54,9 +56,11 @@ class ExpSettings(Atom):
 
         """
         
-        if self.validate and not ExpSettingsVal.validate_lib():
-            print "JSON Files did not validate"
-            return False
+        if self.validate:
+            self.validation_errors = ExpSettingsVal.validate_lib()
+            if self.validation_errors != []:
+                print "JSON Files did not validate"
+                return False
         elif not self.validate:
             print "JSON Files validation disabled"
             
@@ -99,6 +103,9 @@ class ExpSettings(Atom):
     def json_encode(self, matlabCompatible=True):
         #We encode this for an experiment settings file so no channels
         return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
+
+    def format_errors(self):
+        return '\n'.join(self.validation_errors)
 
 if __name__ == '__main__':
     import Libraries
