@@ -1,5 +1,4 @@
 *.pyc
-*.h5
 *.awg
 *.json
 __enamlcache__/
