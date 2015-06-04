@@ -6,7 +6,7 @@ import os.path
 
 from QGL import *
 
-# Waveform Correlation Coefficient Test for QGL
+# Waveform numpy assert_allclose Test for QGL
 #
 # Usage add sequences to the *TestCases classes
 # Run *TestCases.show() to view waveforms to make sure they are correct
@@ -94,8 +94,7 @@ class SequenceTestCases(object):
             self.validate_case(caseName)
 
     def validate_case(self, caseName):
-        # validates each sequences by computing the correlation coefficients for each channel
-        # test passes if the minimum correlation coefficient is >= to minCorrcoeff
+        # validates each sequences by using numpy assert_allclose for each channel
         
         assert(caseName in self.validWaveforms)   
         validWaveform = self.validWaveforms[caseName]
