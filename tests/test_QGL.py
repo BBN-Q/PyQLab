@@ -21,7 +21,6 @@ class SequenceTestCases(object):
     # base class for sequence test cases
     testFileDirectory = './tests/test_data/'
     fileHeader = ''
-    minCorrcoeff = 0.999
 
     def __init__(self):
         super(SequenceTestCases, self).__init__()
@@ -106,8 +105,7 @@ class SequenceTestCases(object):
                 caseName,
                 repr(channelName))
             assert(repr(channelName) in validWaveform)
-            corrcoef = np.corrcoef(waveform, validWaveform[repr(channelName)])  
-            assert(np.min(corrcoef) >= self.minCorrcoeff)
+            np.testing.assert_allclose(waveform, validWaveform[repr(channelName)], rtol=1e-5, atol=0)
    
 
 class SingleQubitTestCases(SequenceTestCases):
