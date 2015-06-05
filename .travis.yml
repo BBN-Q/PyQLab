@@ -13,6 +13,7 @@ before_install:
   - export PATH=/home/travis/miniconda/bin:$PATH
   - conda update --yes conda
   - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION numpy bokeh enaml atom matplotlib h5py ipython scipy
+  - pip install coveralls
   
 # use conda to install packages
 install:
@@ -21,4 +22,6 @@ install:
 
 # execute scripts
 script: 
-  - python -m unittest discover
+  - coverage run -m unittest discover
+after_success:
+  - coveralls
