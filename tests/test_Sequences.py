@@ -5,79 +5,66 @@ import time
 import os.path
 
 import Libraries
-import QGL
 from QGL import *
-
+import QGL
 
 from QGL.Channels import Measurement, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
-from instruments.AWGs import APS2, APS
+from instruments.AWGs import APS2, APS, Tek5014
 from instruments.InstrumentManager import InstrumentLibrary
 
 import time
 
 import ExpSettingsVal
 
-
-
 class ChannelMap(object):
 
+	def __init__(self):
+		self.channels = {}
+		self.instruments = {}
+		self.assign_channels()
+
+
+	def finalize_map(self, mapping):
+		for name,value in mapping.iteritems():
+			self.channels[name].physChan = self.channels[value]
+
+		Compiler.channelLib = ChannelLibrary()
+		Compiler.channelLib.channelDict = self.channels
+
+		Compiler.instrumentLib = InstrumentLibrary()
+		Compiler.instrumentLib.instrDict = self.instruments
+
+		(self.q1, self.q2) = self.get_qubits()
+	
 	def assign_channels(self):
 
-		self.ready = False
 		self.qubit_names = ['q1','q2']
 		self.logical_names = ['digitizerTrig', 'slaveTrig']
 
-		self.reset()
 		self.assign_logical_channels()
-		self.assign_physical_channels()
-
-		self.ready = ExpSettingsVal.validate_dynamic_lib(QGL.Compiler.channelLib, QGL.Compiler.instrumentLib)
-
-		# write libraries out and reload
-		QGL.Compiler.channelLib.write_to_file()
-		QGL.Compiler.instrumentLib.write_to_file()
-
-		reload(Libraries)
-		reload(QGL)
-
-		QGL.Compiler.channelLib = Libraries.channelLib
-		QGL.Compiler.instrumentLib = Libraries.instrumentLib
-
-		ExpSettingsVal.validate_lib()
-
-	def print_physical_channels(self):
-		print "Listing physical channel mapping:"
-		for channel in QGL.Compiler.channelLib.keys():
-			if isinstance(QGL.Compiler.channelLib[channel], QGL.Channels.LogicalChannel):
-				print "\t", channel, " => " , repr(QGL.Compiler.channelLib[channel].physChan)
-
-	def reset(self):
-
-		QGL.Compiler.channelLib = ChannelLibrary()
-		QGL.Compiler.instrumentLib = InstrumentLibrary()
-
+	
 	def assign_logical_channels(self):
 
 		for name in self.qubit_names:
-			q = Qubit(label=name)
+			mName = 'M-' + name
+			mgName = 'M-' + name + '-gate'
+			qgName = name + '-gate'
+
+			mg = LogicalMarkerChannel(label=mgName)
+			qg = LogicalMarkerChannel(label=qgName)
+
+			m = Measurement(label=mName, gateChan = mg)
+			
+			q = Qubit(label=name, gateChan=qg)
 			q.pulseParams['length'] = 30e-9
 
-			QGL.Compiler.channelLib[name] = q
-
-			mName = 'M-' + name
-			QGL.Compiler.channelLib[mName]  = Measurement(label=mName)
-
-			mName = 'M-' + name + '-gate'
-			QGL.Compiler.channelLib[mName]  = LogicalMarkerChannel(label=mName)
-
-			qName = name + '-gate'
-			QGL.Compiler.channelLib[qName]  = LogicalMarkerChannel(label=qName)
+			self.channels[name] = q
+			self.channels[mName] = m
+			self.channels[mgName]  = mg
+			self.channels[qgName]  = qg
 
 		for name in self.logical_names:
-			QGL.Compiler.channelLib[name] = LogicalMarkerChannel(label=name)
-
-	def assign_physical_channels(self): abstract
-
+			self.channels[name] = LogicalMarkerChannel(label=name)
 
 	def get_qubits(self):
 		return [QGL.Compiler.channelLib[name] for name in self.qubit_names]
@@ -119,79 +106,96 @@ class TestSequences(object):
 class TestAPS2(unittest.TestCase, ChannelMap, TestSequences):
 
 	def setUp(self):
-		self.assign_channels()
-		(self.q1, self.q2) = self.get_qubits()
-		assert(self.ready == True)
-
-	def assign_physical_channels(self):
-
-		for name in ['APS1', 'APS2']:
-			QGL.Compiler.instrumentLib.instrDict[name] = APS2()
+		ChannelMap.__init__(self)
+		for name in ['APS1', 'APS2', 'APS3', 'APS4']:
+			self.instruments[name] = APS2(label=name)
 
 			channelName = name + '-12'
 			channel = PhysicalQuadratureChannel(label=channelName)
-			channel.AWG.label = name
-			QGL.Compiler.channelLib[channelName] = channel
+			channel.AWG = self.instruments[name]
+			self.channels[channelName] = channel
 
 			for m in range(1,5):
 				channelName = "{0}-12m{1}".format(name,m)
 				channel = PhysicalMarkerChannel(label=channelName)
-				channel.AWG.label = name
-				QGL.Compiler.channelLib[channelName] = channel
+				channel.AWG = self.instruments[name]
+				self.channels[channelName] = channel
 
-		QGL.Compiler.channelLib['digitizerTrig'].physChan = QGL.Compiler.channelLib['APS1-12m1']
-		QGL.Compiler.channelLib['slaveTrig'].physChan = QGL.Compiler.channelLib['APS1-12m2']
-
-		QGL.Compiler.channelLib['q1'].physChan = QGL.Compiler.channelLib['APS1-12']
-		QGL.Compiler.channelLib['M-q1'].physChan = QGL.Compiler.channelLib['APS1-12']
-		QGL.Compiler.channelLib['M-q1-gate'].physChan = QGL.Compiler.channelLib['APS1-12m3']
-		QGL.Compiler.channelLib['q1-gate'].physChan = QGL.Compiler.channelLib['APS1-12m4']
+		mapping = {	'digitizerTrig' : 'APS1-12m1',
+				   	'slaveTrig': 'APS1-12m2',
+			       	'q1':'APS1-12',
+					'q1-gate':'APS1-12m3',
+					'M-q1':'APS2-12',
+					'M-q1-gate':'APS2-12m1',
+					'q2':'APS3-12',
+					'q2-gate':'APS3-12m1',
+					'M-q2':'APS4-12',
+					'M-q2-gate':'APS4-12m1'}
 		
-		QGL.Compiler.channelLib['q2'].physChan = QGL.Compiler.channelLib['APS2-12']
-		QGL.Compiler.channelLib['M-q2'].physChan = QGL.Compiler.channelLib['APS2-12']
-		QGL.Compiler.channelLib['M-q2-gate'].physChan = QGL.Compiler.channelLib['APS2-12m1']
-		QGL.Compiler.channelLib['q2-gate'].physChan = QGL.Compiler.channelLib['APS2-12m2']
+		self.finalize_map(mapping)
 			
 
 class TestAPS1(unittest.TestCase, ChannelMap, TestSequences):
 
 	def setUp(self):
-		self.assign_channels()
-		(self.q1, self.q2) = self.get_qubits()
-		assert(self.ready == True)
-
-	def assign_physical_channels(self):
-
+		ChannelMap.__init__(self)
 		for name in ['APS1', 'APS2']:
-			QGL.Compiler.instrumentLib.instrDict[name] = APS()
+			self.instruments[name] = APS(label=name)
 
 			for ch in ['12', '34']:
 				channelName = name + '-' + ch
 				channel = PhysicalQuadratureChannel(label=channelName)
-				channel.AWG.label = name
-				QGL.Compiler.channelLib[channelName] = channel
+				channel.AWG = self.instruments[name]
+				self.channels[channelName] = channel
 
 			for m in range(1,5):
 				channelName = "{0}-{1}m1".format(name,m)
 				channel = PhysicalMarkerChannel(label=channelName)
-				channel.AWG.label = name
-				QGL.Compiler.channelLib[channelName] = channel
+				channel.AWG = self.instruments[name]
+				self.channels[channelName] = channel
 
-		QGL.Compiler.channelLib['digitizerTrig'].physChan = QGL.Compiler.channelLib['APS2-1m1']
-		QGL.Compiler.channelLib['slaveTrig'].physChan = QGL.Compiler.channelLib['APS2-2m1']
+		mapping = {	'digitizerTrig':'APS2-1m1',
+					'slaveTrig'    :'APS2-2m1',
+					'q1'           :'APS1-12',
+					'M-q1'         :'APS1-12',
+					'M-q1-gate'    :'APS1-1m1',
+					'q1-gate'      :'APS1-2m1',
+					'q2'           :'APS1-34',
+					'M-q2'         :'APS1-34',
+					'M-q2-gate'    :'APS1-3m1',
+					'q2-gate'      :'APS1-4m1'}
+		self.finalize_map(mapping)
 
-		QGL.Compiler.channelLib['q1'].physChan = QGL.Compiler.channelLib['APS1-12']
-		QGL.Compiler.channelLib['M-q1'].physChan = QGL.Compiler.channelLib['APS1-12']
-		QGL.Compiler.channelLib['M-q1-gate'].physChan = QGL.Compiler.channelLib['APS1-1m1']
-		QGL.Compiler.channelLib['q1-gate'].physChan = QGL.Compiler.channelLib['APS1-2m1']
-		
-		QGL.Compiler.channelLib['q2'].physChan = QGL.Compiler.channelLib['APS1-34']
-		QGL.Compiler.channelLib['M-q2'].physChan = QGL.Compiler.channelLib['APS1-34']
-		QGL.Compiler.channelLib['M-q2-gate'].physChan = QGL.Compiler.channelLib['APS1-3m1']
-		QGL.Compiler.channelLib['q2-gate'].physChan = QGL.Compiler.channelLib['APS1-4m1']
+class TestTek5014(unittest.TestCase, ChannelMap, TestSequences):
 
-		
+	def setUp(self):
+		ChannelMap.__init__(self)
+		for name in ['TEK1']:
+			self.instruments[name] = Tek5014(label=name)
 
+			for ch in ['12', '34']:
+				channelName = name + '-' + ch
+				channel = PhysicalQuadratureChannel(label=channelName)
+				channel.AWG = self.instruments[name]
+				self.channels[channelName] = channel
+
+			for m in ['1m1', '1m2', '2m1', '2m2', '3m1', '3m2', '4m1', '4m2']:
+				channelName = "{0}-{1}".format(name,m)
+				channel = PhysicalMarkerChannel(label=channelName)
+				channel.AWG = self.instruments[name]
+				self.channels[channelName] = channel
+
+		mapping = { 'digitizerTrig'	:'TEK1-1m2',
+					'slaveTrig'   	:'TEK1-2m2',
+					'q1'			:'TEK1-12',
+					'M-q1'			:'TEK1-12',
+					'M-q1-gate'		:'TEK1-1m1',
+					'q1-gate'		:'TEK1-2m1',
+					'q2'			:'TEK1-34',
+					'M-q2'			:'TEK1-34',
+					'M-q2-gate'		:'TEK1-3m1',
+					'q2-gate'		:'TEK1-4m1'}
+		self.finalize_map(mapping)
 
 if __name__ == "__main__":    
     unittest.main()

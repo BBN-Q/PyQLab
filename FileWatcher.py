@@ -37,7 +37,7 @@ class LibraryFileWatcher(object):
         self.callback = callback
         self.eventHandler = MyEventHandler(self.filePath, callback)
         self.observer = Observer()
-        self.watch = self.observer.schedule(self.eventHandler, path=os.path.dirname(self.filePath))
+        self.watch = self.observer.schedule(self.eventHandler, path=os.path.dirname(os.path.abspath(self.filePath)))
         self.observer.start()
         self.resume()
 

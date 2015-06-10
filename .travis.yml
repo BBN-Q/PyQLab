@@ -19,6 +19,7 @@ before_install:
 install:
  # Coverage packages are on my binstar channel
   - pip install watchdog
+  - mkdir awg
 
 # execute scripts
 script: 
