@@ -14,6 +14,8 @@ before_install:
   - conda update --yes conda
   - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION numpy bokeh enaml atom matplotlib h5py ipython scipy
   - pip install coveralls
+  - wget "https://drive.google.com/uc?export=download&id=0BxaPKTZqyVcheW1zU0c3WmxBTFU" -O test_data.tar.gz
+  - tar xzvf test_data.tar.gz -C tests/
   
 # use conda to install packages
 install:
