@@ -62,9 +62,8 @@ class ControlFlowTest(unittest.TestCase):
         crseq = Reset(q1)
         seq1 = [Call(label(crseq[1]))]
         # print seq1
-        subseq2 = crseq[1][2:-1]
-        seq2 = [CmpNeq(1), Goto(endlabel(subseq2))] + subseq2 + [Return()]
-        seq2[0].label = crseq[1][0].label
+        subseq2 = crseq[1][3:-1]
+        seq2 = [label(crseq[1]), CmpNeq(1), Goto(endlabel(subseq2))] + subseq2 + [Return()]
         # print seq2
         assert( Reset(q1) == (seq1, seq2) )
 
