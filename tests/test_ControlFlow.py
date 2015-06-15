@@ -40,10 +40,9 @@ class ControlFlowTest(unittest.TestCase):
     def test_qwhile(self):
         q1 = self.q1
         seq1 = [X90(q1), Y90(q1)]
-        label(seq1)
-        # print qwhile(0, seq1)
-        # print [CmpNeq(0), Goto(endlabel(seq1))] + seq1
-        assert( qwhile(0, seq1) == [CmpNeq(0), Goto(endlabel(seq1))] + seq1 )
+        seq2 = qwhile(0, seq1)
+        seq3 = [label(seq2), CmpNeq(0), Goto(endlabel(seq2))] + seq1 + [Goto(label(seq2)), endlabel(seq2)]
+        assert( seq2 ==  seq3)
 
     def test_qdowhile(self):
         q1 = self.q1
