@@ -28,7 +28,6 @@ class ControlFlowTest(unittest.TestCase):
         # if and else branches
         seq = qif(0, X(q1), Y(q1))
 
-    @unittest.expectedFailure
     def test_inline_qif(self):
         q1 = self.q1
         seq = [X90(q1), Y(q1), qwait("CMP"), qif(0, [Id(q1)], [X(q1)]), Y(q1)]
@@ -80,12 +79,6 @@ class ControlFlowTest(unittest.TestCase):
         seq1 = [qwait(), qwait("CMP")]
         assert( isinstance(seq1[0], ControlFlow.Wait) )
         assert( isinstance(seq1[1], ControlFlow.LoadCmp) )
-
-    def test_flatten_and_separate(self):
-        seq = [1, ([2, ([3], [4, ([5, 6, 7], [8, 9])])], [10, 11])]
-        main, branch = Compiler.flatten_and_separate(seq)
-        assert( main == [1,2,3] )
-        assert( branch == [4,5,6,7,8,9,10,11] )
 
     def test_compile(self):
         q1 = self.q1
