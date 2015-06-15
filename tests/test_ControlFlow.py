@@ -55,17 +55,18 @@ class ControlFlowTest(unittest.TestCase):
 
     def test_qcall(self):
         q1 = self.q1
+        q2 = self.q2
         @qfunction
-        def Reset(q):
-            return qwhile(1, [X(q)])
+        def dummy(q):
+            return [X(q), Y(q)]
 
-        crseq = Reset(q1)
-        seq1 = [Call(label(crseq[1]))]
-        # print seq1
-        subseq2 = crseq[1][3:-1]
-        seq2 = [label(crseq[1]), CmpNeq(1), Goto(endlabel(subseq2))] + subseq2 + [Return()]
-        # print seq2
-        assert( Reset(q1) == (seq1, seq2) )
+        # multiple calls should return the same thing
+        assert dummy(q1) == dummy(q1)
+        assert dummy(q2) == dummy(q2)
+        assert dummy(q1) != dummy(q2)
+
+        # specialization lookup with label at beginning and RETURN at end
+        assert ControlFlow.qfunction_specialization(dummy(q1).target) == [dummy(q1).target, X(q1), Y(q1), Return()]
 
     def test_repeat(self):
         q1 = self.q1
