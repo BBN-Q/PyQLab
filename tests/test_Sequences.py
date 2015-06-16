@@ -17,6 +17,7 @@ import ExpSettingsVal
 
 BASE_AWG_DIR = config.AWGDir
 
+
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
@@ -135,7 +136,6 @@ class AWGTestHelper(object):
 	def compare_sequence(self, seqA, seqB, errorHeader):
 		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
 		np.testing.assert_allclose(seqA, seqB, rtol=1e-5, atol=0)
-
 
 class TestSequences(object):
 
@@ -373,6 +373,5 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 # 					'cr-gate'       :'TEK5-1m1'}
 # 		self.finalize_map(mapping)
 	
-
 if __name__ == "__main__":    
     unittest.main()
