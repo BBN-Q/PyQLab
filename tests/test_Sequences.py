@@ -10,7 +10,7 @@ from QGL import *
 import QGL
 
 from QGL.Channels import Measurement, LogicalChannel, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
-from instruments.AWGs import APS2, APS, Tek5014
+from instruments.AWGs import APS2, APS, Tek5014, Tek7000
 from instruments.InstrumentManager import InstrumentLibrary
 
 import ExpSettingsVal
@@ -270,7 +270,7 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
 		AWGTestHelper.__init__(self, APSPattern.read_APS_file)
-		for name in ['APS1', 'APS2']:
+		for name in ['APS1', 'APS2', 'APS3']:
 			self.instruments[name] = APS(label=name)
 
 			for ch in ['12', '34']:
@@ -285,19 +285,27 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 				channel.AWG = self.instruments[name]
 				self.channels[channelName] = channel
 
-		mapping = {	'digitizerTrig':'APS2-1m1',
-					'slaveTrig'    :'APS2-2m1',
+		mapping = {	'digitizerTrig':'APS1-1m1',
+					'slaveTrig'    :'APS1-2m1',
 					'q1'           :'APS1-12',
-					'M-q1'         :'APS1-12',
-					'M-q1-gate'    :'APS1-1m1',
-					'q1-gate'      :'APS1-2m1',
-					'q2'           :'APS1-34',
-					'M-q2'         :'APS1-34',
-					'M-q2-gate'    :'APS1-3m1',
-					'q2-gate'      :'APS1-4m1',
-					'cr'           :'APS2-12', 
-					'cr-gate'      :'APS2-1m1'}
+					'M-q1'         :'APS1-34',
+					'M-q1-gate'    :'APS1-3m1',
+					'q1-gate'      :'APS1-4m1',
+					'q2'           :'APS2-12',
+					'M-q2'         :'APS2-34',
+					'M-q2-gate'    :'APS2-1m1',
+					'q2-gate'      :'APS2-2m1',
+					'cr'           :'APS3-12', 
+					'cr-gate'      :'APS3-1m1'}
 		self.finalize_map(mapping)
+
+	@unittest.expectedFailure
+	def test_Rabi_RabiWidth(self):
+		""" test_Rabi_RabiWidth is expected to fail on APS1 with the following error:
+			AssertionError: Oops! You have exceeded the waveform memory of the APS
+		"""
+		TestSequences.test_Rabi_RabiWidth(self)
+
 
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 
@@ -331,6 +339,40 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 					'cr'            :'TEK2-12',
 					'cr-gate'       :'TEK2-1m1'}
 		self.finalize_map(mapping)
+
+# class TestTek7000(unittest.TestCase, AWGTestHelper, TestSequences):
+
+# 	def setUp(self):
+# 		AWGTestHelper.__init__(self, TekPattern.read_Tek_file)
+# 		for name in ['TEK1', 'TEK2', 'TEK3', 'TEK4', 'TEK5']:
+# 			self.instruments[name] = Tek7000(label=name)
+
+# 			for ch in ['12']:
+# 				channelName = name + '-' + ch
+# 				channel = PhysicalQuadratureChannel(label=channelName)
+# 				channel.AWG = self.instruments[name]
+# 				self.channels[channelName] = channel
+
+# 			for m in ['1m1', '1m2', '2m1', '2m2']:
+# 				channelName = "{0}-{1}".format(name,m)
+# 				channel = PhysicalMarkerChannel(label=channelName)
+# 				channel.AWG = self.instruments[name]
+# 				self.channels[channelName] = channel
+
+# 		mapping = { 'digitizerTrig'	:'TEK1-1m2',
+# 					'slaveTrig'   	:'TEK1-2m2',
+# 					'q1'			:'TEK1-12',
+# 					'M-q1'			:'TEK2-12',
+# 					'M-q1-gate'		:'TEK1-1m1',
+# 					'q1-gate'		:'TEK1-2m1',
+# 					'q2'			:'TEK3-12',
+# 					'M-q2'			:'TEK4-12',
+# 					'M-q2-gate'		:'TEK2-1m1',
+# 					'q2-gate'		:'TEK2-2m1',
+# 					'cr'            :'TEK5-12',
+# 					'cr-gate'       :'TEK5-1m1'}
+# 		self.finalize_map(mapping)
+	
 
 if __name__ == "__main__":    
     unittest.main()
