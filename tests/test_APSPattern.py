@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 
 from QGL import *
-from QGL.BlockLabel import label
 
 class APSPatternUtils(unittest.TestCase):
     def setUp(self):
@@ -39,7 +38,7 @@ class APSPatternUtils(unittest.TestCase):
         seqs = [repeat(2, [X(q1),Y(q1)] + repeat(3, [Z(q1)]) + [Y(q1),X(q1)]), [X(q1), Y(q1)]]
         a, b = APSPattern.unroll_loops(seqs)
 
-        seqUnrolled = ([X(q1).promote(),Y(q1)] + [Z(q1).promote()]*3 + [Y(q1),X(q1)])*2
+        seqUnrolled = ([X(q1),Y(q1)] + [Z(q1)]*3 + [Y(q1),X(q1)])*2
 
         assert(a[0] == seqUnrolled)
 
