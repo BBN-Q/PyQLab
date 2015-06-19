@@ -32,6 +32,7 @@ from instruments.AWGs import APS, APS2, Tek5014, AWG
 from atom.api import Str
 
 import re
+import itertools
 
 channels = Libraries.channelLib
 instruments = Libraries.instrumentLib.instrDict
@@ -121,13 +122,13 @@ def test_require_physical():
 		physicalChannel = channels[channel].physChan
 
 		if physicalChannel is None:
-			print '"{0}" channel "{1}" Physical Channel is not defined'.format(channels[channel].__class__.__name__, channel)
-			errors.append(channel)
+			errMsg = '"{0}" channel "{1}" Physical Channel is not defined'.format(channels[channel].__class__.__name__, channel)
+			errors.append(errMsg)
 		else:
 			physicalChannelName = channels[channel].physChan.label
 			if physicalChannelName not in channels.keys():
-				print 'Physical Channel "{0}" not found'.format(physicalChannelName)
-				errors.append(physicalChannelName)
+				errMsg =  'Physical Channel "{0}" not found'.format(physicalChannelName)
+				errors.append(errMsg)
 
 	return errors
 
@@ -158,8 +159,8 @@ def test_logical_channels():
 		if physicalChannelName not in channels.keys():
 			continue
 		if is_logicalmarker_channel(channel) != is_physicalmarker_channel(physicalChannelName):
-			print errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
-			errors.append(channel)
+			errMsg =  errorHeader.format(channels[channel].__class__.__name__, channel, physicalChannelName)
+			errors.append(errMsg)
 
 	return errors
 
@@ -181,11 +182,11 @@ def test_physical_channels():
 	for channel in physicalChannels:
 		awg = channels[channel].AWG.label
 		if awg == '':
-			print 'Physical Channel "{0}" requires an AWG assignment'.format(channel)
-			errors.append(channel)
+			errMsg = 'Physical Channel "{0}" requires an AWG assignment'.format(channel)
+			errors.append(errMsg)
 		elif awg not in instruments.keys():
-			print 'Physical Channel "{0}" AWG {1} not found'.format(channel, awg)
-			errors.append(channel)
+			errMsg =  'Physical Channel "{0}" AWG {1} not found'.format(channel, awg)
+			errors.append(errMsg)
 
 		# test AWG name to channel format
 		validName = True
@@ -193,20 +194,21 @@ def test_physical_channels():
 		if validName:
 			awgName, awgChan = channel.rsplit('-',1)
 			if awgName not in instruments.keys():
-				print 'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
-				errors.append(channel)
+				errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
+				errors.append(errMsg)
 			if awgName != awg:
-				print 'Physical Channel "{0}" Label AWGName {1} != AWG.label {2}'.format(channel, awgName, awg)
-				errors.append(channel)
+				errMsg =  'Physical Channel "{0}" Label AWGName {1} != AWG.label {2}'.format(channel, awgName, awg)
+				errors.append(errMsg)
 			
 			# apply device specific channel namming conventions
 			# force converions of awgChan to unicode so multimethod dispatch will
 			# work with str or unicode
-			if invalid_awg_name_convention(channels[channel].AWG, unicode(awgChan)):
-				errors.append(channel)
+			errMsg = invalid_awg_name_convention(channels[channel].AWG, unicode(awgChan))
+			if errMsg:
+				errors.append(errMsg)
 		else:
-			print 'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
-			errors.append(channel)
+			errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)				
+			errors.append(errMsg)
 
 	return errors
 
@@ -215,14 +217,13 @@ def test_physical_channels():
 def invalid_awg_name_convention_common(label, channelName, conventionList):
 	errorStr =  'AWG {0} channel name {1} not in convention list {2}'
 	if channelName not in conventionList:
-		print errorStr.format(label, channelName, conventionList)
-		return True
-	return False
+		return errorStr.format(label, channelName, conventionList)
+	return None
 
 @multimethod(AWG, unicode)
 def invalid_awg_name_convention(AWG, channelName):
 	# there is no convention for a generic AWG
-	return False
+	return None
 
 @multimethod(APS, unicode)
 def invalid_awg_name_convention(AWG, channelName):
@@ -248,7 +249,7 @@ def is_valid_awg_channel_name(channelName):
 
 	if awgName not in instruments.keys():
 		return False
-	return not invalid_awg_name_convention(instruments[awgName], awgChan)
+	return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
 
 #####################################################################################
 
@@ -264,10 +265,9 @@ def validate_instrumentLib():
 
 	if invalidNames != []:
 		for name in invalidNames:
-			print "Instrument name {0} is not a valid Matlab Name".format(name)
-		errors.append(invalidNames)
+			errMsg =  "Instrument name {0} is not a valid Matlab Name".format(name)
+			errors.append(errMsg)
 	
-	print errors
 	return errors
 
 
@@ -276,14 +276,14 @@ def validate_instrumentLib():
 def validate_channelLib():
 	errors = []
 	if 'digitizerTrig' not in channels.keys():
-		print 'A LogicalMarkerChannel named digitizerTrig is required'
-		errors.append('digitizerTrig')
+		errMsg = 'A LogicalMarkerChannel named digitizerTrig is required'
+		errors.append([errMsg])
 			
 	# test gate pulses
 
 	if 'slaveTrig' not in channels.keys():
-		print 'A LogicalMarkerChannel named slaveTrig is required'
-		errors.append('slaveTrig')		
+		errMsg = 'A LogicalMarkerChannel named slaveTrig is required'
+		errors.append([errMsg])		
 
 	# test map_logical_to_physical
 	rp_errors = test_require_physical()
@@ -297,16 +297,22 @@ def validate_channelLib():
 	if rp_errors != []:		
 		errors.append(rp_errors)		
 
-	print errors
+	errors = list(itertools.chain(*errors))
 	return errors
 
 def validate_lib():
-	validates = True
-	if validate_channelLib() != []:
-		validates =  False
-	if validate_instrumentLib() != []:
-		validates = False
-	return validates
+	errors = []
+
+	channel_errors = validate_channelLib() 
+	if channel_errors != []:
+		errors.append(channel_errors)
+
+	instrument_errors = validate_instrumentLib() 
+	if instrument_errors != []:
+		errors.append(instrument_errors)
+
+	errors = list(itertools.chain(*errors))
+	return errors
 
 def default_repr(items, item):
 	return '\t{0}: {1}'.format(item, 

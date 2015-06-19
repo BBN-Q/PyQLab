@@ -55,6 +55,23 @@ enamldef NotificationPopup(PopupView):
 			text = displayText
 			align = 'center'
 
+enamldef ErrorPopup(Window): error_win:
+    title = 'Validation Error'
+    modality = 'application_modal' 
+    attr displayText = ''
+
+    Container:
+        constraints = []
+
+        Label:
+        	text = displayText
+
+        PushButton: ok_btn:
+            text = 'Okay'
+            clicked ::
+                error_win.close()
+
+
 enamldef ExpSettingsView(MainWindow): main:
 	attr expSettings
 	attr curFileName := expSettings.curFileName
@@ -67,8 +84,13 @@ enamldef ExpSettingsView(MainWindow): main:
 				tool_tip << 'Save to {}'.format(curFileName)
 				triggered ::
 					expSettings.write_to_file()
-					expSettings.write_libraries()
-					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+					if expSettings.write_libraries():
+						NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+					else:
+						ep = ErrorPopup(displayText=expSettings.format_errors())
+						ep.show()
+						ep.center_on_widget(main)
+						
 			Action:
 				text = 'Save As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
@@ -159,7 +181,9 @@ enamldef ExpSettingsView(MainWindow): main:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
-				message = "Settings saved"
-				if not expSettings.write_libraries():
-					message = "Error validaing libraries.\nFiles not saved.\nSee console."
-				NotificationPopup(main, window_type='window', displayText=message).show()
+				if expSettings.write_libraries():
+					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
+				else:
+					ep = ErrorPopup(displayText=expSettings.format_errors())
+					ep.show()
+					ep.center_on_widget(main)
