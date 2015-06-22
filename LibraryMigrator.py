@@ -95,7 +95,7 @@ class ChannelMigrator(JSONMigrator):
 			print "Error json file is not a ChannelLibrary"
 			return
 
-		# Migration Setup 1
+		# Migration step 1
 		# Move SSBFreq from Physical Chanel for Qubits to the Logical Qubit Channel
 
 		lcClasses = ['Qubit']
