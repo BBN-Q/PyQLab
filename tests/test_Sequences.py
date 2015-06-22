@@ -221,16 +221,30 @@ class TestSequences(object):
 		PulsedSpec(self.q1)
 		self.compare_sequences('Spec')
 
-	# def test_RB_SingleQubitRB(self):
-	# 	self.set_awg_dir('SingleQubitRB')
-	# 	PulsedSpec(self.q1, create_RB_seqs(1, range(1,10)))
-	# 	self.compare_sequences('RB')
+	def test_RB_SingleQubitRB(self):
+		self.set_awg_dir('SingleQubitRB')
+		SingleQubitRB(self.q1, create_RB_seqs(1, range(1,10)))
+		self.compare_sequences('RB')
 
-	# def test_RB_TwoQubitRB(self):
-	# 	self.set_awg_dir('TwoQubitRB')
-	# 	PulsedSpec(self.q1, create_RB_seqs(2, range(1,10)))
-	# 	self.compare_sequences('RB')
-		
+	def test_RB_TwoQubitRB(self):
+		self.set_awg_dir('TwoQubitRB')
+		TwoQubitRB(self.q1, self.q2, self.cr, create_RB_seqs(2, range(1,10)))
+		self.compare_sequences('RB')
+
+	def test_RB_SingleQubitRB_AC(self):
+		self.set_awg_dir('SingleQubitRB_AC')
+		SingleQubitRB_AC(self.q1,create_RB_seqs(1, range(1,10)))
+		self.compare_sequences('RB')
+
+	def test_RB_SingleQubitIRB_AC(self):
+		self.set_awg_dir('SingleQubitIRB_AC')
+		SingleQubitIRB_AC(self.q1,'')
+		self.compare_sequences('RB')
+	
+	def test_RB_SingleQubitRBT(self):
+		self.set_awg_dir('SingleQubitRBT')
+		SingleQubitRBT(self.q1,'')
+		self.compare_sequences('RBT')
 
 class TestAPS2(unittest.TestCase, AWGTestHelper, TestSequences):
 
