@@ -7,7 +7,8 @@ import json
 # Version 1 adds the version to all json files
 # Version 2+ change the structure of the files
 
-# to add migrations add version_{n}_to_{n+1} methods
+# to add migrations add version_{n}_to_{n+1} methods in the subclasses of JSONMigrator
+# currently  [IntrumentMigrator, ChannelMigrator,SweepMigrator, MeasurementMigrator]
 # to make the changes in the json dict 
 
 class JSONMigrator(object):
@@ -37,6 +38,7 @@ class JSONMigrator(object):
 			    self.jsonDict = json.load(FID)
 		except IOError:
 			print('json file {0} not found'.format(self.fileName))
+			self.jsonDict = None
 
 	def is_class(self, dict, searchClasses):
 
@@ -61,13 +63,14 @@ class JSONMigrator(object):
 
 	def migrate(self):
 		self.load()
-		while self.version() < self.max_version:
-			migrate_function = "version_{0}_to_{1}".format(self.version(), self.version() + 1)
-			print "Migrating: {0}.{1}()".format(self.__class__.__name__, migrate_function)
-			function = getattr(self,migrate_function) 
-			function()
-			self.jsonDict['version'] = self.version() + 1
-		self.save()
+		if self.jsonDict:
+			while self.version() < self.max_version:
+				migrate_function = "version_{0}_to_{1}".format(self.version(), self.version() + 1)
+				print "Migrating: {0}.{1}()".format(self.__class__.__name__, migrate_function)
+				function = getattr(self,migrate_function) 
+				function()
+				self.jsonDict['version'] = self.version() + 1
+			self.save()
 
 	def version_0_to_1(self):
 		# does nothing but bump version number
