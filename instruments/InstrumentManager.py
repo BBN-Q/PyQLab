@@ -1,4 +1,4 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -28,6 +28,7 @@ class InstrumentLibrary(Atom):
     AWGs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
+    version = Int(1)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
