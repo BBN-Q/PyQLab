@@ -20,11 +20,11 @@ class JSONMigrator(object):
 		Includes version_0_to_1
 	"""
 
-	def __init__(self):
-		self.fileName = None
+	def __init__(self, fileName, max_version = 1):
+		self.fileName = fileName
 		self.jsonDict = None
 		self.min_version = 0
-		self.max_version = 1
+		self.max_version = max_version
 
 	def version(self):
 		try:
@@ -79,16 +79,13 @@ class JSONMigrator(object):
 class IntrumentMigrator(JSONMigrator):
 	""" Migrator for the Intrument Manager JSON File """
 	def __init__(self):
-		super(IntrumentMigrator, self).__init__()
-		self.fileName = config.instrumentLibFile
+		super(IntrumentMigrator, self).__init__(config.instrumentLibFile)
 
 class ChannelMigrator(JSONMigrator):		
 	""" Migrator for the Channel Manager JSON File """
 	def __init__(self):
-		super(ChannelMigrator, self).__init__()
-		self.fileName = config.channelLibFile
-		self.max_version = 2
-
+		super(ChannelMigrator, self).__init__(config.channelLibFile, 2)
+		
 	def version_1_to_2(self):
 
 		if not self.is_class(self.jsonDict,'ChannelLibrary') or 'channelDict' not in self.jsonDict:
@@ -111,21 +108,20 @@ class ChannelMigrator(JSONMigrator):
 				continue
 			frequency = self.jsonDict['channelDict'][pc]['SSBFreq']
 			del self.jsonDict['channelDict'][pc]['SSBFreq']
-			self.jsonDict['channelDict'][lc]['SSBFreq'] = frequency
+			self.jsonDict['channelDict'][lc]['frequency'] = frequency
 
 class SweepMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
 	def __init__(self):
-		super(SweepMigrator, self).__init__()
-		self.fileName = config.sweepLibFile
+		super(SweepMigrator, self).__init__(config.sweepLibFile)
+		
 
 class MeasurementMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
 	def __init__(self):
-		super(MeasurementMigrator, self).__init__()
-		self.fileName = config.measurementLibFile
+		super(MeasurementMigrator, self).__init__(config.measurementLibFile)
 
 def migrate_all():
 	migrators = [IntrumentMigrator, 
