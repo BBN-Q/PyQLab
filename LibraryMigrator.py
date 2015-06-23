@@ -134,6 +134,9 @@ class ChannelMigrator(JSONMigrator):
 		# Migration step 1
 		# Move SSBFreq from Physical Chanel for Qubits to the Logical Qubit Channel
 
+		# two phases 
+		# 1) copy all of the data from physical channel
+		# 2) delete data after copying is done in cases there are many-to-one mappings
 		lcClasses = ['Qubit', 'Measurement']
 		logicalChannels = self.get_items_matching_class(lcClasses)
 
@@ -143,10 +146,18 @@ class ChannelMigrator(JSONMigrator):
 				print 'Error: Physical Channel {0} not found.'.format(pc)
 				continue
 			if 'SSBFreq' not in self.primaryDict[pc]:
+				print "Warning: did not find SSBFreq for PhysicalChannel: ", pc
 				continue
 			frequency = self.primaryDict[pc]['SSBFreq']
-			del self.primaryDict[pc]['SSBFreq']
 			self.primaryDict[lc]['frequency'] = frequency
+
+		lcClasses = ['PhysicalQuadratureChannel']
+		iqChannels = self.get_items_matching_class(lcClasses)
+
+		for iq in iqChannels:
+			if 'SSBFreq' not in self.primaryDict[iq]:
+				continue
+			del self.primaryDict[pc]['SSBFreq']
 
 class SweepMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
