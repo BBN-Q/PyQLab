@@ -300,6 +300,13 @@ def validate_channelLib():
 	errors = list(itertools.chain(*errors))
 	return errors
 
+def validate_dynamic_lib(channelsLib, instrumentLib):
+	global channels
+	global instruments
+	channels = channelsLib
+	instruments = instrumentLib.instrDict
+	return validate_lib()
+
 def validate_lib():
 	errors = []
 
