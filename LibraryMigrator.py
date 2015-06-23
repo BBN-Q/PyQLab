@@ -20,11 +20,14 @@ class JSONMigrator(object):
 		Includes version_0_to_1
 	"""
 
-	def __init__(self, fileName, max_version = 1):
+	def __init__(self, fileName, libraryClass, primaryKey, max_version = 1):
 		self.fileName = fileName
 		self.jsonDict = None
 		self.min_version = 0
 		self.max_version = max_version
+		self.primaryKey = primaryKey
+		self.primaryDict = None
+		self.libraryClass = libraryClass
 
 	def version(self):
 		try:
@@ -39,6 +42,19 @@ class JSONMigrator(object):
 		except IOError:
 			print('json file {0} not found'.format(self.fileName))
 			self.jsonDict = None
+		
+		if not self.json_input_validate():
+			self.jsonDict = None
+			return
+
+		# cache primary dictionary
+		self.primaryDict = self.jsonDict[self.primaryKey]
+
+	def json_input_validate(self):
+		if not self.is_class(self.jsonDict, self.libraryClass) or self.primaryKey  not in self.jsonDict:
+			print "Error json file is not a " + self.libraryClass
+			return False
+		return True
 
 	def is_class(self, dict, searchClasses):
 
@@ -58,6 +74,10 @@ class JSONMigrator(object):
 		return False
 	
 	def save(self):
+		# store primary dictionary back into json dictionary
+		self.jsonDict[self.primaryKey] = self.primaryDict
+
+		# write out file
 		with open(self.fileName,'w') as FID:
 			json.dump(self.jsonDict, FID, indent=2, sort_keys=True)
 
@@ -72,6 +92,9 @@ class JSONMigrator(object):
 				self.jsonDict['version'] = self.version() + 1
 			self.save()
 
+	def get_items_matching_class(self, classes):
+		return [a for a in self.primaryDict if self.is_class(self.primaryDict[a],classes)]
+
 	def version_0_to_1(self):
 		# does nothing but bump version number
 		pass
@@ -79,49 +102,72 @@ class JSONMigrator(object):
 class IntrumentMigrator(JSONMigrator):
 	""" Migrator for the Intrument Manager JSON File """
 	def __init__(self):
-		super(IntrumentMigrator, self).__init__(config.instrumentLibFile)
+		super(IntrumentMigrator, self).__init__(
+			config.instrumentLibFile, 
+			"InstrumentLibrary",
+			"instrDict",
+			2)
+
+	def version_1_to_2(self):
+
+		# Migration step 1
+		# Change Labbrick64 class to Labbrick
+
+		chClasses = ['Labbrick64']
+		lb64 = self.get_items_matching_class(chClasses)
+
+		for lb in lb64:
+			self.primaryDict[lb]['x__class__'] = "Labbrick"
+							
 
 class ChannelMigrator(JSONMigrator):		
 	""" Migrator for the Channel Manager JSON File """
 	def __init__(self):
-		super(ChannelMigrator, self).__init__(config.channelLibFile, 2)
-		
-	def version_1_to_2(self):
+		super(ChannelMigrator, self).__init__(
+			config.channelLibFile, 
+			'ChannelLibrary',
+			'channelDict',
+			2)
 
-		if not self.is_class(self.jsonDict,'ChannelLibrary') or 'channelDict' not in self.jsonDict:
-			print "Error json file is not a ChannelLibrary"
-			return
+	def version_1_to_2(self):
 
 		# Migration step 1
 		# Move SSBFreq from Physical Chanel for Qubits to the Logical Qubit Channel
 
-		lcClasses = ['Qubit']
-		logicalChannels = [lc for lc in self.jsonDict['channelDict'] if 
-							self.is_class(self.jsonDict['channelDict'][lc],lcClasses)]
+		lcClasses = ['Qubit', 'Measurement']
+		logicalChannels = self.get_items_matching_class(lcClasses)
 
 		for lc in logicalChannels:
-			pc = self.jsonDict['channelDict'][lc]['physChan']
-			if pc not in self.jsonDict['channelDict']:
+			pc = self.primaryDict[lc]['physChan']
+			if pc not in self.primaryDict:
 				print 'Error: Physical Channel {0} not found.'.format(pc)
 				continue
-			if 'SSBFreq' not in self.jsonDict['channelDict'][pc]:
+			if 'SSBFreq' not in self.primaryDict[pc]:
 				continue
-			frequency = self.jsonDict['channelDict'][pc]['SSBFreq']
-			del self.jsonDict['channelDict'][pc]['SSBFreq']
-			self.jsonDict['channelDict'][lc]['frequency'] = frequency
+			frequency = self.primaryDict[pc]['SSBFreq']
+			del self.primaryDict[pc]['SSBFreq']
+			self.primaryDict[lc]['frequency'] = frequency
 
 class SweepMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
 	def __init__(self):
-		super(SweepMigrator, self).__init__(config.sweepLibFile)
+		super(SweepMigrator, self).__init__(
+			config.sweepLibFile,
+			"SweepLibrary",
+			"sweepDict",
+			1)
 		
 
 class MeasurementMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
 	def __init__(self):
-		super(MeasurementMigrator, self).__init__(config.measurementLibFile)
+		super(MeasurementMigrator, self).__init__(
+			config.measurementLibFile,
+			"MeasFilterLibrary",
+			"filterDict",
+			1)
 
 def migrate_all():
 	migrators = [IntrumentMigrator, 
