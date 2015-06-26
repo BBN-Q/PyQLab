@@ -66,7 +66,7 @@ class TestJSON(unittest.TestCase, APS2Helper):
 		Libraries.channelLib.channelDict = {}
 		Libraries.channelLib.load_from_library()
 
-		self.validate_library(Libraries.channelLib, self.channels)
+		self.validate_library(Libraries.channelLib.channelDict, self.channels)
 
 	def test_instruments_library(self):
 		Libraries.instrumentLib.instrDict = self.instruments
