@@ -17,7 +17,6 @@ import ExpSettingsVal
 
 BASE_AWG_DIR = config.AWGDir
 
-
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
@@ -40,14 +39,14 @@ class AWGTestHelper(object):
 
 		(self.q1, self.q2) = self.get_qubits()
 		self.cr = self.channels["cr"]
-	
+
 	def assign_channels(self):
 
 		self.qubit_names = ['q1','q2']
 		self.logical_names = ['digitizerTrig', 'slaveTrig']
 
 		self.assign_logical_channels()
-	
+
 	def assign_logical_channels(self):
 
 		for name in self.qubit_names:
@@ -59,20 +58,20 @@ class AWGTestHelper(object):
 			qg = LogicalMarkerChannel(label=qgName)
 
 			m = Measurement(label=mName, gateChan = mg)
-			
+
 			q = Qubit(label=name, gateChan=qg)
 			q.pulseParams['length'] = 30e-9
 
 			self.channels[name] = q
 			self.channels[mName] = m
 			self.channels[mgName]  = mg
-			self.channels[qgName]  = qg	
-			
+			self.channels[qgName]  = qg
+
 			self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
-			cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )	
+			cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
 			cr.pulseParams['length'] = 30e-9
 			self.channels["cr"] = cr
-			
+
 
 		for name in self.logical_names:
 			self.channels[name] = LogicalMarkerChannel(label=name)
@@ -92,7 +91,7 @@ class AWGTestHelper(object):
 
 		if not os.path.isdir(self.awg_dir):
 			os.mkdir(self.awg_dir)
-		config.AWGDir = self.awg_dir 
+		config.AWGDir = self.awg_dir
 
 	def compare_sequences(self, seqDir):
 		if not self.read_function:
@@ -117,12 +116,12 @@ class AWGTestHelper(object):
 		awgDataLen = len(awgData)
 		truthDataLen = len(truthData)
 
-		self.assertTrue(awgDataLen == truthDataLen, 
+		self.assertTrue(awgDataLen == truthDataLen,
 			"Expected {0} sequences in file. Found {1}.".format(truthDataLen, awgDataLen))
 
 		for name in truthData:
 			self.assertTrue(name in awgData, "Expected sequence {0} not found in file {1}".format(name, testFile))
-			
+
 			if len(truthData[name][0]) == 1:
 				seqA = np.array(truthData[name])
 				seqB = np.array(awgData[name])
@@ -188,7 +187,7 @@ class TestSequences(object):
 
 	def test_SPAM(self):
 		self.set_awg_dir()
-	  	SPAM(self.q1, np.linspace(0, pi/2, 11))	
+	  	SPAM(self.q1, np.linspace(0, pi/2, 11))
 	  	self.compare_sequences('SPAM')
 
 	def test_Rabi_RabiAmp(self):
@@ -199,22 +198,22 @@ class TestSequences(object):
 	def test_Rabi_RabiWidth(self):
 		self.set_awg_dir('RabiWidth')
 		RabiWidth(self.q1,  np.linspace(0, 5e-6, 11))
-		self.compare_sequences('Rabi')	
+		self.compare_sequences('Rabi')
 
 	def test_Rabi_RabiAmp_TwoQubits(self):
 		self.set_awg_dir('RabiAmp2')
 		RabiAmp_TwoQubits(self.q1, self.q2, np.linspace(0, 5e-6, 11),  np.linspace(0, 5e-6, 11))
-		self.compare_sequences('Rabi')	
+		self.compare_sequences('Rabi')
 
 	def test_Rabi_RabiAmpPi(self):
 		self.set_awg_dir('RabiAmpPi')
 		RabiAmpPi(self.q1, self.q2, np.linspace(0, 5e-6, 11))
-		self.compare_sequences('Rabi')	
+		self.compare_sequences('Rabi')
 
 	def test_Rabi_SingleShot(self):
 		self.set_awg_dir()
 		SingleShot(self.q1)
-		self.compare_sequences('SingleShot')	
+		self.compare_sequences('SingleShot')
 
 	def test_Rabi_PulsedSpec(self):
 		self.set_awg_dir()
@@ -240,14 +239,13 @@ class TestSequences(object):
 		self.set_awg_dir('SingleQubitIRB_AC')
 		SingleQubitIRB_AC(self.q1,'')
 		self.compare_sequences('RB')
-	
+
 	def test_RB_SingleQubitRBT(self):
 		self.set_awg_dir('SingleQubitRBT')
 		SingleQubitRBT(self.q1,'')
 		self.compare_sequences('RBT')
 
-class TestAPS2(unittest.TestCase, AWGTestHelper, TestSequences):
-
+class APS2Helper(AWGTestHelper):
 	def setUp(self):
 		AWGTestHelper.__init__(self, APS2Pattern.read_APS2_file)
 		for name in ['APS1', 'APS2', 'APS3', 'APS4', 'APS5']:
@@ -274,11 +272,14 @@ class TestAPS2(unittest.TestCase, AWGTestHelper, TestSequences):
 					'q2-gate':'APS3-12m1',
 					'M-q2':'APS4-12',
 					'M-q2-gate':'APS4-12m1',
-					'cr' : 'APS5-12', 
+					'cr' : 'APS5-12',
 					'cr-gate' : 'APS5-12m1'}
-		
+
 		self.finalize_map(mapping)
-			
+
+class TestAPS2(unittest.TestCase, APS2Helper, TestSequences):
+	# TestAPS2 is seperated from APS2Helper so the setup method of APS2Helper may be used in test_json.py
+	pass
 
 class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
@@ -309,7 +310,7 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 					'M-q2'         :'APS2-34',
 					'M-q2-gate'    :'APS2-1m1',
 					'q2-gate'      :'APS2-2m1',
-					'cr'           :'APS3-12', 
+					'cr'           :'APS3-12',
 					'cr-gate'      :'APS3-1m1'}
 		self.finalize_map(mapping)
 
@@ -386,6 +387,6 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 # 					'cr'            :'TEK5-12',
 # 					'cr-gate'       :'TEK5-1m1'}
 # 		self.finalize_map(mapping)
-	
-if __name__ == "__main__":    
+
+if __name__ == "__main__":
     unittest.main()
