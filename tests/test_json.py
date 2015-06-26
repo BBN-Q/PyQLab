@@ -62,9 +62,10 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 	def setUp(self):
 		APS2Helper.__init__(self)
 		APS2Helper.setUp(self)
+		Libraries.channelLib.channelDict = self.channels
+		Libraries.instrumentLib.instrDict = self.instruments
 
 	def test_channels_library(self):
-		Libraries.channelLib.channelDict = self.channels
 		Libraries.channelLib.write_to_file()
 		Libraries.channelLib.channelDict = {}
 		Libraries.channelLib.load_from_library()
@@ -72,7 +73,6 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 		self.validate_library(Libraries.channelLib.channelDict, self.channels)
 
 	def test_instruments_library(self):
-		Libraries.instrumentLib.instrDict = self.instruments
 		Libraries.instrumentLib.write_to_file()
 		Libraries.instrumentLib.instrDict = {}
 		Libraries.instrumentLib.load_from_library()
