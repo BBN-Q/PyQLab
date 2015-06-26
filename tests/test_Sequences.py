@@ -279,9 +279,9 @@ class APS2Helper(AWGTestHelper):
 
 class TestAPS2(unittest.TestCase, APS2Helper, TestSequences):
 	# TestAPS2 is seperated from APS2Helper so the setup method of APS2Helper may be used in test_json.py
-	def setup(self):
+	def setUp(self):
 		APS2Helper.__init__(self)
-		APS2Heper.setUp(self)
+		APS2Helper.setUp(self)
 
 class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
