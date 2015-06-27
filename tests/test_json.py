@@ -1,19 +1,15 @@
-import h5py
 import unittest
 import os
-import inspect
-
 import json
-
 import config
+import numpy as np
+from atom.api import Atom, atomlist
+
 import Libraries
 from MeasFilters import RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector
 from Sweeps import *
-
 from test_Sequences import APS2Helper
-import numpy as np
-
-from atom.api import Atom, atomlist
+import ExpSettingsVal
 
 class JSONTestHelper(object):
 	def validate_json_dictionary(self, testDict, validDict):
@@ -84,9 +80,12 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
 	def test_channels_instruments_library(self):
 		# test channels and instruments together as they are coupled
-		
+
 		Libraries.channelLib.channelDict = self.channels
 		Libraries.instrumentLib.instrDict = self.instruments
+
+		ExpSettingsVal.list_config()
+		ExpSettingsVal.validate_lib()
 
 		Libraries.channelLib.write_to_file()
 		Libraries.instrumentLib.write_to_file()
@@ -128,6 +127,10 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 	def test_measurements_library(self):
 		Libraries.measLib.filterDict = self.measurements
+
+		ExpSettingsVal.list_config()
+		ExpSettingsVal.validate_lib()
+
 		Libraries.measLib.write_to_file()
 		Libraries.measLib.filterDict = {}
 		Libraries.measLib.load_from_library()
@@ -183,6 +186,10 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 
 	def test_sweeps_library(self):
 		Libraries.sweepLib.sweepDict = self.sweeps
+
+		ExpSettingsVal.list_config()
+		ExpSettingsVal.validate_lib()
+
 		Libraries.sweepLib.write_to_file()
 		Libraries.sweepLib.sweepDict = {}
 		Libraries.sweepLib.load_from_library()
