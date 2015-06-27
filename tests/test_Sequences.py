@@ -13,8 +13,6 @@ from QGL.Channels import Measurement, LogicalChannel, LogicalMarkerChannel, Phys
 from instruments.AWGs import APS2, APS, Tek5014, Tek7000
 from instruments.InstrumentManager import InstrumentLibrary
 
-import ExpSettingsVal
-
 BASE_AWG_DIR = config.AWGDir
 
 class AWGTestHelper(object):
@@ -61,16 +59,21 @@ class AWGTestHelper(object):
 
 			q = Qubit(label=name, gateChan=qg)
 			q.pulseParams['length'] = 30e-9
+			q.pulseParams['phase'] = pi/2
 
 			self.channels[name] = q
 			self.channels[mName] = m
 			self.channels[mgName]  = mg
 			self.channels[qgName]  = qg
 
-			self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
-			cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
-			cr.pulseParams['length'] = 30e-9
-			self.channels["cr"] = cr
+		self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
+		cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
+		cr.pulseParams['length'] = 30e-9
+		self.channels["cr"] = cr
+
+		mq1q2g = LogicalMarkerChannel(label='M-q1q2-gate')
+		self.channels['M-q1q2-gate']  = mq1q2g
+		self.channels['M-q1q2']       = Measurement(label='M-q1q2', gateChan = mq1q2g)
 
 
 		for name in self.logical_names:
@@ -139,6 +142,53 @@ class AWGTestHelper(object):
 class TestSequences(object):
 
 	def compare_sequences(self): abstract
+
+	def test_misc_seqs1(self):
+		""" catch all for sequences not otherwise covered """
+		self.set_awg_dir()
+		seqs = [Ytheta(self.q1, amp = 0.5), Z90m(self.q1), Ztheta(self.q1, angle = np.pi/4),
+				arb_axis_drag(self.q1, 5.0, np.pi/4, np.pi/2, np.pi/8)
+			   ]
+
+		for ac in range(0, 24):
+			seqs.append(AC(self.q1, ac))
+
+		seqs = [seqs]
+
+		filenames = compile_to_hardware(seqs, 'MISC1/MISC1')
+		self.compare_sequences('MISC1')
+
+	def test_misc_seqs2(self):
+		""" catch all for sequences not otherwise covered """
+		self.set_awg_dir()
+		seqs = [ZX90_CR(self.cr, self.q1, self.q2)]
+
+		filenames = compile_to_hardware(seqs, 'MISC2/MISC2')
+		self.compare_sequences('MISC2')
+
+	def test_misc_seqs3(self):
+		""" catch all for sequences not otherwise covered """
+		self.set_awg_dir()
+		seqs = [CNOT_CRa(self.cr, self.q1, self.q2)]
+
+		filenames = compile_to_hardware(seqs, 'MISC3/MISC3')
+		self.compare_sequences('MISC3')
+
+	def test_misc_seqs4(self):
+		""" catch all for sequences not otherwise covered """
+		self.set_awg_dir()
+		seqs = [CNOT_CRb(self.cr, self.q1, self.q2)]
+
+		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
+		self.compare_sequences('MISC4')
+
+	def test_misc_seqs5(self):
+		""" Failes becuase nothing is written by compile to hardware """
+		self.set_awg_dir()
+		seqs = [[MEASmux((self.q1, self.q2))]]
+
+		filenames = compile_to_hardware(seqs, 'MISC5/MISC5')
+		self.compare_sequences('MISC5')
 
 	def test_AllXY(self):
 		self.set_awg_dir()
@@ -258,7 +308,7 @@ class TestSequences(object):
 class APS2Helper(AWGTestHelper):
 	def setUp(self):
 		AWGTestHelper.__init__(self, APS2Pattern.read_APS2_file)
-		for name in ['APS1', 'APS2', 'APS3', 'APS4', 'APS5']:
+		for name in ['APS1', 'APS2', 'APS3', 'APS4', 'APS5', 'APS6']:
 			self.instruments[name] = APS2(label=name)
 
 			channelName = name + '-12'
@@ -273,17 +323,19 @@ class APS2Helper(AWGTestHelper):
 				self.channels[channelName] = channel
 
 		mapping = {	'digitizerTrig' : 'APS1-12m1',
-				   	'slaveTrig': 'APS1-12m2',
-			       	'q1':'APS1-12',
-					'q1-gate':'APS1-12m3',
-					'M-q1':'APS2-12',
-					'M-q1-gate':'APS2-12m1',
-					'q2':'APS3-12',
-					'q2-gate':'APS3-12m1',
-					'M-q2':'APS4-12',
-					'M-q2-gate':'APS4-12m1',
-					'cr' : 'APS5-12',
-					'cr-gate' : 'APS5-12m1'}
+				    'slaveTrig'     : 'APS1-12m2',
+			        'q1'            : 'APS1-12',
+					'q1-gate'       : 'APS1-12m3',
+					'M-q1'          : 'APS2-12',
+					'M-q1-gate'     : 'APS2-12m1',
+					'q2'            : 'APS3-12',
+					'q2-gate'       : 'APS3-12m1',
+					'M-q2'          : 'APS4-12',
+					'M-q2-gate'     : 'APS4-12m1',
+					'cr'            : 'APS5-12',
+					'cr-gate'       : 'APS5-12m1',
+					'M-q1q2'        : 'APS6-12',
+					'M-q1q2-gate'   : 'APS6-12m1'}
 
 		self.finalize_map(mapping)
 
@@ -312,18 +364,21 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 				channel.AWG = self.instruments[name]
 				self.channels[channelName] = channel
 
-		mapping = {	'digitizerTrig':'APS1-1m1',
-					'slaveTrig'    :'APS1-2m1',
-					'q1'           :'APS1-12',
-					'M-q1'         :'APS1-34',
-					'M-q1-gate'    :'APS1-3m1',
-					'q1-gate'      :'APS1-4m1',
-					'q2'           :'APS2-12',
-					'M-q2'         :'APS2-34',
-					'M-q2-gate'    :'APS2-1m1',
-					'q2-gate'      :'APS2-2m1',
-					'cr'           :'APS3-12',
-					'cr-gate'      :'APS3-1m1'}
+		mapping = {	'digitizerTrig' : 'APS1-1m1',
+					'slaveTrig'     : 'APS1-2m1',
+					'q1'            : 'APS1-12',
+					'M-q1'          : 'APS1-34',
+					'M-q1-gate'     : 'APS1-3m1',
+					'q1-gate'       : 'APS1-4m1',
+					'q2'            : 'APS2-12',
+					'M-q2'          : 'APS2-34',
+					'M-q2-gate'     : 'APS2-1m1',
+					'q2-gate'       : 'APS2-2m1',
+					'cr'            : 'APS3-12',
+					'cr-gate'       : 'APS3-1m1',
+					'M-q1q2'        : 'APS3-34',
+					'M-q1q2-gate'   : 'APS3-2m1'}
+
 		self.finalize_map(mapping)
 
 	@unittest.expectedFailure
@@ -332,6 +387,15 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 			AssertionError: Oops! You have exceeded the waveform memory of the APS
 		"""
 		TestSequences.test_Rabi_RabiWidth(self)
+
+	@unittest.expectedFailure
+	def test_misc_seqs4(self):
+		""" Fails due to a list index out of range
+		  File "C:\Projects\Q\lib\PyQLab\QGL\APSPattern.py", line 344, in merge_APS_markerDat
+    		while (isinstance(miniLL_IQ[curIQIdx], ControlFlow.ControlInstruction) or
+		  IndexError: list index out of range
+		"""
+		TestSequences.test_misc_seqs4(self)
 
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 
@@ -352,23 +416,56 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 				channel.AWG = self.instruments[name]
 				self.channels[channelName] = channel
 
-		mapping = { 'digitizerTrig'	:'TEK1-1m2',
-					'slaveTrig'   	:'TEK1-2m2',
-					'q1'			:'TEK1-12',
-					'M-q1'			:'TEK1-12',
-					'M-q1-gate'		:'TEK1-1m1',
-					'q1-gate'		:'TEK1-2m1',
-					'q2'			:'TEK1-34',
-					'M-q2'			:'TEK1-34',
-					'M-q2-gate'		:'TEK1-3m1',
-					'q2-gate'		:'TEK1-4m1',
-					'cr'            :'TEK2-12',
-					'cr-gate'       :'TEK2-1m1'}
+		mapping = { 'digitizerTrig'	: 'TEK1-1m2',
+					'slaveTrig'   	: 'TEK1-2m2',
+					'q1'			: 'TEK1-12',
+					'M-q1'			: 'TEK1-12',
+					'M-q1-gate'		: 'TEK1-1m1',
+					'q1-gate'		: 'TEK1-2m1',
+					'q2'			: 'TEK1-34',
+					'M-q2'			: 'TEK1-34',
+					'M-q2-gate'		: 'TEK1-3m1',
+					'q2-gate'		: 'TEK1-4m1',
+					'cr'            : 'TEK2-12',
+					'cr-gate'       : 'TEK2-1m1',
+					'M-q1q2'        : 'TEK2-34',
+					'M-q1q2-gate'   : 'TEK2-2m1'}
+
 		self.finalize_map(mapping)
+
+	@unittest.expectedFailure
+	def test_misc_seqs2(self):
+		""" Fails due to a divide by zero
+		    File "C:\Projects\Q\lib\PyQLab\QGL\TekPattern.py", line 77, in merge_waveform
+   			  for entry in chAB['linkList'][n % len(chAB['linkList'])]:
+			ZeroDivisionError: integer division or modulo by zero
+		"""
+		TestSequences.test_misc_seqs2(self)
+
+	@unittest.expectedFailure
+	def test_misc_seqs5(self):
+		""" Fails due to a divide by zero
+		    File "C:\Projects\Q\lib\PyQLab\QGL\TekPattern.py", line 77, in merge_waveform
+   			  for entry in chAB['linkList'][n % len(chAB['linkList'])]:
+			ZeroDivisionError: integer division or modulo by zero
+		"""
+		TestSequences.test_misc_seqs5(self)
 
 	# multiple tests will fail with an attribute error:
 	# AttributeError: 'Wait' object has no attribute 'isTimeAmp' at line 78
 	# in TekPattern.py in merge_waveform
+
+	@unittest.expectedFailure
+	def test_misc_seqs1(self):
+		TestSequences.test_misc_seqs1(self)
+
+	@unittest.expectedFailure
+	def test_misc_seqs3(self):
+		TestSequences.test_misc_seqs3(self)
+
+	@unittest.expectedFailure
+	def test_misc_seqs4(self):
+		TestSequences.test_misc_seqs4(self)
 
 	@unittest.expectedFailure
 	def test_AllXY(self):
