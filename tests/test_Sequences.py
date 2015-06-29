@@ -18,12 +18,13 @@ BASE_AWG_DIR = config.AWGDir
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
-	def __init__(self, read_function = None):
+	def __init__(self, read_function = None, tolerance = 1.5/2**13):
 		self.channels = {}
 		self.instruments = {}
 		self.assign_channels()
 		self.set_awg_dir()
 		self.read_function = read_function
+		self.tolerance = tolerance
 
 	def finalize_map(self, mapping):
 		for name,value in mapping.iteritems():
@@ -124,21 +125,34 @@ class AWGTestHelper(object):
 			"Expected {0} sequences in file. Found {1}.".format(truthDataLen, awgDataLen))
 
 		for name in truthData:
-			self.assertTrue(name in awgData, "Expected sequence {0} not found in file {1}".format(name, testFile))
+			self.assertTrue(name in awgData, "Expected channel {0} not found in file {1}".format(name, testFile))
 
 			if len(truthData[name][0]) == 1:
 				seqA = np.array(truthData[name])
 				seqB = np.array(awgData[name])
-				self.compare_sequence(seqA,seqB, "\nFile {0} =>\n\tSequence {1}".format(testFile, name))
+				self.compare_sequence(seqA,seqB, "\nFile {0} =>\nChannel {1}".format(testFile, name))
 			else:
-				for x in range(1,len(truthData[name])):
+				for x in range(len(truthData[name])):
 					seqA = np.array(truthData[name][x])
 					seqB = np.array(awgData[name][x])
-					self.compare_sequence(seqA,seqB,  "\nFile {0} =>\n\tSequence {1} Element{2}".format(testFile, name, x))
+					self.compare_sequence(seqA,seqB,  "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
 
 	def compare_sequence(self, seqA, seqB, errorHeader):
 		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
-		np.testing.assert_allclose(seqA, seqB, rtol=1e-5, atol=0)
+		# np.testing.assert_allclose(seqA, seqB, rtol=0, atol=self.tolerance, err_msg=errorHeader)
+		npdiff = np.allclose(seqA, seqB, rtol=0, atol=self.tolerance)
+		diff = np.abs(seqA - seqB) < self.tolerance
+		test = npdiff or all(diff)
+		if not test:
+			bad_idx = np.where(diff == False)[0]
+			percent_bad = float(len(bad_idx))/len(seqA)
+			if percent_bad < 0.8:
+				msg = "{0}.\nFailed indices: ({1:.2f}% incorrect)\n{2}".format(errorHeader, percent_bad, bad_idx)
+			else:
+				msg = "{0} ({1:.2f% incorrect)".format(errorHeader, percent_bad)
+		else:
+			msg = ""
+		self.assertTrue(npdiff or all(diff), msg)
 
 class TestSequences(object):
 
