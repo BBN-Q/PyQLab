@@ -69,6 +69,7 @@ class AWGTestHelper(object):
 		self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
 		cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
 		cr.pulseParams['length'] = 30e-9
+		cr.pulseParams['phase'] = pi/4
 		self.channels["cr"] = cr
 
 		mq1q2g = LogicalMarkerChannel(label='M-q1q2-gate')
@@ -161,7 +162,7 @@ class TestSequences(object):
 	def test_misc_seqs2(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [ZX90_CR(self.cr, self.q1, self.q2)]
+		seqs = [ZX90_CR(self.q1, self.q2, self.cr)]
 
 		filenames = compile_to_hardware(seqs, 'MISC2/MISC2')
 		self.compare_sequences('MISC2')
@@ -169,7 +170,7 @@ class TestSequences(object):
 	def test_misc_seqs3(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRa(self.cr, self.q1, self.q2)]
+		seqs = [CNOT_CRa(self.q1, self.q2, self.cr)]
 
 		filenames = compile_to_hardware(seqs, 'MISC3/MISC3')
 		self.compare_sequences('MISC3')
@@ -177,13 +178,13 @@ class TestSequences(object):
 	def test_misc_seqs4(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRb(self.cr, self.q1, self.q2)]
+		seqs = [CNOT_CRb(self.q1, self.q2, self.cr)]
 
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
 
 	def test_misc_seqs5(self):
-		""" Failes becuase nothing is written by compile to hardware """
+		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
 		seqs = [[MEASmux((self.q1, self.q2))]]
 
