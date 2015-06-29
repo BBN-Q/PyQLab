@@ -1,5 +1,5 @@
 {
-	"AWGDir": "/my/path/here/",
+	"AWGDir": "/my/path/to/awg/",
 	"ChannelLibraryFile": "/my/path/to/ChannelParams.json",
 	"InstrumentLibraryFile": "/my/path/to/Instruments.json",
 	"SweepLibraryFile": "/my/path/to/Sweeps.json",
