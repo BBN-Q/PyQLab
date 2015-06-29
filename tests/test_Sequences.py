@@ -183,13 +183,15 @@ class TestSequences(object):
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
 
-	def test_misc_seqs5(self):
-		""" catch all for sequences not otherwise covered """
-		self.set_awg_dir()
-		seqs = [[MEASmux((self.q1, self.q2))]]
+	# TODO: replace with a [MEAS(q1)*MEAS(q2)] sequence where M-q1 and M-q2 share
+	# a physical channel.
+	# def test_misc_seqs5(self):
+	# 	""" catch all for sequences not otherwise covered """
+	# 	self.set_awg_dir()
+	# 	seqs = [[MEASmux((self.q1, self.q2))]]
 
-		filenames = compile_to_hardware(seqs, 'MISC5/MISC5')
-		self.compare_sequences('MISC5')
+	# 	filenames = compile_to_hardware(seqs, 'MISC5/MISC5')
+	# 	self.compare_sequences('MISC5')
 
 	def test_AllXY(self):
 		self.set_awg_dir()
