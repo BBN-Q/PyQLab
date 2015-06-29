@@ -16,6 +16,8 @@ before_install:
   - pip install coveralls
   - wget "https://drive.google.com/uc?export=download&id=0BxaPKTZqyVchWWdOTG9NZW84a1U" -O test_data.tar.gz
   - tar xzvf test_data.tar.gz -C tests/
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
 
 # use conda to install packages
 install:
