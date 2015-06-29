@@ -12,7 +12,6 @@ from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 import ExpSettingsGUI
-import Libraries
 
 class TestExpSettingsGUI(unittest.TestCase):
 
@@ -129,6 +128,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 		self.add_item('Channels', "Logical", name, model)
 
 	def test_measurement_setup(self):
+		TestExpSettingsGUI.removeFiles()
 		import Libraries
 
 		from ExpSettingsGUI import ExpSettings
