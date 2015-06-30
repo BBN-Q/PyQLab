@@ -18,27 +18,11 @@ class TestExpSettingsGUI(unittest.TestCase):
 
 	timeDelay = 2000
 
-	@classmethod
-	def setUpClass(cls):
-		cls.removeFiles()
+	def setUp(cls):
+		config.remove_files()
 
-	def setUp(self):
-		TestExpSettingsGUI.removeFiles()
-
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
-
-	@classmethod
-	def removeFiles(cls):
-		files = [config.channelLibFile,
-				 config.instrumentLibFile,
-				 config.sweepLibFile,
-				 config.measurementLibFile,
-				 config.quickpickFile]
-		for file in files:
-			if os.path.exists(file):
-			 	os.remove(file)
+	def tearDown(self):
+		config.remove_files()
 
 	def left_click(self, enamlObject):
 		qtObject = enamlObject.proxy.widget
@@ -53,7 +37,6 @@ class TestExpSettingsGUI(unittest.TestCase):
 	def set_keys(self, enamlObject, key):
 		qtObject = enamlObject.proxy.widget
 		QTest.keyClick(qtObject, key)
-
 
 	def get_main_menu(self):
 		return self.view.children[0]
@@ -132,8 +115,10 @@ class TestExpSettingsGUI(unittest.TestCase):
 		self.add_item('Channels', "Logical", name, model)
 
 	def test_measurement_setup(self):
-		TestExpSettingsGUI.removeFiles()
 		import Libraries
+
+		Libraries.instrumentLib.load_from_library()
+		Libraries.channelLib.load_from_library()
 
 		from ExpSettingsGUI import ExpSettings
 		expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
@@ -197,6 +182,11 @@ class TestExpSettingsGUI(unittest.TestCase):
 				self.assertIn(channel, Libraries.channelLib.channelDict)
 
 			self.assertIn("APS1", Libraries.instrumentLib.instrDict)
+
+			# remove scripting file
+			if os.path.exists(expSettings.curFileName):
+			 	os.remove(expSettings.curFileName)
+
 
 		self.app.timed_call(self.timeDelay, run_test)
 		self.app.start()

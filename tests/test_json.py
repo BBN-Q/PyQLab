@@ -56,27 +56,13 @@ class JSONTestHelper(object):
 
 class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
-	@classmethod
-	def setUpClass(cls):
-		cls.removeFiles()
-
 	def setUp(self):
-		TestAWGJSON.removeFiles()
+		config.remove_files()
 		APS2Helper.__init__(self)
 		APS2Helper.setUp(self)
 
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
-
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.channelLib.libFile):
-		# 	os.remove(Libraries.channelLib.libFile)
-		#
-		# if os.path.exists(Libraries.instrumentLib.libFile):
-		# 	os.remove(Libraries.instrumentLib.libFile)
+	def tearDown(self):
+		config.remove_files()
 
 	def test_channels_instruments_library(self):
 		# test channels and instruments together as they are coupled
@@ -101,12 +87,8 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
 class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
-	@classmethod
-	def setUpClass(cls):
-		cls.removeFiles()
-
 	def setUp(self):
-		TestMeasJSON.removeFiles()
+		config.remove_files()
 		self.measurements = {}
 		self.measurements['R1'] = RawStream(label='R1', saveRecords = True,recordsFilePath = '/tmp/records', channel='1')
 		self.measurements['M1'] = DigitalDemod(label='M1',  saveRecords = True,recordsFilePath = '/tmp/records', IFfreq=10e6, samplingRate=250e6)
@@ -115,15 +97,8 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integrationTime = 100)
 		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
 
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
-
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.measLib.libFile):
-		# 	os.remove(Libraries.measLib.libFile)
+	def tearDown(self):
+		config.remove_files()
 
 	def test_measurements_library(self):
 		Libraries.measLib.filterDict = self.measurements
@@ -140,12 +115,8 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 
-	@classmethod
-	def setUpClass(cls):
-		cls.removeFiles()
-
 	def setUp(self):
-		TestSweepJSON.removeFiles()
+		config.remove_files()
 		self.sweeps = {}
 		self.sweeps['PS'] = PointsSweep(label='PS', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['PW'] = Power(label='PW', instr = 'CSSRC',
@@ -174,15 +145,9 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 		self.sweeps['D'] = DC( instr = 'DCInst', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['T'] = Threshold( instr = 'TInst', stream = '(1,1)', start = 1.0 , stop = 10.0, numPoints = 10 )
 
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
 
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.sweepLib.libFile):
-		# 	os.remove(Libraries.sweepLib.libFile)
+	def tearDown(self):
+		config.remove_files()
 
 	def test_sweeps_library(self):
 		Libraries.sweepLib.sweepDict = self.sweeps
