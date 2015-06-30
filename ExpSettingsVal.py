@@ -249,6 +249,9 @@ def is_valid_awg_channel_name(channelName):
 
 	if awgName not in instruments.keys():
 		return False
+
+    print "Testing invalid_awg_name_convention: ", awgName, awgChan
+
 	return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
 
 #####################################################################################
