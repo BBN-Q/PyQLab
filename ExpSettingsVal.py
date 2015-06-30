@@ -242,13 +242,13 @@ def invalid_awg_name_convention(AWG, channelName):
 
 # GUI validator
 def is_valid_awg_channel_name(channelName):
-	if '-' in channelName:
-		awgName, awgChan = channelName.rsplit('-',1)
-	else:
-		awgName, awgChan = channelName, ""
+    if '-' in channelName:
+        awgName, awgChan = channelName.rsplit('-',1)
+    else:
+        awgName, awgChan = channelName, ""
 
-	if awgName not in instruments.keys():
-		return False
+    if awgName not in instruments.keys():
+        return False
 
     print "Testing invalid_awg_name_convention: {0} {1}".format(awgName, awgChan)
     return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
