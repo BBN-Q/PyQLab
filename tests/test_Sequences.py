@@ -127,15 +127,10 @@ class AWGTestHelper(object):
 		for name in truthData:
 			self.assertTrue(name in awgData, "Expected channel {0} not found in file {1}".format(name, testFile))
 
-			if len(truthData[name][0]) == 1:
-				seqA = np.array(truthData[name])
-				seqB = np.array(awgData[name])
-				self.compare_sequence(seqA,seqB, "\nFile {0} =>\nChannel {1}".format(testFile, name))
-			else:
-				for x in range(len(truthData[name])):
-					seqA = np.array(truthData[name][x])
-					seqB = np.array(awgData[name][x])
-					self.compare_sequence(seqA,seqB,  "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
+			for x in range(len(truthData[name])):
+				seqA = np.array(truthData[name][x])
+				seqB = np.array(awgData[name][x])
+				self.compare_sequence(seqA,seqB,  "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
 
 	def compare_sequence(self, seqA, seqB, errorHeader):
 		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
@@ -146,10 +141,10 @@ class AWGTestHelper(object):
 		if not test:
 			bad_idx = np.where(diff == False)[0]
 			percent_bad = float(len(bad_idx))/len(seqA)
-			if percent_bad < 0.8:
-				msg = "{0}.\nFailed indices: ({1:.1f}% incorrect)\n{2}".format(errorHeader, 100*percent_bad, bad_idx)
+			if percent_bad < 0.6:
+				msg = "{0}.\nFailed indices: ({1:.1f}% mismatch)\n{2}".format(errorHeader, 100*percent_bad, bad_idx)
 			else:
-				msg = "{0} ({1:.1f}% incorrect)".format(errorHeader, percent_bad)
+				msg = "{0} ({1:.1f}% mismatch)".format(errorHeader, 100*percent_bad)
 		else:
 			msg = ""
 		self.assertTrue(npdiff or all(diff), msg)
