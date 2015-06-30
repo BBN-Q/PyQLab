@@ -15,6 +15,8 @@ import ExpSettingsGUI
 
 class TestExpSettingsGUI(unittest.TestCase):
 
+	timeDelay = 5000
+
 	@classmethod
 	def setUpClass(cls):
 		cls.removeFiles()
@@ -115,7 +117,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 
 	def add_item(self, nb, pg, name, model):
 		page, addButton = self.get_notebook_page(nb, pg)
-		self.app.timed_call(1000, self.populate_selector, page, name, model)
+		self.app.timed_call(self.timeDelay, self.populate_selector, page, name, model)
 		self.left_click(addButton)
 
 	def add_instrument(self, name, model):
@@ -172,7 +174,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 			self.click_apply_button()
 			self.app.stop()
 
-			time.sleep(2)
+			time.sleep(self.timeDelay/1000)
 			Libraries.instrumentLib.load_from_library()
 			Libraries.channelLib.load_from_library()
 
@@ -189,7 +191,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 
 			self.assertIn("APS1", Libraries.instrumentLib.instrDict)
 
-		self.app.timed_call(1000, run_test)
+		self.app.timed_call(self.timeDelay, run_test)
 		self.app.start()
 
 
