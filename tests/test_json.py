@@ -10,6 +10,38 @@ from MeasFilters import RawStream, DigitalDemod, KernelIntegration, Correlator, 
 from Sweeps import *
 from test_Sequences import APS2Helper
 import ExpSettingsVal
+import time
+
+def clear_config_files():
+
+	# erase contents of library dictionaries without
+	# destroying atom Dict() object
+
+	if Libraries.channelLib.fileWatcher:
+		Libraries.channelLib.fileWatcher.pause()
+
+	if Libraries.instrumentLib.fileWatcher:
+		Libraries.instrumentLib.fileWatcher.pause()
+
+	for key in Libraries.channelLib.channelDict.keys():
+		del Libraries.channelLib.channelDict[key]
+
+	for key in Libraries.instrumentLib.instrDict.keys():
+		del Libraries.instrumentLib.instrDict[key]
+
+	for key in Libraries.measLib.filterDict.keys():
+		del Libraries.measLib.filterDict[key]
+
+	for key in  Libraries.sweepLib.sweepDict.keys():
+		del Libraries.sweepLib.sweepDict[key]
+
+	Libraries.channelLib.write_to_file()
+	Libraries.instrumentLib.write_to_file()
+	Libraries.measLib.write_to_file()
+	Libraries.sweepLib.write_to_file()
+
+
+
 
 class JSONTestHelper(object):
 	def validate_json_dictionary(self, testDict, validDict):
@@ -57,12 +89,12 @@ class JSONTestHelper(object):
 class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
 	def setUp(self):
-		config.remove_files()
+		clear_config_files()
 		APS2Helper.__init__(self)
 		APS2Helper.setUp(self)
 
 	def tearDown(self):
-		config.remove_files()
+		clear_config_files()
 
 	def test_channels_instruments_library(self):
 		# test channels and instruments together as they are coupled
@@ -88,7 +120,7 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 	def setUp(self):
-		config.remove_files()
+		clear_config_files()
 		self.measurements = {}
 		self.measurements['R1'] = RawStream(label='R1', saveRecords = True,recordsFilePath = '/tmp/records', channel='1')
 		self.measurements['M1'] = DigitalDemod(label='M1',  saveRecords = True,recordsFilePath = '/tmp/records', IFfreq=10e6, samplingRate=250e6)
@@ -98,7 +130,7 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
 
 	def tearDown(self):
-		config.remove_files()
+		clear_config_files()
 
 	def test_measurements_library(self):
 		Libraries.measLib.filterDict = self.measurements
@@ -116,7 +148,7 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 
 	def setUp(self):
-		config.remove_files()
+		clear_config_files()
 		self.sweeps = {}
 		self.sweeps['PS'] = PointsSweep(label='PS', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['PW'] = Power(label='PW', instr = 'CSSRC',
@@ -147,7 +179,7 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 
 
 	def tearDown(self):
-		config.remove_files()
+		clear_config_files()
 
 	def test_sweeps_library(self):
 		Libraries.sweepLib.sweepDict = self.sweeps

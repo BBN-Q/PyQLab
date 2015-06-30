@@ -14,15 +14,17 @@ from PyQt4.QtCore import Qt
 import ExpSettingsGUI
 import ExpSettingsVal
 
+from test_json import clear_config_files
+
 class TestExpSettingsGUI(unittest.TestCase):
 
 	timeDelay = 2000
 
 	def setUp(cls):
-		config.remove_files()
+		clear_config_files()
 
 	def tearDown(self):
-		config.remove_files()
+		clear_config_files()
 
 	def left_click(self, enamlObject):
 		qtObject = enamlObject.proxy.widget
@@ -32,7 +34,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 		qtObject = enamlObject.proxy.widget
 		qtObject.clear()
 		QTest.keyClicks(qtObject, value)
-		QTest.keyClick(qtObject, Qt.Key_Return)
+		#QTest.keyClick(qtObject, Qt.Key_Return)
 
 	def set_keys(self, enamlObject, key):
 		qtObject = enamlObject.proxy.widget
@@ -158,13 +160,15 @@ class TestExpSettingsGUI(unittest.TestCase):
 			self.add_logical_channel("slaveTrig", 1)
 			self.set_physical_channel(1, 2)
 
+			ExpSettingsVal.list_config()
+
 			self.click_apply_button()
 
 			self.app.stop()
 
-			print "Apply button clicked"
-			print "Validator errors:"
-			print ExpSettingsVal.cached_errors
+			if ExpSettingsVal.cached_errors != []:
+				print "Validator errors:"
+				print ExpSettingsVal.cached_errors
 
 			time.sleep(self.timeDelay/1000)
 			Libraries.instrumentLib.load_from_library()
@@ -186,7 +190,6 @@ class TestExpSettingsGUI(unittest.TestCase):
 			# remove scripting file
 			if os.path.exists(expSettings.curFileName):
 			 	os.remove(expSettings.curFileName)
-
 
 		self.app.timed_call(self.timeDelay, run_test)
 		self.app.start()
