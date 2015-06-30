@@ -22,10 +22,21 @@ if not os.path.isfile(PyQLabCfgFile):
 with open(PyQLabCfgFile, 'r') as f:
 	PyQLabCfg = json.load(f)
 
-#pull out the variables 
+#pull out the variables
 AWGDir = PyQLabCfg['AWGDir']
 channelLibFile = PyQLabCfg['ChannelLibraryFile']
 instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
 sweepLibFile = PyQLabCfg['SweepLibraryFile']
 measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
 quickpickFile = PyQLabCfg['QuickPickFile'] if 'QuickPickFile' in PyQLabCfg else ''
+
+def remove_files():
+	files = [channelLibFile ,
+			 instrumentLibFile,
+			 sweepLibFile,
+			 measurementLibFile,
+			 quickpickFile]
+
+	for file in files:
+		if os.path.exists(file):
+		 	os.remove(file)
