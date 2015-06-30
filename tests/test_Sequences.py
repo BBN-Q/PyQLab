@@ -141,8 +141,10 @@ class AWGTestHelper(object):
 		if not test:
 			bad_idx = np.where(diff == False)[0]
 			percent_bad = float(len(bad_idx))/len(seqA)
+			bad_level = np.mean(np.abs(seqA - seqB)[bad_idx]) / self.tolerance
 			if percent_bad < 0.6:
 				msg = "{0}.\nFailed indices: ({1:.1f}% mismatch)\n{2}".format(errorHeader, 100*percent_bad, bad_idx)
+				msg += "\nAvg failure level: {0}".format(bad_level)
 			else:
 				msg = "{0} ({1:.1f}% mismatch)".format(errorHeader, 100*percent_bad)
 		else:
@@ -209,18 +211,18 @@ class TestSequences(object):
 
 	def test_CR_PiRabi(self):
 		self.set_awg_dir()
-	  	PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 5e-6, 11))
-	  	self.compare_sequences('PiRabi')
+		PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 4e-6, 11))
+		self.compare_sequences('PiRabi')
 
 	def test_CR_EchoCRLen(self):
 		self.set_awg_dir('EchoCRLen')
-	  	EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 5e-6, 11))
-	  	self.compare_sequences('EchoCR')
+		EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 2e-6, 11))
+		self.compare_sequences('EchoCR')
 
 	def test_CR_EchoCRPhase(self):
 		self.set_awg_dir('EchoCRPhase')
-	  	EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
-	  	self.compare_sequences('EchoCR')
+		EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
+		self.compare_sequences('EchoCR')
 
 	def test_Decoupling_HannEcho(self):
 		self.set_awg_dir()
