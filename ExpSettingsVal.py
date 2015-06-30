@@ -78,6 +78,9 @@ MATLAB_FORMAT_STRING = "\A[a-zA-Z]\w{0,%i}?\Z" % (MATLAB_NAME_LENGTH_MAX - 1)
 MATLAB_VALID_NAME_REGEX = re.compile(MATLAB_FORMAT_STRING)
 
 #####################################################################################
+cached_errors = []
+
+#####################################################################################
 ## Helper functions for list comprehension
 
 def is_logicalmarker_channel(name):
@@ -240,18 +243,18 @@ def invalid_awg_name_convention(AWG, channelName):
 	convention = ['12', '34', '1m1', '1m2', '2m1', '2m2', '3m1', '3m2', '4m1', '4m2']
 	return invalid_awg_name_convention_common(AWG.label, channelName,convention)
 
+
 # GUI validator
 def is_valid_awg_channel_name(channelName):
-    if '-' in channelName:
-        awgName, awgChan = channelName.rsplit('-',1)
-    else:
-        awgName, awgChan = channelName, ""
+	if '-' in channelName:
+		awgName, awgChan = channelName.rsplit('-',1)
+	else:
+		awgName, awgChan = channelName, ""
 
-    if awgName not in instruments.keys():
-        return False
+	if awgName not in instruments.keys():
+		return False
 
-    print "Testing invalid_awg_name_convention: {0} {1}".format(awgName, awgChan)
-    return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
+	return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
 
 #####################################################################################
 
@@ -310,6 +313,7 @@ def validate_dynamic_lib(channelsLib, instrumentLib):
 	return validate_lib()
 
 def validate_lib():
+	global cached_errors
 	errors = []
 
 	channel_errors = validate_channelLib()
@@ -321,6 +325,7 @@ def validate_lib():
 		errors.append(instrument_errors)
 
 	errors = list(itertools.chain(*errors))
+	cached_errors = errors
 	return errors
 
 def default_repr(items, item):

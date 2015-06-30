@@ -12,10 +12,11 @@ from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
 import ExpSettingsGUI
+import ExpSettingsVal
 
 class TestExpSettingsGUI(unittest.TestCase):
 
-	timeDelay = 5000
+	timeDelay = 2000
 
 	@classmethod
 	def setUpClass(cls):
@@ -173,7 +174,12 @@ class TestExpSettingsGUI(unittest.TestCase):
 			self.set_physical_channel(1, 2)
 
 			self.click_apply_button()
+
 			self.app.stop()
+
+			print "Apply button clicked"
+			print "Validator errors:"
+			print ExpSettingsVal.cached_errors
 
 			time.sleep(self.timeDelay/1000)
 			Libraries.instrumentLib.load_from_library()
