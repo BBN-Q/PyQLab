@@ -47,6 +47,7 @@ class TestExpSettingsGUI(unittest.TestCase):
 		qtObject = enamlObject.proxy.widget
 		qtObject.clear()
 		QTest.keyClicks(qtObject, value)
+		QTest.keyClick(qtObject, Qt.Key_Return)
 
 	def set_keys(self, enamlObject, key):
 		qtObject = enamlObject.proxy.widget
