@@ -402,15 +402,6 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 		"""
 		TestSequences.test_Rabi_RabiWidth(self)
 
-	@unittest.expectedFailure
-	def test_misc_seqs4(self):
-		""" Fails due to a list index out of range
-		  File "C:\Projects\Q\lib\PyQLab\QGL\APSPattern.py", line 344, in merge_APS_markerDat
-    		while (isinstance(miniLL_IQ[curIQIdx], ControlFlow.ControlInstruction) or
-		  IndexError: list index out of range
-		"""
-		TestSequences.test_misc_seqs4(self)
-
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
