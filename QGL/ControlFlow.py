@@ -1,4 +1,4 @@
-from BlockLabel import label, endlabel
+from BlockLabel import newlabel, label, endlabel
 from PulseSequencer import Pulse
 from functools import wraps
 from mm import multimethod
@@ -7,29 +7,34 @@ from mm import multimethod
 
 def qif(mask, ifSeq, elseSeq=None):
 	if elseSeq:
-		endlabel(elseSeq) # make sure to populate label of elseSeq before using it
 		return [CmpEq(mask), Goto(label(ifSeq))] + elseSeq + [Goto(endlabel(ifSeq))] + ifSeq
 	else:
 		endlabel(ifSeq)
 		return [CmpNeq(mask), Goto(endlabel(ifSeq))] + ifSeq
 
 def qwhile(mask, seq):
-	return [CmpNeq(mask), Goto(endlabel(seq))] + seq
+	label1 = newlabel()
+	label2 = newlabel()
+	return [label1, CmpNeq(mask), Goto(label2)] + seq + [Goto(label1), label2]
 
 def qdowhile(mask, seq):
 	return seq + [CmpEq(mask), Goto(label(seq))]
 
+# caches for sequences and labels
+qfunction_seq = {}
 def qfunction(func):
-	# caches for sequences and labels
-	seq = {}
 	target = {}
 	@wraps(func)
 	def crfunc(*args):
 		if args not in target:
-			seq[args] = func(*args)
-			target[args] = label(seq[args])
-		return [Call(target[args])], seq[args] + [Return()] # TODO: update me to only return seq[args] on first call
+			seq = func(*args) + [Return()]
+			target[args] = label(seq)
+			qfunction_seq[label(seq)] = seq
+		return Call(target[args])
 	return crfunc
+
+def qfunction_specialization(target):
+	return qfunction_seq[target]
 
 @multimethod(int, Pulse)
 def repeat(n, p):
@@ -84,18 +89,20 @@ class ControlInstruction(object):
 		return result
 
 	def __eq__(self, other):
-		# ignore label in equality testing
-		mydict = self.__dict__.copy()
-		otherdict = other.__dict__.copy()
-		mydict.pop('label')
-		otherdict.pop('label')
-		return mydict == otherdict
+		if isinstance(other, self.__class__):
+			# ignore label in equality testing
+			mydict = self.__dict__.copy()
+			otherdict = other.__dict__.copy()
+			mydict.pop('label')
+			otherdict.pop('label')
+			return mydict == otherdict
+		return False
+
+	def __ne__(self, other):
+		return not self == other
 
 	def promote(self):
 		return self
-
-	def __len__(self):
-		return self.length
 
 class Goto(ControlInstruction):
 	def __init__(self, target):

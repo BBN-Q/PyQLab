@@ -18,12 +18,13 @@ BASE_AWG_DIR = config.AWGDir
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
-	def __init__(self, read_function = None):
+	def __init__(self, read_function = None, tolerance = 1.5/2**13):
 		self.channels = {}
 		self.instruments = {}
 		self.assign_channels()
 		self.set_awg_dir()
 		self.read_function = read_function
+		self.tolerance = tolerance
 
 	def finalize_map(self, mapping):
 		for name,value in mapping.iteritems():
@@ -124,21 +125,31 @@ class AWGTestHelper(object):
 			"Expected {0} sequences in file. Found {1}.".format(truthDataLen, awgDataLen))
 
 		for name in truthData:
-			self.assertTrue(name in awgData, "Expected sequence {0} not found in file {1}".format(name, testFile))
+			self.assertTrue(name in awgData, "Expected channel {0} not found in file {1}".format(name, testFile))
 
-			if len(truthData[name][0]) == 1:
-				seqA = np.array(truthData[name])
-				seqB = np.array(awgData[name])
-				self.compare_sequence(seqA,seqB, "\nFile {0} =>\n\tSequence {1}".format(testFile, name))
-			else:
-				for x in range(1,len(truthData[name])):
-					seqA = np.array(truthData[name][x])
-					seqB = np.array(awgData[name][x])
-					self.compare_sequence(seqA,seqB,  "\nFile {0} =>\n\tSequence {1} Element{2}".format(testFile, name, x))
+			for x in range(len(truthData[name])):
+				seqA = np.array(truthData[name][x])
+				seqB = np.array(awgData[name][x])
+				self.compare_sequence(seqA,seqB,  "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
 
 	def compare_sequence(self, seqA, seqB, errorHeader):
 		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
-		np.testing.assert_allclose(seqA, seqB, rtol=1e-5, atol=0)
+		# np.testing.assert_allclose(seqA, seqB, rtol=0, atol=self.tolerance, err_msg=errorHeader)
+		npdiff = np.allclose(seqA, seqB, rtol=0, atol=self.tolerance)
+		diff = np.abs(seqA - seqB) < self.tolerance
+		test = npdiff or all(diff)
+		if not test:
+			bad_idx = np.where(diff == False)[0]
+			percent_bad = float(len(bad_idx))/len(seqA)
+			bad_level = np.mean(np.abs(seqA - seqB)[bad_idx]) / self.tolerance
+			if percent_bad < 0.6:
+				msg = "{0}.\nFailed indices: ({1:.1f}% mismatch)\n{2}".format(errorHeader, 100*percent_bad, bad_idx)
+				msg += "\nAvg failure level: {0}".format(bad_level)
+			else:
+				msg = "{0} ({1:.1f}% mismatch)".format(errorHeader, 100*percent_bad)
+		else:
+			msg = ""
+		self.assertTrue(npdiff or all(diff), msg)
 
 class TestSequences(object):
 
@@ -183,13 +194,15 @@ class TestSequences(object):
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
 
-	def test_misc_seqs5(self):
-		""" catch all for sequences not otherwise covered """
-		self.set_awg_dir()
-		seqs = [[MEASmux((self.q1, self.q2))]]
+	# TODO: replace with a [MEAS(q1)*MEAS(q2)] sequence where M-q1 and M-q2 share
+	# a physical channel.
+	# def test_misc_seqs5(self):
+	# 	""" catch all for sequences not otherwise covered """
+	# 	self.set_awg_dir()
+	# 	seqs = [[MEASmux((self.q1, self.q2))]]
 
-		filenames = compile_to_hardware(seqs, 'MISC5/MISC5')
-		self.compare_sequences('MISC5')
+	# 	filenames = compile_to_hardware(seqs, 'MISC5/MISC5')
+	# 	self.compare_sequences('MISC5')
 
 	def test_AllXY(self):
 		self.set_awg_dir()
@@ -198,18 +211,18 @@ class TestSequences(object):
 
 	def test_CR_PiRabi(self):
 		self.set_awg_dir()
-	  	PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 5e-6, 11))
-	  	self.compare_sequences('PiRabi')
+		PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 4e-6, 11))
+		self.compare_sequences('PiRabi')
 
 	def test_CR_EchoCRLen(self):
 		self.set_awg_dir('EchoCRLen')
-	  	EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 5e-6, 11))
-	  	self.compare_sequences('EchoCR')
+		EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 2e-6, 11))
+		self.compare_sequences('EchoCR')
 
 	def test_CR_EchoCRPhase(self):
 		self.set_awg_dir('EchoCRPhase')
-	  	EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
-	  	self.compare_sequences('EchoCR')
+		EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
+		self.compare_sequences('EchoCR')
 
 	def test_Decoupling_HannEcho(self):
 		self.set_awg_dir()
@@ -388,15 +401,6 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 			AssertionError: Oops! You have exceeded the waveform memory of the APS
 		"""
 		TestSequences.test_Rabi_RabiWidth(self)
-
-	@unittest.expectedFailure
-	def test_misc_seqs4(self):
-		""" Fails due to a list index out of range
-		  File "C:\Projects\Q\lib\PyQLab\QGL\APSPattern.py", line 344, in merge_APS_markerDat
-    		while (isinstance(miniLL_IQ[curIQIdx], ControlFlow.ControlInstruction) or
-		  IndexError: list index out of range
-		"""
-		TestSequences.test_misc_seqs4(self)
 
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 

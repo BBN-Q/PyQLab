@@ -19,7 +19,8 @@ limitations under the License.
 from copy import copy
 import json
 import numpy as np
-import bokeh.plotting as bk
+
+import Channels, PulseShapes, operator
 
 class Pulse(object):
     '''
@@ -29,15 +30,21 @@ class Pulse(object):
         shape - numpy array pulse shape
         frameChange - accumulated phase from the pulse
     '''
-    def __init__(self, label, qubits, shape, phase, frameChange):
+    def __init__(self, label, qubits, shapeParams, phase=0, frameChange=0):
         self.label = label
-        self.qubits = qubits
-        self.shape = shape.astype(np.complex)
+        if isinstance(qubits, (list, tuple)):
+            # with more than one qubit, need to look up the channel
+            self.qubits = Channels.QubitFactory(reduce(operator.add, [q.label for q in qubits]))
+        else:
+            self.qubits = qubits
+        self.shapeParams = shapeParams
         self.phase = phase
         self.frameChange = frameChange
         self.isTimeAmp = False
-        self.TALength = 0
-        self.repeat = 1
+        requiredParams = ['amp', 'length', 'shapeFun']
+        for param in requiredParams:
+            if param not in shapeParams.keys():
+                raise NameError("ShapeParams must incluce {0}".format(param))
 
     def __repr__(self):
         return str(self)
@@ -54,20 +61,25 @@ class Pulse(object):
             raise NameError("Can only concatenate pulses acting on the same channel")
         return CompositePulse([self, other])
 
-    # unary negation inverts the pulse shape and frame change
+    # unary negation inverts the pulse amplitude and frame change
     def __neg__(self):
-        return Pulse(self.label, self.qubits, -self.shape, self.phase, -self.frameChange)
+        shapeParams = copy(self.shapeParams)
+        shapeParams['amp'] *= -1
+        return Pulse(self.label, self.qubits, shapeParams, self.phase, -self.frameChange)
 
     def __mul__(self, other):
         return self.promote()*other.promote()
 
     def __eq__(self, other):
-        mydict = self.__dict__.copy()
-        otherdict = other.__dict__.copy()
-        # element-wise comparison of shape
-        mydict.pop('shape')
-        otherdict.pop('shape')
-        return mydict == otherdict and all(self.shape == other.shape)
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __ne__(self, other):
+        return not self == other
+
+    def hashshape(self):
+        return hash(frozenset(self.shapeParams.iteritems()))
 
     def promote(self):
         # promote a Pulse to a PulseBlock
@@ -77,22 +89,32 @@ class Pulse(object):
 
     @property
     def length(self):
-        if self.isTimeAmp:
-            return self.TALength
-        else:
-            return len(self.shape)
+        return self.shapeParams['length']
+
+    @length.setter
+    def length(self, value):
+        self.shapeParams['length'] = value
+        return value
 
     @property
     def isZero(self):
-        return np.all(self.shape == 0)
+        return self.shapeParams['amp'] == 0 or np.all(self.shape == 0)
 
-def TAPulse(label, qubits, length, amp, phase, frameChange):
+    @property
+    def shape(self):
+        params = copy(self.shapeParams)
+        params['samplingRate'] = self.qubits.physChan.samplingRate
+        params.pop('shapeFun')
+        params.pop('amp')
+        return self.shapeParams['shapeFun'](**params)
+
+def TAPulse(label, qubits, length, amp, phase=0, frameChange=0):
     '''
     Creates a time/amplitude pulse with the given pulse length and amplitude
     '''
-    p = Pulse(label, qubits, np.array([amp], np.complex), phase, frameChange)
+    params = {'amp': amp, 'length': length, 'shapeFun': PulseShapes.constant}
+    p = Pulse(label, qubits, params, phase, frameChange)
     p.isTimeAmp = True
-    p.TALength = int(round(length))
     return p
 
 class CompositePulse(object):
@@ -124,7 +146,12 @@ class CompositePulse(object):
         return self.promote()*other.promote()
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __ne__(self, other):
+        return not self == other
 
     def promote(self):
         # promote a CompositePulse to a PulseBlock
@@ -139,7 +166,7 @@ class CompositePulse(object):
 
     @property
     def length(self):
-        return sum([p.length*p.repeat for p in self.pulses])
+        return sum([p.length for p in self.pulses])
 
     @property
     def frameChange(self):
@@ -183,12 +210,17 @@ class PulseBlock(object):
         return result
 
     def __eq__(self, other):
-        # ignore label in equality testing
-        mydict = self.__dict__.copy()
-        otherdict = other.__dict__.copy()
-        mydict.pop('label')
-        otherdict.pop('label')
-        return mydict == otherdict
+        if isinstance(other, self.__class__):
+            # ignore label in equality testing
+            mydict = self.__dict__.copy()
+            otherdict = other.__dict__.copy()
+            mydict.pop('label')
+            otherdict.pop('label')
+            return mydict == otherdict
+        return False
+
+    def __ne__(self, other):
+        return not self == other
 
     #PulseBlocks don't need to be promoted, so just return self
     def promote(self):
@@ -204,7 +236,8 @@ class PulseBlock(object):
         return [channel.name for channel in self.pulses.keys()]
 
     #The maximum number of points needed for any channel on this block
-    def __len__(self):
+    @property
+    def length(self):
         return max([p.length for p in self.pulses.values()])
 
 def align(pulseBlock, mode="center"):
@@ -212,45 +245,3 @@ def align(pulseBlock, mode="center"):
     pulseBlock = pulseBlock.promote()
     pulseBlock.alignment = mode
     return pulseBlock
-
-AWGFreq = 1.2e9
-
-def build_waveforms(seq):
-    import Compiler
-    from Compiler import compile_sequence #import here to avoid circular imports 
-    #compile
-    linkList, wfLib = compile_sequence(seq)
-
-    # build a concatenated waveform for each channel
-    channels = linkList.keys()
-    concatShapes = {q: np.array([0], dtype=np.complex128) for q in channels}
-    for q in channels:
-        for entry in filter(lambda x: isinstance(x, Compiler.LLWaveform), linkList[q]):
-            if entry.isTimeAmp:
-                concatShapes[q] = np.append(concatShapes[q], wfLib[q][entry.key][0]*np.ones(entry.length*entry.repeat))
-            else:
-                concatShapes[q] = np.append(concatShapes[q], np.tile(wfLib[q][entry.key], (1, entry.repeat)) )
-    # add an extra zero to make things look more normal
-    for q in channels:
-        concatShapes[q] = np.append(concatShapes[q], 0)  
-    return concatShapes
-
-def plot_waveforms(waveforms, figTitle = ''):
-    channels = waveforms.keys()
-     # plot
-    plots = []
-    for (ct,chan) in enumerate(channels):
-        fig = bk.figure(title=figTitle + repr(chan), plot_width=800, plot_height=350, y_range=[-1.05, 1.05])
-        waveformToPlot = waveforms[chan]
-        xpts = np.linspace(0,len(waveformToPlot)/AWGFreq/1e-6,len(waveformToPlot))
-        fig.line(xpts, np.real(waveformToPlot), color='red')
-        fig.line(xpts, np.imag(waveformToPlot), color='blue')
-        plots.append(fig)
-    bk.show(bk.VBox(*plots))
-
-def show(seq):
-    waveforms = build_waveforms(seq)
-    plot_waveforms(waveforms)
-    
-   
-

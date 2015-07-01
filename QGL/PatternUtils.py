@@ -17,30 +17,28 @@ import numpy as np
 from warnings import warn
 from PulseSequencer import Pulse, TAPulse
 from PulsePrimitives import BLANK
-import ControlFlow, Compiler
+import ControlFlow, BlockLabel, Compiler
 from math import pi
-import hashlib
+import hashlib, collections
 
 def hash_pulse(shape):
     return hashlib.sha1(shape.tostring()).hexdigest()
 
 TAZKey = hash_pulse(np.zeros(1, dtype=np.complex))
-markerHighKey = hash_pulse(np.ones(1, dtype=np.bool))
 
-def delay(linkList, delay, samplingRate):
+def delay(sequences, delay):
     '''
-    Delays a mini link list by the given amount.
+    Delays a sequence by the given amount.
     '''
-    sampShift = int(round(delay * samplingRate))
-    if sampShift <= 0: # no need to inject zero delays
+    if delay <= 0: # no need to inject zero delays
         return
-    for miniLL in linkList:
+    for seq in sequences:
         # loop through and look for WAIT instructions
-        # use while loop because len(miniLL) will change as we inject delays
+        # use while loop because len(seq) will change as we inject delays
         ct = 0
-        while ct < len(miniLL):
-            if miniLL[ct] == ControlFlow.Wait() or miniLL[ct] == ControlFlow.Sync():
-                miniLL.insert(ct+1, Compiler.create_padding_LL(sampShift))
+        while ct < len(seq)-1:
+            if seq[ct] == ControlFlow.Wait() or seq[ct] == ControlFlow.Sync():
+                seq.insert(ct+1, TAPulse("Id", seq[ct+1].qubits, delay, 0))
             ct += 1
 
 def normalize_delays(delays):
@@ -56,63 +54,7 @@ def normalize_delays(delays):
             out[chan] += -min_delay
     return out
 
-def apply_SSB(linkList, wfLib, SSBFreq, samplingRate):
-    #Negative because of negative frequency qubits
-    phaseStep = -2*pi*SSBFreq/samplingRate
-
-    #Bits of phase precision
-    #Choose usual DAC vertical precision arbirarily
-    phasePrecision = 2**14
-    def round_phase(phase, precision):
-        """
-        Helper function to round a phase to a certain binary precision.
-        """
-        #Convert radians to portion of circle and then to integer precision round to precision
-        intPhase = round(phasePrecision*np.mod(phase/2.0/pi,1))
-        return int(intPhase), 2*pi*(intPhase/phasePrecision)
-
-    #Keep a dictionary of pulses and phases
-    pulseDict = {}
-    for miniLL in linkList:
-        curFrame = 0.0
-        for entry in miniLL:
-            #If it's a zero then just adjust the frame and move on
-            if not hasattr(entry, 'key') or entry.key == TAZKey:
-                curFrame += phaseStep*entry.length
-                continue
-            # expand time-amplitude pulses in-place
-            if entry.isTimeAmp:
-                entry.isTimeAmp = False
-                shape = wfLib[entry.key][0] * np.ones(entry.length, dtype=np.complex)
-            else:
-                shape = np.copy(wfLib[entry.key])
-
-            intPhase, truncPhase = round_phase(curFrame, 14)
-            pulseTuple = (entry.key, intPhase, entry.length)
-            if pulseTuple in pulseDict:
-                entry.key = pulseDict[pulseTuple]
-            else:
-                phaseRamp = phaseStep*np.arange(0.5, shape.size)
-                shape *= np.exp(1j*(truncPhase + phaseRamp))
-                shapeHash = hash_pulse(shape)
-                if shapeHash not in wfLib:
-                    wfLib[shapeHash] = shape
-                pulseDict[pulseTuple] = shapeHash
-                entry.key = shapeHash
-            curFrame += phaseStep*entry.length
-
-def align(linkList, mode, length):
-    for miniLL in linkList:
-        miniLL_length = sum([len(entry) for entry in miniLL])
-        paddingEntry = Compiler.create_padding_LL(length - miniLL_length)
-        if mode == 'left':
-            miniLL.append(paddingEntry)
-        elif mode == 'right':
-            miniLL.insert(0, paddingEntry)
-        else:
-            raise NameError("Unknown aligment mode")
-
-def correctMixer(wfLib, T):
+def correct_mixers(wfLib, T):
     for k, v in wfLib.items():
         # To get the broadcast to work in numpy, need to do the multiplication one row at a time
         iqWF = np.vstack((np.real(v), np.imag(v)))
@@ -144,8 +86,9 @@ def apply_gating_constraints(chan, linkList):
     if not hasattr(chan,'gateMinWidth'):
         raise AttributeError("{0} does not have gateMinWidth".format(chan.label))
       
-    gateBuffer = int(round(chan.gateBuffer * chan.samplingRate))
-    gateMinWidth = int(round(chan.gateMinWidth * chan.samplingRate))
+    # get channel parameters
+    gateBuffer = chan.gateBuffer
+    gateMinWidth = chan.gateMinWidth
 
     #Initialize list of sequences to return
     gateSeqs = []
@@ -155,7 +98,7 @@ def apply_gating_constraints(chan, linkList):
         # first pass consolidates entries
         previousEntry = None
         for entry in miniLL:
-            if isinstance(entry, ControlFlow.ControlInstruction):
+            if isinstance(entry, (ControlFlow.ControlInstruction, BlockLabel.BlockLabel)):
                 if previousEntry:
                     gateSeq.append(previousEntry)
                     previousEntry = None
@@ -182,7 +125,7 @@ def apply_gating_constraints(chan, linkList):
             if isNonZeroWaveform(gateSeq[ct]):
                 gateSeq[ct].length += gateBuffer
                 # contract the next pulse by the same amount
-                if ct + 1 < len(gateSeq) - 1 and not isinstance(gateSeq[ct+1], ControlFlow.ControlInstruction):
+                if ct + 1 < len(gateSeq) - 1 and isinstance(gateSeq[ct+1], Pulse):
                     gateSeq[ct+1].length -= gateBuffer #TODO: what if this becomes negative?
 
         # third pass ensures gateMinWidth
@@ -191,7 +134,7 @@ def apply_gating_constraints(chan, linkList):
             # look for pulse, delay, pulse pattern and ensure delay is long enough
             if [isNonZeroWaveform(x) for x in gateSeq[ct:ct+3]] == [True, False, True] and \
                 gateSeq[ct+1].length < gateMinWidth and \
-                [isinstance(x, ControlFlow.ControlInstruction) for x in gateSeq[ct:ct+3]] == [False, False, False]:
+                [isinstance(x, Pulse) for x in gateSeq[ct:ct+3]] == [True, True, True]:
                 gateSeq[ct].length += gateSeq[ct+1].length + gateSeq[ct+2].length
                 del gateSeq[ct+1:ct+3]
             else:
@@ -202,18 +145,17 @@ def apply_gating_constraints(chan, linkList):
     return gateSeqs
 
 def isNonZeroWaveform(entry):
-    return not isinstance(entry, ControlFlow.ControlInstruction) and not entry.isZero
+    return isinstance(entry, Pulse) and not entry.isZero
 
 def add_digitizer_trigger(seqs, trigChan):
     '''
     Add the digitizer trigger to a logical LL (pulse blocks).
     '''
     # Attach a trigger to any pulse block containing a measurement
-    pulseLength = trigChan.pulseParams['length'] * trigChan.physChan.samplingRate
     for seq in seqs:
         for ct in range(len(seq)):
             if contains_measurement(seq[ct]) and not (hasattr(seq[ct], 'pulses') and trigChan in seq[ct].pulses.keys()):
-                seq[ct] *= TAPulse("TRIG", trigChan, pulseLength, 1.0, 0.0, 0.0)
+                seq[ct] *= TAPulse("TRIG", trigChan, trigChan.pulseParams['length'], 1.0, 0.0, 0.0)
 
 def contains_measurement(entry):
     '''
@@ -231,9 +173,46 @@ def add_slave_trigger(seqs, slaveChan):
     '''
     Add the slave trigger to each sequence.
     '''
-    pulseLength = slaveChan.pulseParams['length'] * slaveChan.physChan.samplingRate
     for seq in seqs:
         # skip if the sequence already starts with a slave trig
         if hasattr(seq[0], 'qubits') and seq[0].qubits == slaveChan:
             continue
-        seq.insert(0, TAPulse("TRIG", slaveChan, pulseLength, 1.0, 0.0, 0.0))
+        seq.insert(0, TAPulse("TRIG", slaveChan, slaveChan.pulseParams['length'], 1.0, 0.0, 0.0))
+
+def propagate_frame_changes(seq):
+    '''
+    Propagates all frame changes through sequence
+    '''
+    frame = 0
+    for entry in seq:
+        if not isinstance(entry, Compiler.Waveform):
+            continue
+        entry.phase = np.mod(frame + entry.phase, 2*pi)
+        frame += entry.frameChange + (2*np.pi * entry.frequency * entry.length)
+    return seq
+
+def quantize_phase(seqs, precision):
+    '''
+    Quantizes waveform phases with given precision (in radians).
+    '''
+    for entry in flatten(seqs):
+        if not isinstance(entry, Compiler.Waveform):
+            continue
+        phase = np.mod(entry.phase, 2*np.pi)
+        entry.phase = precision * round(phase / precision)
+    return seqs
+
+def convert_lengths_to_samples(instructions, samplingRate):
+    for entry in flatten(instructions):
+        if isinstance(entry, Compiler.Waveform):
+            entry.length = int(round(entry.length * samplingRate))
+    return instructions
+
+# from Stack Overflow: http://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists-in-python/2158532#2158532
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+            for sub in flatten(el):
+                yield sub
+        else:
+            yield el

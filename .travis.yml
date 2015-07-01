@@ -2,7 +2,7 @@
 # https://gist.github.com/dan-blanchard/7045057
 
 language: python
-python: 
+python:
   - "2.7"
 
 # Setup anaconda
@@ -14,9 +14,9 @@ before_install:
   - conda update --yes conda
   - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION numpy bokeh enaml atom matplotlib h5py ipython scipy
   - pip install coveralls
-  - wget "https://drive.google.com/uc?export=download&id=0BxaPKTZqyVchZEVHZXRHb2tfNHM" -O test_data.tar.gz
+  - wget "https://drive.google.com/uc?export=download&id=0BxaPKTZqyVchWWdOTG9NZW84a1U" -O test_data.tar.gz
   - tar xzvf test_data.tar.gz -C tests/
-  
+
 # use conda to install packages
 install:
  # Coverage packages are on my binstar channel
@@ -24,7 +24,7 @@ install:
   - mkdir awg
 
 # execute scripts
-script: 
+script:
   - coverage run -m unittest discover
 after_script:
   - coveralls

@@ -42,11 +42,11 @@ class CompileUtils(unittest.TestCase):
     def test_concatenate_entries(self):
         q1 = Qubit(label='q1')
         seq = [X90(q1, length=20e-9), Y90(q1, length=40e-9)]
-        ll, wflib = Compiler.compile_sequence(seq)
-        entry = Compiler.concatenate_entries(ll[q1][0], ll[q1][1], wflib[q1])
-        assert len(entry) == seq[0].length + seq[1].length
-        wf = np.hstack((seq[0].shape, 1j*seq[1].shape))
-        assert all(abs(wflib[q1][entry.key] - wf) < 1e-16)
+        ll = Compiler.compile_sequence(seq)
+        entry = Compiler.concatenate_entries(ll[q1][0], ll[q1][1])
+        assert entry.length == seq[0].length + seq[1].length
+        wf = np.hstack((seq[0].shapeParams['amp']*seq[0].shape, 1j*seq[1].shapeParams['amp']*seq[1].shape))
+        assert all(abs(entry.shape - wf) < 1e-16)
 
     def test_pull_uniform_entries(self):
         q1 = Qubit(label='q1')
@@ -54,22 +54,22 @@ class CompileUtils(unittest.TestCase):
         q2 = Qubit(label='q2')
         q2.pulseParams['length'] = 60e-9
         seq = [(X90(q1)+Y90(q1)+X90(q1)) * X(q2)]
-        ll, wflib = Compiler.compile_sequence(seq)
+        ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, wflib, [q1, q2])
-        assert blocklen == 72
-        assert all(len(e) == blocklen for e in entries)
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        self.assertAlmostEqual(blocklen, 60e-9)
+        assert all(e.length == blocklen for e in entries)
         self.assertRaises(StopIteration, entryIterators[0].next)
 
         q2.pulseParams['length'] = 40e-9
         seq = [(X90(q1) + Z90(q1) + X90(q1)) * Y(q2)]
-        ll, wflib = Compiler.compile_sequence(seq)
+        ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, wflib, [q1, q2])
-        assert blocklen == 48
-        assert all(len(e) == blocklen for e in entries)
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        self.assertAlmostEqual(blocklen, 40e-9)
+        assert all(e.length == blocklen for e in entries)
 
 
     @unittest.expectedFailure
@@ -83,7 +83,7 @@ class CompileUtils(unittest.TestCase):
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
         blocklen = Compiler.pull_uniform_entries(entries, entryIterators, wflib, [q1, q2])
-        self.assertEqual(blocklen, 144)
+        self.assertEqual(blocklen, 120e-9)
         self.assertEqual( all(len(e) == blocklen for e in entries), True )
 
     def test_merge_channels(self):
@@ -92,12 +92,11 @@ class CompileUtils(unittest.TestCase):
         q2 = Qubit(label='q2')
         q2.pulseParams['length'] = 60e-9
         seqs = [[(X90(q1)+Y90(q1)+X90(q1)) * X(q2)]]
-        ll, wflib = Compiler.compile_sequences(seqs)
+        ll = Compiler.compile_sequences(seqs)
 
-        chLL, chWf = Compiler.merge_channels(ll, wflib, [q1, q2])
+        chLL = Compiler.merge_channels(ll, [q1, q2])
         assert len(chLL[0]) == len(ll[q1][0]) - 2
-        assert len(chLL[0]) == len(ll[q2][0])
-        assert len(chWf.keys()) == 1
+        assert len(chLL[0]) == len(ll[q2][0]) - 1
 
 if __name__ == "__main__":    
     unittest.main()
