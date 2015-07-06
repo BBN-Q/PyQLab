@@ -29,3 +29,6 @@ instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
 sweepLibFile = PyQLabCfg['SweepLibraryFile']
 measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
 quickpickFile = PyQLabCfg['QuickPickFile'] if 'QuickPickFile' in PyQLabCfg else ''
+
+# plotting options
+plotBackground = PyQLabCfg['PlotBackground'] if 'PlotBackground' in PyQLabCfg else 'white'
