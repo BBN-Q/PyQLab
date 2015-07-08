@@ -231,7 +231,7 @@ class TestSequences(object):
 
 	def test_Decoupling_CPMG(self):
 		self.set_awg_dir()
-	 	CPMG(self.q1, np.linspace(0, 2, 4), np.linspace(0, 5e-6, 11))
+		CPMG(self.q1, 2*np.arange(4), 500e-9)
 	 	self.compare_sequences('CPMG')
 
 	def test_FlipFlop(self):
