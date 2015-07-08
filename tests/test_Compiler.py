@@ -45,7 +45,7 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entry = Compiler.concatenate_entries(ll[q1][0], ll[q1][1])
         assert entry.length == seq[0].length + seq[1].length
-        wf = np.hstack((seq[0].shapeParams['amp']*seq[0].shape, 1j*seq[1].shapeParams['amp']*seq[1].shape))
+        wf = np.hstack((seq[0].amp*seq[0].shape, 1j*seq[1].amp*seq[1].shape))
         assert all(abs(entry.shape - wf) < 1e-16)
 
     def test_pull_uniform_entries(self):
@@ -98,5 +98,5 @@ class CompileUtils(unittest.TestCase):
         assert len(chLL[0]) == len(ll[q1][0]) - 2
         assert len(chLL[0]) == len(ll[q2][0]) - 1
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     unittest.main()
