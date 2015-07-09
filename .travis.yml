@@ -28,3 +28,6 @@ script:
   - coverage run -m unittest discover
 after_script:
   - coveralls
+
+# necessary to run on new container-based infrastructure
+sudo: false
