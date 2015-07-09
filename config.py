@@ -31,4 +31,5 @@ measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
 quickpickFile = PyQLabCfg['QuickPickFile'] if 'QuickPickFile' in PyQLabCfg else ''
 
 # plotting options
-plotBackground = PyQLabCfg['PlotBackground'] if 'PlotBackground' in PyQLabCfg else 'lightgray'
+plotBackground = PyQLabCfg['PlotBackground'] if 'PlotBackground' in PyQLabCfg else '#EAEAF2'
+gridColor = PyQLabCfg['GridColor'] if 'GridColor' in PyQLabCfg else None
