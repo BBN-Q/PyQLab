@@ -1,8 +1,6 @@
 import h5py
-import unittest
 import numpy as np
-import time
-import os
+import unittest, time, os, random
 
 import config
 import Libraries
@@ -284,10 +282,10 @@ class TestSequences(object):
 		PulsedSpec(self.q1)
 		self.compare_sequences('Spec')
 
-	@unittest.expectedFailure
 	def test_RB_SingleQubitRB(self):
 		self.set_awg_dir('SingleQubitRB')
-		np.random.seed(20152606) # set seed for create_RB_seqs
+		np.random.seed(20152606) # set seed for create_RB_seqs()
+		random.seed(20152606) # set seed for random.choice()
 		SingleQubitRB(self.q1, create_RB_seqs(1, 2**np.arange(1,7)))
 		self.compare_sequences('RB')
 
@@ -299,7 +297,7 @@ class TestSequences(object):
 		AttributeError: 'CompositePulse' object has no attribute 'isZero'
 		"""
 		self.set_awg_dir('TwoQubitRB')
-		np.random.seed(20152606) # set seed for create_RB_seqs
+		np.random.seed(20152606) # set seed for create_RB_seqs()
 		TwoQubitRB(self.q1, self.q2, self.cr, create_RB_seqs(2, 2**np.arange(1,6, repeats=16)))
 		self.compare_sequences('RB')
 
