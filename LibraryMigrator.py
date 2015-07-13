@@ -157,7 +157,7 @@ class ChannelMigrator(JSONMigrator):
 		for iq in iqChannels:
 			if 'SSBFreq' not in self.primaryDict[iq]:
 				continue
-			del self.primaryDict[pc]['SSBFreq']
+			del self.primaryDict[iq]['SSBFreq']
 
 class SweepMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
