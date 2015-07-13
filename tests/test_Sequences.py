@@ -171,7 +171,7 @@ class TestSequences(object):
 	def test_misc_seqs2(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [ZX90_CR(self.q1, self.cr)]
+		seqs = [ZX90_CR(self.q1, self.q2, self.cr)]
 
 		filenames = compile_to_hardware(seqs, 'MISC2/MISC2')
 		self.compare_sequences('MISC2')
