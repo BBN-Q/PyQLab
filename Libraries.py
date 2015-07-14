@@ -10,6 +10,8 @@ from MeasFilters import MeasFilterLibrary
 import LibraryMigrator
 
 migrationMsg = LibraryMigrator.migrate_all()
+for msg in migrationMsg:
+    print msg
 
 instrumentLib = InstrumentLibrary(libFile=config.instrumentLibFile)
 channelLib = ChannelLibrary(libFile=config.channelLibFile)

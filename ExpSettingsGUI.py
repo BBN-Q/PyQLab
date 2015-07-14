@@ -111,8 +111,10 @@ if __name__ == '__main__':
     import Libraries
 
     from ExpSettingsGUI import ExpSettings
-    expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
-                     measurements=Libraries.measLib,  channels=Libraries.channelLib)
+    expSettings = ExpSettings(sweeps=Libraries.sweepLib,
+                              instruments=Libraries.instrumentLib,
+                              measurements=Libraries.measLib,
+                              channels=Libraries.channelLib)
 
     # setup on change AWG
     expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change

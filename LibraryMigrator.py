@@ -1,6 +1,7 @@
 
 import config
 import json
+import itertools
 
 # Migrates json file versions using a version number
 # File version prior to adding a version number are 0
@@ -82,15 +83,18 @@ class JSONMigrator(object):
 			json.dump(self.jsonDict, FID, indent=2, sort_keys=True)
 
 	def migrate(self):
+		messages = []
 		self.load()
 		if self.jsonDict:
 			while self.version() < self.max_version:
 				migrate_function = "version_{0}_to_{1}".format(self.version(), self.version() + 1)
-				print "Migrating: {0}.{1}()".format(self.__class__.__name__, migrate_function)
+				msg = "Migrating: {0}.{1}()".format(self.__class__.__name__, migrate_function)
+				messages.append(msg)
 				function = getattr(self,migrate_function) 
 				function()
 				self.jsonDict['version'] = self.version() + 1
 			self.save()
+		return messages
 
 	def get_items_matching_class(self, classes):
 		return [a for a in self.primaryDict if self.is_class(self.primaryDict[a],classes)]
@@ -185,10 +189,13 @@ def migrate_all():
 	             ChannelMigrator,
 	             SweepMigrator,
 	             MeasurementMigrator]
-	
+	messages = []
+
 	for migrator in migrators:
 		m = migrator()
-		m.migrate()
+		msg = m.migrate()
+		messages.append(msg)
+	return list(itertools.chain(*messages))
 
 if __name__ == '__main__':
 	migrate_all()
