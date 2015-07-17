@@ -109,7 +109,7 @@ class MeasFilterLibrary(Atom):
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
-    version = Int(1)
+    version = Int(0)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
@@ -142,6 +142,8 @@ class MeasFilterLibrary(Atom):
                                     filterList.append(tmpLib.filterDict[f])
                                 filt.filters = filterList
                         self.filterDict.update(tmpLib.filterDict)
+                        # grab library version
+                        self.version = tmpLib.version
             except IOError:
                 print("No measurement library found.")
 
@@ -149,7 +151,10 @@ class MeasFilterLibrary(Atom):
         if matlabCompatible:
             return {label:filt for label,filt in self.filterDict.items() if filt.enabled}
         else:
-            return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
+            return {
+                "filterDict": {label:filt for label,filt in self.filterDict.items()},
+                "version": self.version
+            }
 
 
 measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector]

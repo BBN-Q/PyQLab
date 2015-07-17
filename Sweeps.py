@@ -125,7 +125,7 @@ class SweepLibrary(Atom):
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
-    version = Int(1)
+    version = Int(0)
 
     sweepManager = Typed(DictManager)
 
@@ -164,6 +164,8 @@ class SweepLibrary(Atom):
                         del self.sweepOrder[:]
                         for sweepStr in tmpLib.sweepOrder:
                             self.sweepOrder.append(sweepStr)
+                        # grab library version
+                        self.version = tmpLib.version
             except IOError:
                 print('No sweep library found.')
 
@@ -174,7 +176,11 @@ class SweepLibrary(Atom):
                   self.sweepDict[sweep].order = ct+1
                 return {label:sweep for label,sweep in self.sweepDict.items() if label in self.sweepOrder}
             else:
-                return {'sweepDict':{label:sweep for label,sweep in self.sweepDict.items()}, 'sweepOrder':self.sweepOrder}
+                return {
+                    'sweepDict': {label:sweep for label,sweep in self.sweepDict.items()},
+                    'sweepOrder': self.sweepOrder,
+                    'version': self.version
+                }
 
 
 
