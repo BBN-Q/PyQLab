@@ -1,4 +1,4 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -28,6 +28,7 @@ class InstrumentLibrary(Atom):
     AWGs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
+    version = Int(0)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -75,6 +76,8 @@ class InstrumentLibrary(Atom):
                     tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
                     if isinstance(tmpLib, InstrumentLibrary):
                         self.instrDict.update(tmpLib.instrDict)
+                        # grab library version
+                        self.version = tmpLib.version
             except IOError:
                 print('No instrument library found')
             except ValueError:
@@ -121,7 +124,10 @@ class InstrumentLibrary(Atom):
         if matlabCompatible:
             return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
         else:
-            return {"instrDict":{label:instr for label,instr in self.instrDict.items()}}
+            return {
+                "instrDict": {label:instr for label,instr in self.instrDict.items()},
+                "version": self.version
+            }
 
 
 if __name__ == '__main__':
