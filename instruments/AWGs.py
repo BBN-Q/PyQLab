@@ -86,9 +86,10 @@ AWGList = [APS, APS2, Tek5014, Tek7000]
 
 if __name__ == "__main__":
 
+
     with enaml.imports():
-        from AWGViews import AWGView
-    
+        from AWGsViews import AWGView
+
     awg = APS(label='BBNAPS1')
     app = QtApplication()
     view = AWGView(awg=awg)
@@ -109,5 +110,4 @@ def get_empty_channel_set(AWG):
     elif isinstance(AWG, APS2):
         return {'ch12':{}, 'ch12m1':{}, 'ch12m2':{}, 'ch12m3':{}, 'ch12m4':{}}
     else:
-        raise NameError('Unknown AWG type')             
-
+        raise NameError('Unknown AWG type')
