@@ -393,6 +393,46 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
 		self.finalize_map(mapping)
 
+	def compare_file_data(self, testFile, truthFile):
+		'''
+		Override the method in AWGTestHelper so that we can special-case marker comparison
+		'''
+		awgData = self.read_function(testFile)
+		truthData = self.read_function(truthFile)
+
+		awgDataLen = len(awgData)
+		truthDataLen = len(truthData)
+
+		self.assertTrue(awgDataLen == truthDataLen,
+			"Expected {0} sequences in file. Found {1}.".format(truthDataLen, awgDataLen))
+
+		for name in truthData:
+			self.assertTrue(name in awgData, "Expected channel {0} not found in file {1}".format(name, testFile))
+			isMarker = ('m' == name[-2])
+
+			for x in range(len(truthData[name])):
+				seqA = np.array(truthData[name][x])
+				seqB = np.array(awgData[name][x])
+				if isMarker:
+					self.compare_marker_sequence(seqA, seqB, "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
+				else:
+					self.compare_sequence(seqA, seqB, "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
+
+	def compare_marker_sequence(self, seqA, seqB, errorHeader):
+		markerDistanceTolerance = 4
+		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
+
+		# convert sequences to locations of blips
+		idxA = np.where(seqA)[0]
+		idxB = np.where(seqB)[0]
+		self.assertTrue(len(idxA) == len(idxB), "{0}.\nNumber of blips did not match: {1} != {2}".format(errorHeader, len(idxA), len(idxB)))
+		# compare the blip locations element-wise
+		if len(idxA) > 0:
+			diff = np.abs(idxA - idxB)
+		else:
+			diff = np.array([0])
+		self.assertTrue(max(diff) <= markerDistanceTolerance, "{0}\nMismatches: {1}".format(errorHeader, diff.nonzero()[0]))
+
 	@unittest.expectedFailure
 	def test_Rabi_RabiWidth(self):
 		""" test_Rabi_RabiWidth is expected to fail on APS1 with the following error:
