@@ -90,7 +90,7 @@ class QtListStrWidget(RawWidget):
         widget = self.get_widget()
         self.selected_index = widget.currentRow()
         self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''            
-
+        
     def on_edit(self, item):
         """ 
         The signal handler for the item changed signal.
@@ -150,7 +150,8 @@ class QtListStrWidget(RawWidget):
 
         """
         # The superclass handler implementation is sufficient.
-        if self.get_widget() != None:
+        widget =self.get_widget()
+        if widget != None:
             if change["name"] == "items":
                 if change["type"] == "update":
                     if len(change["oldvalue"]) > len(change["value"]):
@@ -161,7 +162,12 @@ class QtListStrWidget(RawWidget):
                     elif len(change["oldvalue"]) < len(change["value"]):
                         self.checked_states.append(True)
 
-            self.set_items(self.items)       
+            self.set_items(self.items)
+            
+            
+            #update the selected item because the current row has changed 
+            self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''            
+      
 
 # Helper methods
 def _set_item_flag(item, flag, enabled):
