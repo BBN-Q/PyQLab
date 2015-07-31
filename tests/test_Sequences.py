@@ -7,7 +7,7 @@ import Libraries
 from QGL import *
 import QGL
 
-from QGL.Channels import Measurement, LogicalChannel, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
+from QGL.Channels import Edge, Measurement, LogicalChannel, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
 from instruments.AWGs import APS2, APS, Tek5014, Tek7000
 from instruments.InstrumentManager import InstrumentLibrary
 
@@ -30,12 +30,12 @@ class AWGTestHelper(object):
 
 		Compiler.channelLib = ChannelLibrary()
 		Compiler.channelLib.channelDict = self.channels
+		Compiler.channelLib.build_connectivity_graph()
 
 		Compiler.instrumentLib = InstrumentLibrary()
 		Compiler.instrumentLib.instrDict = self.instruments
 
 		(self.q1, self.q2) = self.get_qubits()
-		self.cr = self.channels["cr"]
 
 	def assign_channels(self):
 
@@ -65,8 +65,11 @@ class AWGTestHelper(object):
 			self.channels[mgName]  = mg
 			self.channels[qgName]  = qg
 
-		self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
-		cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
+		# this block depends on the existence of q1 and q2
+		self.channels['cr-gate'] = LogicalMarkerChannel(label='cr-gate')
+
+		q1, q2 = self.channels['q1'], self.channels['q2']
+		cr = Edge(label="cr", source = q1, target = q2, gateChan = self.channels['cr-gate'] )
 		cr.pulseParams['length'] = 30e-9
 		cr.pulseParams['phase'] = pi/4
 		self.channels["cr"] = cr
@@ -171,7 +174,7 @@ class TestSequences(object):
 	def test_misc_seqs2(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [ZX90_CR(self.q1, self.q2, self.cr)]
+		seqs = [ZX90_CR(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC2/MISC2')
 		self.compare_sequences('MISC2')
@@ -179,7 +182,7 @@ class TestSequences(object):
 	def test_misc_seqs3(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRa(self.q1, self.q2, self.cr)]
+		seqs = [CNOT_CRa(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC3/MISC3')
 		self.compare_sequences('MISC3')
@@ -187,7 +190,7 @@ class TestSequences(object):
 	def test_misc_seqs4(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRb(self.q1, self.q2, self.cr)]
+		seqs = [CNOT_CRb(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
@@ -209,17 +212,17 @@ class TestSequences(object):
 
 	def test_CR_PiRabi(self):
 		self.set_awg_dir()
-		PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 4e-6, 11))
+		PiRabi(self.q1, self.q2, np.linspace(0, 4e-6, 11))
 		self.compare_sequences('PiRabi')
 
 	def test_CR_EchoCRLen(self):
 		self.set_awg_dir('EchoCRLen')
-		EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 2e-6, 11))
+		EchoCRLen(self.q1, self.q2, np.linspace(0, 2e-6, 11))
 		self.compare_sequences('EchoCR')
 
 	def test_CR_EchoCRPhase(self):
 		self.set_awg_dir('EchoCRPhase')
-		EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
+		EchoCRPhase(self.q1, self.q2, np.linspace(0, pi/2, 11))
 		self.compare_sequences('EchoCR')
 
 	def test_Decoupling_HannEcho(self):
@@ -298,7 +301,7 @@ class TestSequences(object):
 		"""
 		self.set_awg_dir('TwoQubitRB')
 		np.random.seed(20152606) # set seed for create_RB_seqs()
-		TwoQubitRB(self.q1, self.q2, self.cr, create_RB_seqs(2, 2**np.arange(1,6, repeats=16)))
+		TwoQubitRB(self.q1, self.q2, create_RB_seqs(2, 2**np.arange(1,6, repeats=16)))
 		self.compare_sequences('RB')
 
 	# def test_RB_SingleQubitRB_AC(self):
