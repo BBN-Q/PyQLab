@@ -182,7 +182,7 @@ class TestSequences(object):
 	def test_misc_seqs3(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRa(self.q1, self.q2)]
+		seqs = [CNOT_CR(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC3/MISC3')
 		self.compare_sequences('MISC3')
@@ -190,7 +190,7 @@ class TestSequences(object):
 	def test_misc_seqs4(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRb(self.q1, self.q2)]
+		seqs = [CNOT_CR(self.q2, self.q1)]
 
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
