@@ -40,27 +40,18 @@ def _memoize(pulseFunc):
         return cache[args]
     return cacheWrap
 
-def Id(qubit, *args, **kwargs):
+def Id(channel, *args, **kwargs):
     '''
     A delay or no-op in the form of a pulse.
     Accepts the following pulse signatures:
-        Id(qubit, [kwargs])
-        Id(qubit, delay, [kwargs])
-        Id(qubit1, qubit2, [kwargs])
-        Id((qubit1,qubit2...), delay, [kwargs])
+        Id(channel, [kwargs])
+        Id(channel, delay, [kwargs])
     '''
-    if not isinstance(qubit, tuple):
-        channel = qubit
-    else:
-        channel = Channels.QubitFactory(reduce(operator.add, [q.label for q in qubit]))
-    if len(args) > 0 and isinstance(args[0], Channels.Qubit):
-        channel = Channels.QubitFactory(qubit.label + args[0].label)
-        qubit = (qubit, args[0])
     params = overrideDefaults(channel, kwargs)
     if len(args) > 0 and isinstance(args[0], (int,float)):
         params['length'] = args[0]
 
-    return TAPulse("Id", qubit, params['length'], 0)
+    return TAPulse("Id", channel, params['length'], 0)
 
 # the most generic pulse is Utheta
 def Utheta(qubit, amp=0, phase=0, label='Utheta', **kwargs):
@@ -283,7 +274,6 @@ def AC(qubit, cliffNum):
 
 
 ## two-qubit primitivies
-# @_memoize
 def CNOT(source, target, **kwargs):
     # construct (source, target) channel and pull parameters from there
     channel = Channels.QubitFactory(source.label + target.label)
@@ -298,10 +288,13 @@ def flat_top_gaussian(chan, riseFall, length, amp, phase=0):
            Utheta(chan, length=length, amp=amp, phase=phase, shapeFun=PulseShapes.square) + \
            Utheta(chan, length=riseFall, amp=amp, phase=phase, shapeFun=PulseShapes.gaussOff)
 
-def echoCR(controlQ, CRchan, amp=1, phase=0, length=200e-9, riseFall=20e-9, lastPi=True):
+def echoCR(controlQ, targetQ, amp=1, phase=0, length=200e-9, riseFall=20e-9, lastPi=True):
     """
     An echoed CR pulse.  Used for calibration of CR gate
     """
+    CRchan = Channels.EdgeFactory(controlQ, targetQ)
+    if not CRchan.isforward(controlQ, targetQ):
+        raise ValueError('Could not find an edge with control qubit {0}'.format(controlQ))
     seq = [flat_top_gaussian(CRchan, amp=amp, riseFall=riseFall, length=length, phase=phase),
            X(controlQ),
            flat_top_gaussian(CRchan, amp=amp, riseFall=riseFall, length=length, phase=phase+np.pi)]
@@ -309,30 +302,33 @@ def echoCR(controlQ, CRchan, amp=1, phase=0, length=200e-9, riseFall=20e-9, last
         seq += [X(controlQ)]
     return seq
 
-def ZX90_CR(controlQ, targetQ, CRchan, riseFall=20e-9, **kwargs):
+def ZX90_CR(controlQ, targetQ, **kwargs):
     """
-    A calibrated CR ZX90 pulse.  Uses piAmp for the pulse amplitude, phase for its phase (in deg).
+    A calibrated CR ZX90 pulse.  Uses 'amp' for the pulse amplitude, 'phase' for its phase (in deg).
     """
-    amp=CRchan.pulseParams['piAmp']
-    phase=CRchan.pulseParams['phase']/180*np.pi
-    length=CRchan.pulseParams['length']
-    return echoCR(controlQ, CRchan, amp=amp, phase=phase, length=length, riseFall=riseFall)
+    CRchan = Channels.EdgeFactory(controlQ, targetQ)
 
-def CNOT_CRa(controlQ, targetQ, CRchan, riseFall=20e-9, **kwargs):
-    """
-    CNOT made of a CR pulse and single qubit gates. Control and target are the same for CR and CNOT
-    controlQ, targetQ: of the CR gate (= CNOT)
-    """
-    return ZX90_CR(controlQ, targetQ,CRchan,riseFall=riseFall) +\
-    [Z90m(controlQ)*X90m(targetQ)]
+    params = overrideDefaults(CRchan, kwargs)
+    amp = CRchan.pulseParams['amp']
+    phase = CRchan.pulseParams['phase']/180*np.pi
+    length = CRchan.pulseParams['length']
+    riseFall = CRchan.pulseParams['riseFall']
+    return echoCR(controlQ, targetQ, amp=amp, phase=phase, length=length, riseFall=riseFall)
 
-def CNOT_CRb(controlQ, targetQ, CRchan, riseFall= 20e-9, **kwargs):
-    """
-    CNOT made of a CR pulse and single qubit gates. Control and target are inverted for the CNOT
-    controlQ, targetQ: of the CR gate
-    """
-    return [Y90(controlQ)*Y90(targetQ),X(controlQ)*X(targetQ)]+ZX90_CR(controlQ, targetQ,CRchan,riseFall=riseFall) +\
-    [Z90(controlQ), Y90(controlQ)*X90(targetQ),X(controlQ)*Y90m(targetQ)]
+def CNOT_CR(controlQ, targetQ, **kwargs):
+    edge = Channels.EdgeFactory(controlQ, targetQ)
+
+    if edge.isforward(controlQ, targetQ):
+        # control and target for CNOT and CR match
+        return ZX90_CR(controlQ, targetQ, **kwargs) + [Z90m(controlQ) * X90m(targetQ)]
+    else:
+        # control and target for CNOT and CR are inverted
+        return [Y90(controlQ) * Y90(targetQ),
+                X(controlQ) * X(targetQ)] + \
+                ZX90_CR(targetQ, controlQ, **kwargs) + \
+               [Z90(targetQ),
+                X90(controlQ) * Y90(targetQ),
+                Y90m(controlQ) * X(targetQ)]
 
 ## Measurement operators
 # @_memoize
