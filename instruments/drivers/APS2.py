@@ -3,7 +3,7 @@ from atom.api import Int, Constant
 
 from APS2Pattern import *
 
-class APS2(AWG, AWGDriver):
+class APS2(AWG):
 	numChannels = Int(default=2)
 	seqFileExt = Constant('.h5')
 

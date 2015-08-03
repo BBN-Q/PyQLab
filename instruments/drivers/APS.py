@@ -3,7 +3,7 @@ from atom.api import Int, Constant
 
 from APSPattern import *
 
-class APS(AWG, AWGDriver):
+class APS(AWG):
 	numChannels = Int(default=4)
 	miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
 	seqFileExt = Constant('.h5')

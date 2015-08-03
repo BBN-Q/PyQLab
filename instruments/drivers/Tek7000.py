@@ -3,7 +3,7 @@ from atom.api import Int, Constant
 
 from TekPattern import *
 
-class Tek7000(AWG, AWGDriver):
+class Tek7000(AWG):
 	numChannels = Int(default=2)
 	seqFileExt = Constant('.awg')
 
