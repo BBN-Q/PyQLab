@@ -21,8 +21,8 @@ import os
 import numpy as np
 from warnings import warn
 from itertools import chain, izip_longest
-import Compiler, ControlFlow, BlockLabel, PatternUtils
-from PatternUtils import hash_pulse, flatten
+from QGL import Compiler, ControlFlow, BlockLabel, PatternUtils
+from QGL.PatternUtils import hash_pulse, flatten
 from copy import copy, deepcopy
 
 

@@ -16,12 +16,15 @@ BASE_AWG_DIR = config.AWGDir
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
-	def __init__(self, read_function = None, tolerance = 1.5/2**13):
+	def __init__(self, clsObj = None, tolerance = 1.5/2**13):
 		self.channels = {}
 		self.instruments = {}
 		self.assign_channels()
 		self.set_awg_dir()
-		self.read_function = read_function
+		if clsObj:
+			self.read_function = clsObj().read_sequence_file
+		else:
+			self.read_function = None
 		self.tolerance = tolerance
 
 	def finalize_map(self, mapping):
@@ -322,7 +325,7 @@ class TestSequences(object):
 
 class APS2Helper(AWGTestHelper):
 	def setUp(self):
-		AWGTestHelper.__init__(self, APS2Pattern.read_APS2_file)
+		AWGTestHelper.__init__(self, APS2)
 		for name in ['APS1', 'APS2', 'APS3', 'APS4', 'APS5', 'APS6']:
 			self.instruments[name] = APS2(label=name)
 
@@ -363,7 +366,7 @@ class TestAPS2(unittest.TestCase, APS2Helper, TestSequences):
 class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
-		AWGTestHelper.__init__(self, APSPattern.read_APS_file)
+		AWGTestHelper.__init__(self, APS)
 		for name in ['APS1', 'APS2', 'APS3']:
 			self.instruments[name] = APS(label=name)
 
@@ -446,7 +449,7 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
-		AWGTestHelper.__init__(self, TekPattern.read_Tek_file)
+		AWGTestHelper.__init__(self, Tek5014)
 		for name in ['TEK1', 'TEK2']:
 			self.instruments[name] = Tek5014(label=name)
 

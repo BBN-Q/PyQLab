@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 
 from QGL import *
+from instruments.drivers import APSPattern
 
 class APSPatternUtils(unittest.TestCase):
     def setUp(self):
