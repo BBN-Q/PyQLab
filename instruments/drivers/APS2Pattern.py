@@ -21,8 +21,8 @@ import os
 import numpy as np
 from warnings import warn
 from copy import copy
-import Compiler, ControlFlow, BlockLabel, PatternUtils
-from PatternUtils import hash_pulse, flatten
+from QGL import Compiler, ControlFlow, BlockLabel, PatternUtils
+from QGL.PatternUtils import hash_pulse, flatten
 
 #Some constants
 SAMPLING_RATE = 1.2e9

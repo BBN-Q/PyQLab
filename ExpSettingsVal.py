@@ -26,9 +26,6 @@ import h5py
 import Libraries
 import QGL.Channels
 
-from QGL.mm import multimethod
-from instruments.AWGs import APS, APS2, Tek5014, AWG
-
 from atom.api import Str
 
 import re
@@ -222,24 +219,8 @@ def invalid_awg_name_convention_common(label, channelName, conventionList):
         return errorStr.format(label, channelName, conventionList)
     return None
 
-@multimethod(AWG, unicode)
 def invalid_awg_name_convention(AWG, channelName):
-    # there is no convention for a generic AWG
-    return None
-
-@multimethod(APS, unicode)
-def invalid_awg_name_convention(AWG, channelName):
-    convention = ['12', '34', '1m1', '2m1', '3m1', '4m1']
-    return invalid_awg_name_convention_common(AWG.label, channelName,convention)
-
-@multimethod(APS2, unicode)
-def invalid_awg_name_convention(AWG, channelName):
-    convention = ['12', '12m1', '12m2', '12m3', '12m4']
-    return invalid_awg_name_convention_common(AWG.label, channelName,convention)
-
-@multimethod(Tek5014, unicode)
-def invalid_awg_name_convention(AWG, channelName):
-    convention = ['12', '34', '1m1', '1m2', '2m1', '2m2', '3m1', '3m2', '4m1', '4m2']
+    convention = AWG.get_naming_convention()
     return invalid_awg_name_convention_common(AWG.label, channelName,convention)
 
 # GUI validator
