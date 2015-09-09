@@ -49,9 +49,11 @@ class AlazarATS9870(Instrument):
 class X6VirtualChannel(Atom):
 	label = Str()
 	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
-	enableResultStream = Bool(True).tag(desc='Enable result data stream')
+	enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
+	enableRawResultStream = Bool(True).tag(desc='Enable raw result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	kernel = Str().tag(desc='Integration kernel vector')
+	demodKernel = Str().tag(desc='Integration kernel vector for demod stream')
+	rawKernel = Str().tag(desc='Integration kernel vector for raw stream')
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
 
 	def json_encode(self, matlabCompatible=False):
@@ -60,9 +62,13 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
 			except:
-				jsonDict['kernel'] = []
+				jsonDict['demodKernel'] = []
+			try:
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+			except:
+				jsonDict['rawKernel'] = []
 		return jsonDict
 
 class X6(Instrument):

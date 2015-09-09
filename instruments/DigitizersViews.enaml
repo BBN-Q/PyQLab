@@ -173,8 +173,13 @@ enamldef X6ChannelView(GroupBox):
 		Label:
 			text = 'Result Stream'
 		CheckBox:
-			checked := chan.enableResultStream
-			tool_tip = chan.get_member('enableResultStream').metadata["desc"]
+			checked := chan.enableDemodResultStream
+			tool_tip = chan.get_member('enableDemodResultStream').metadata["desc"]
+		Label:
+			text = 'Raw Result Stream'
+		CheckBox:
+			checked := chan.enableRawResultStream
+			tool_tip = chan.get_member('enableRawResultStream').metadata["desc"]
 		Label:
 			text = 'IF Frequency (MHz)'
 		FloatField:
@@ -182,10 +187,15 @@ enamldef X6ChannelView(GroupBox):
 			value :: chan.IFfreq = value*1e6
 			tool_tip = chan.get_member('IFfreq').metadata["desc"]
 		Label:
-			text = 'Kernel'
+			text = 'Demod Kernel'
 		Field:
-			text := chan.kernel
-			tool_tip = chan.get_member('kernel').metadata["desc"]
+			text := chan.demodKernel
+			tool_tip = chan.get_member('demodKernel').metadata["desc"]
+		Label:
+			text = 'Raw Kernel'
+		Field:
+			text := chan.rawKernel
+			tool_tip = chan.get_member('rawKernel').metadata["desc"]
 		Label:
 			text = 'Threshold'
 		FloatField:

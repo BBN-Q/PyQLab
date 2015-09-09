@@ -110,7 +110,7 @@ class IntrumentMigrator(JSONMigrator):
 			config.instrumentLibFile, 
 			"InstrumentLibrary",
 			"instrDict",
-			2)
+			3)
 
 	def version_1_to_2(self):
 
@@ -122,7 +122,19 @@ class IntrumentMigrator(JSONMigrator):
 
 		for lb in lb64:
 			self.primaryDict[lb]['x__class__'] = "Labbrick"
-							
+
+	def version_2_to_3(self):
+		# Migration step 2
+		# Follow X6 channel schema change
+		scopes = self.get_items_matching_class(['X6'])
+		for x6 in scopes:
+			for channel in self.primaryDict[x6]['channels'].values():
+				channel['enableDemodResultStream'] = channel['enableResultStream']
+				channel['enableRawResultStream'] = channel['enableResultStream']
+				channel['demodKernel'] = channel['kernel']
+				channel['rawKernel'] = ''
+				del channel['enableResultStream']
+				del channel['kernel']
 
 class ChannelMigrator(JSONMigrator):		
 	""" Migrator for the Channel Manager JSON File """
