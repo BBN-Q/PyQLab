@@ -99,15 +99,19 @@ class QtListStrWidget(RawWidget):
         itemRow = widget.indexFromItem(item).row()
         oldLabel = self.items[itemRow]
         newLabel = item.text()
-        if oldLabel != newLabel:
+        
+        #only signal the enable change when the labels are the same and is in
+        #the item list, also only signal a name change when the labels are not
+        #the same and the newlabel is not in the item list
+        if newLabel == oldLabel and newLabel in self.items:
+            self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
+            self.enable_changed(item.text(), self.checked_states[itemRow])
+        elif oldLabel != newLabel and newLabel not in self.items:
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
             self.items[itemRow] = item.text()
             self.apply_validator(item, newLabel)
-        else:
-            self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
-            self.enable_changed(item.text(), self.checked_states[itemRow])
-
+        
     #--------------------------------------------------------------------------
     # ProxyListStrView API
     #--------------------------------------------------------------------------

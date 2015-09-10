@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 import h5py
 from atom.api import Atom, Typed, Str, Bool, List
 
@@ -14,6 +15,7 @@ import json
 import os
 import config
 import ExpSettingsVal
+import shutil
 
 class ExpSettings(Atom):
 
@@ -46,9 +48,10 @@ class ExpSettings(Atom):
         import JSONHelpers
         pass
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         import JSONHelpers
-        with open(self.curFileName,'w') as FID:
+        curFileName = fileName if fileName != None else self.curFileName
+        with open(curFileName, 'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
     def write_libraries(self):
@@ -63,13 +66,52 @@ class ExpSettings(Atom):
                 return False
         elif not self.validate:
             print "JSON Files validation disabled"
-            
         self.channels.write_to_file()
         self.instruments.write_to_file()
         self.measurements.write_to_file()
         self.sweeps.write_to_file()
 
         return True
+        
+    def save_config(self,path):
+        
+        if self.validate:
+            self.validation_errors = ExpSettingsVal.validate_lib()
+            if self.validation_errors != []:
+                print "JSON Files did not validate"
+                return False
+        elif not self.validate:
+            print "JSON Files validation disabled"
+            
+        try:
+            self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))        
+            self.measurements.write_to_file(fileName=path+ os.sep + os.path.basename(self.measurements.libFile))
+            self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
+            self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
+            self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
+        except:
+            return False
+        
+        
+        return True
+        
+    def load_config(self,path):
+        
+        print("LOADING FROM:",path)
+        
+        try:
+            shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.measurements.libFile),self.measurements.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.sweeps.libFile),self.sweeps.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.curFileName),self.curFileName)
+        except shutil.Error as e:
+            print('Error: %s' % e)
+        except IOError as e:
+            print('Error: %s' % e.strerror)
+            
+        return True
+        
 
     def apply_quickpick(self, name):
         try:
@@ -109,7 +151,7 @@ class ExpSettings(Atom):
 
 if __name__ == '__main__':
     import Libraries
-
+    
     from ExpSettingsGUI import ExpSettings
     expSettings = ExpSettings(sweeps=Libraries.sweepLib,
                               instruments=Libraries.instrumentLib,
