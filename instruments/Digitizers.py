@@ -9,6 +9,9 @@ import itertools, ast
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+class Digitizer(Instrument):
+	pass
+
 class AlazarATS9870(Instrument):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')

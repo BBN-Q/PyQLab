@@ -12,12 +12,22 @@ import importlib
 from DictManager import DictManager
 
 import Digitizers, Analysers, DCSources, Attenuators
+
+from plugins import find_plugins
+
 newOtherInstrs = [Digitizers.AlazarATS9870,
     Digitizers.X6,
     Analysers.HP71000,
     Analysers.SpectrumAnalyzer,
     DCSources.YokoGS200,
     Attenuators.DigitalAttenuator]
+
+plugins = find_plugins(Digitizers.Digitizer)
+for plugin in plugins:
+    newOtherInstrs.append(plugin)
+    globals().update({plugin.__name__: plugin})
+    print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
+
 
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name

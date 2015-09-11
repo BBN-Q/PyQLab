@@ -118,7 +118,3 @@ enamldef EmptyAWGForm(Container):
     attr awg
 
 AWGViewMap = {type(None):EmptyAWGForm, AWGs.AWG:AWGForm}
-
-
-
-
