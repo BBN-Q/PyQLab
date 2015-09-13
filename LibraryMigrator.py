@@ -143,12 +143,12 @@ class ChannelMigrator(JSONMigrator):
 			config.channelLibFile, 
 			'ChannelLibrary',
 			'channelDict',
-			2)
+			3)
 
 	def version_1_to_2(self):
 
 		# Migration step 1
-		# Move SSBFreq from Physical Chanel for Qubits to the Logical Qubit Channel
+		# Move SSBFreq from Physical Channel for Qubits to the Logical Qubit Channel
 
 		# two phases 
 		# 1) copy all of the data from physical channel
@@ -175,6 +175,17 @@ class ChannelMigrator(JSONMigrator):
 				continue
 			del self.primaryDict[iq]['SSBFreq']
 
+	def version_2_to_3(self):
+		#Migration step 2
+		#Set default digitizer trigger to digitizerTrig
+		measChannels = self.get_items_matching_class('Measurement')
+
+		for mc in measChannels:
+			if 'trigChan' in self.primaryDict[mc]:
+				if self.primaryDict[mc]['trigChan'] != '':
+					continue
+			self.primaryDict[mc]['trigChan'] = 'digitizerTrig'
+
 class SweepMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
@@ -185,7 +196,6 @@ class SweepMigrator(JSONMigrator):
 			"sweepDict",
 			1)
 		
-
 class MeasurementMigrator(JSONMigrator):		
 	""" Migrator for the Sweeps JSON File """
 
