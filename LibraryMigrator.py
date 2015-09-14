@@ -194,10 +194,18 @@ class SweepMigrator(JSONMigrator):
 			config.sweepLibFile,
 			"SweepLibrary",
 			"sweepDict",
-			1)
-		
+			2)
+
+	def version_1_to_2(self):
+		#Migration step 1
+		#Add threshold sweep
+		if "Threshold" not in self.primaryDict:
+			self.primaryDict['Threshold'] = {}
+			self.primaryDict['Threshold']['x__class__'] = "Threshold"
+			self.primaryDict['Threshold']['x__module__'] = "Sweeps"
+
 class MeasurementMigrator(JSONMigrator):		
-	""" Migrator for the Sweeps JSON File """
+	""" Migrator for the Measurement JSON File """
 
 	def __init__(self):
 		super(MeasurementMigrator, self).__init__(
