@@ -14,8 +14,9 @@ class CompileUtils(unittest.TestCase):
         self.q2 = Qubit(label='q2', gateChan=self.q2gate)
         self.q2.pulseParams['length'] = 30e-9
 
-        self.measq1 = Channels.Measurement(label='M-q1')
         self.trigger = Channels.LogicalMarkerChannel(label='trigger')
+        self.measq1 = Channels.Measurement(label='M-q1')
+        self.measq1.trigChan = self.trigger
 
         Compiler.channelLib = {'q1': self.q1, 'q2': self.q2, 'M-q1': self.measq1}
 
@@ -23,7 +24,7 @@ class CompileUtils(unittest.TestCase):
         q1 = self.q1
         seq = [X90(q1), MEAS(q1), Y(q1), MEAS(q1)]
 
-        PatternUtils.add_digitizer_trigger([seq], self.trigger)
+        PatternUtils.add_digitizer_trigger([seq])
         assert(self.trigger in seq[1].pulses.keys())
         assert(self.trigger in seq[3].pulses.keys())
 

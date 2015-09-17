@@ -49,6 +49,9 @@ class AWGTestHelper(object):
 
 	def assign_logical_channels(self):
 
+		for name in self.logical_names:
+			self.channels[name] = LogicalMarkerChannel(label=name)
+
 		for name in self.qubit_names:
 			mName = 'M-' + name
 			mgName = 'M-' + name + '-gate'
@@ -57,7 +60,7 @@ class AWGTestHelper(object):
 			mg = LogicalMarkerChannel(label=mgName)
 			qg = LogicalMarkerChannel(label=qgName)
 
-			m = Measurement(label=mName, gateChan = mg)
+			m = Measurement(label=mName, gateChan = mg, trigChan=self.channels['digitizerTrig'])
 
 			q = Qubit(label=name, gateChan=qg)
 			q.pulseParams['length'] = 30e-9
@@ -79,11 +82,7 @@ class AWGTestHelper(object):
 
 		mq1q2g = LogicalMarkerChannel(label='M-q1q2-gate')
 		self.channels['M-q1q2-gate']  = mq1q2g
-		self.channels['M-q1q2']       = Measurement(label='M-q1q2', gateChan = mq1q2g)
-
-
-		for name in self.logical_names:
-			self.channels[name] = LogicalMarkerChannel(label=name)
+		self.channels['M-q1q2']       = Measurement(label='M-q1q2', gateChan = mq1q2g, trigChan=self.channels['digitizerTrig'])
 
 	def get_qubits(self):
 		return [QGL.Compiler.channelLib[name] for name in self.qubit_names]
