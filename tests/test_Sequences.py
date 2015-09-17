@@ -322,6 +322,15 @@ class TestSequences(object):
 	# 	SingleQubitRBT(self.q1,'')
 	# 	self.compare_sequences('RBT')
 
+	@unittest.expectedFailure
+	def test_RB_SimultaneousRB_AC(self):
+		self.set_awg_dir('SimultaneousRB_AC')
+	 	np.random.seed(20151709) # set seed for create_RB_seqs
+		seqs1 = create_RB_seqs(1, 2**np.arange(1,7))
+		seqs2 = create_RB_seqs(1, 2**np.arange(1,7))
+	 	SimultaneousRB_AC((self.q1, self.q2), (seqs1, seqs2))
+	 	self.compare_sequences('RB')
+
 class APS2Helper(AWGTestHelper):
 	def setUp(self):
 		AWGTestHelper.__init__(self, APS2)
