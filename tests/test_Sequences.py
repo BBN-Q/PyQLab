@@ -303,7 +303,7 @@ class TestSequences(object):
 		"""
 		self.set_awg_dir('TwoQubitRB')
 		np.random.seed(20152606) # set seed for create_RB_seqs()
-		TwoQubitRB(self.q1, self.q2, create_RB_seqs(2, 2**np.arange(1,6, repeats=16)))
+		TwoQubitRB(self.q1, self.q2, create_RB_seqs(2, [2, 4, 8, 16, 32], repeats=16))
 		self.compare_sequences('RB')
 
 	# def test_RB_SingleQubitRB_AC(self):
