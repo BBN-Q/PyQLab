@@ -58,7 +58,7 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
         self.assertAlmostEqual(blocklen, 60e-9)
         assert all(e.length == blocklen for e in entries)
         self.assertRaises(StopIteration, entryIterators[0].next)
@@ -68,7 +68,7 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
         self.assertAlmostEqual(blocklen, 40e-9)
         assert all(e.length == blocklen for e in entries)
 
@@ -81,7 +81,7 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
         self.assertAlmostEqual(blocklen, 120e-9)
         self.assertTrue( all(e.length == blocklen for e in entries) )
 
