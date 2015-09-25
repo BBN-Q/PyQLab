@@ -58,7 +58,7 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
         self.assertAlmostEqual(blocklen, 60e-9)
         assert all(e.length == blocklen for e in entries)
         self.assertRaises(StopIteration, entryIterators[0].next)
@@ -68,24 +68,22 @@ class CompileUtils(unittest.TestCase):
         ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, [q1, q2])
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
         self.assertAlmostEqual(blocklen, 40e-9)
         assert all(e.length == blocklen for e in entries)
 
-
-    @unittest.expectedFailure
     def test_pull_uniform_entries2(self):
         q1 = Qubit(label='q1')
         q1.pulseParams['length'] = 30e-9
         q2 = Qubit(label='q2')
         q2.pulseParams['length'] = 40e-9
         seq = [(X90(q1) + Y90(q1) + X(q1) + Y(q1)) * (Y(q2) + X(q2) + Y(q2))]
-        ll, wflib = Compiler.compile_sequence(seq)
+        ll = Compiler.compile_sequence(seq)
         entryIterators = [iter(ll[q1]), iter(ll[q2])]
         entries = [e.next() for e in entryIterators]
-        blocklen = Compiler.pull_uniform_entries(entries, entryIterators, wflib, [q1, q2])
-        self.assertEqual(blocklen, 120e-9)
-        self.assertEqual( all(len(e) == blocklen for e in entries), True )
+        blocklen = Compiler.pull_uniform_entries(entries, entryIterators)
+        self.assertAlmostEqual(blocklen, 120e-9)
+        self.assertTrue( all(e.length == blocklen for e in entries) )
 
     def test_merge_channels(self):
         q1 = Qubit(label='q1')
