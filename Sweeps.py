@@ -147,10 +147,13 @@ class SweepLibrary(Atom):
     def _get_sweepList(self):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         import JSONHelpers
-        if self.libFile:
-            with open(self.libFile, 'w') as FID:
+        
+        libFileName = fileName if fileName != None else self.libFile
+        
+        if libFileName:
+            with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):

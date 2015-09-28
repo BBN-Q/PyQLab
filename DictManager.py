@@ -39,8 +39,8 @@ class DictManager(Atom):
             self.itemDict.pop(itemLabel)
             #TODO: once ContainerDicts land see if we still need this
             self.displayList.pop(self.displayList.index(itemLabel))
-        else:
-            print("WARNING: %s is not in the list"%itemLabel)
+        elif itemLabel != '':
+            self.displayList.pop(self.displayList.index(itemLabel))
 
     def name_changed(self, oldLabel, newLabel):
         # Add copy of changing item

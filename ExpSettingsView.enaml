@@ -1,5 +1,5 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
-					 Menu, Action, FileDialog, ComboBox, PushButton, PopupView, Label, \
+					 Menu, Action, FileDialogEx, ComboBox, PushButton, PopupView, Label, \
 					 CheckBox, Form
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer, align
@@ -8,6 +8,7 @@ from QGL.ChannelsViews import ChannelLibraryView
 from instruments.InstrumentManagerView import InstrumentManagerView
 from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
+import os, sys, time
 
 
 #See what's in the quick pick file to enumerate it
@@ -24,6 +25,7 @@ def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
+			print(expSettings.curFileName)
 	return update_script_file_callback
 
 chosenQuickPick = bytearray("")
@@ -92,12 +94,42 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep.center_on_widget(main)
 						
 			Action:
-				text = 'Save As\tCtrl+Shift+S'
+				text = 'Save Config As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
 				triggered ::
-					dlg = FileDialog(root_object(), title='Choose a script file..', mode='save_file',
-						callback=get_update_script_file_callback(expSettings), filters=['*.json'])
-					dlg.open()
+					path = FileDialogEx.get_existing_directory(main,show_dirs_only=False)
+					if not os.path.isdir(path) and path !='':
+						print('% s Does not Exist: Creating %s'%(path,path))
+						os.mkdir(path)
+					
+						if expSettings.save_config(path):
+							NotificationPopup(main, window_type='window', displayText="Config Saved").show()
+						else:
+							ep = ErrorPopup(displayText=expSettings.format_errors())
+							ep.show()
+							ep.center_on_widget(main)
+			
+			Action:
+				text = 'Load Config\tCtrl+Shift+O'
+				tool_tip = 'Load Config Files from Saved Location'
+				triggered ::
+					path = FileDialogEx.get_existing_directory(main,show_dirs_only=False)
+					if not os.path.isdir(path):
+						print('% s Does not Exist: Creating %s'%(path,path))
+						ep = ErrorPopup(displayText=expSettings.format_errors())
+						ep.show()
+						ep.center_on_widget(main)
+						os.mkdir(path)
+					
+					if expSettings.load_config(path):
+						NotificationPopup(main, window_type='window', displayText="New Config Loaded ... Restarting GUI").show()
+						os.execl(sys.executable, sys.executable, * sys.argv)
+						
+					else:
+						ep = ErrorPopup(displayText=expSettings.format_errors())
+						ep.show()
+						ep.center_on_widget(main)
+						
 			Action:
 				text = "Stash current settings"
 				enabled = False

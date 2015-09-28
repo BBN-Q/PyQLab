@@ -120,11 +120,14 @@ class MeasFilterLibrary(Atom):
     def __getitem__(self, filterName):
         return self.filterDict[filterName]
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         #Move import here to avoid circular import
         import JSONHelpers
-        if self.libFile:
-            with open(self.libFile,'w') as FID:
+        
+        libFileName = fileName if fileName != None else self.libFile
+        
+        if libFileName:
+            with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
@@ -162,12 +165,13 @@ measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateC
 if __name__ == "__main__":
 
     #Work around annoying problem with multiple class definitions
-    from MeasFilters import DigitalHomodyne, Correlator, MeasFilterLibrary
+    from MeasFilters import DigitalDemod, Correlator, MeasFilterLibrary
 
-    testFilter1 = DigitalHomodyne(label='M1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6, channel=1)
-    testFilter2 = DigitalHomodyne(label='M2', boxCarStart=150, boxCarStop=600, IFfreq=39.2e6, samplingRate=250e6, channel=2)
-    testFilter3 = Correlator(label='M12')
-    filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M12':testFilter3}
+    testFilter1 = DigitalDemod(label='M1')
+    testFilter2 = DigitalDemod(label='M2')
+    testFilter3 = Correlator(label='M3')
+    testFilter4 = Correlator(label='M4')
+    filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M3':testFilter3,'M4':testFilter4}
 
     testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json', filterDict=filterDict)
 

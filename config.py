@@ -23,12 +23,13 @@ with open(PyQLabCfgFile, 'r') as f:
 	PyQLabCfg = json.load(f)
 
 #pull out the variables 
-AWGDir = PyQLabCfg['AWGDir']
-channelLibFile = PyQLabCfg['ChannelLibraryFile']
-instrumentLibFile = PyQLabCfg['InstrumentLibraryFile']
-sweepLibFile = PyQLabCfg['SweepLibraryFile']
-measurementLibFile = PyQLabCfg['MeasurementLibraryFile']
-quickpickFile = PyQLabCfg['QuickPickFile'] if 'QuickPickFile' in PyQLabCfg else ''
+#abspath allows the use of relative file names in the config file
+AWGDir = os.path.abspath(PyQLabCfg['AWGDir'])
+channelLibFile = os.path.abspath(PyQLabCfg['ChannelLibraryFile'])
+instrumentLibFile = os.path.abspath(PyQLabCfg['InstrumentLibraryFile'])
+sweepLibFile = os.path.abspath(PyQLabCfg['SweepLibraryFile'])
+measurementLibFile = os.path.abspath(PyQLabCfg['MeasurementLibraryFile'])
+quickpickFile = os.path.abspath(PyQLabCfg['QuickPickFile']) if 'QuickPickFile' in PyQLabCfg else ''
 
 # plotting options
 plotBackground = PyQLabCfg['PlotBackground'] if 'PlotBackground' in PyQLabCfg else '#EAEAF2'
