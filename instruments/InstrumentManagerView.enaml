@@ -14,6 +14,8 @@ from DictManagerView import DictManagerView
 
 from ExpSettingsVal import is_valid_instrument_name
 
+from plugins import find_view_maps
+
 enamldef EmptyInstrView(Container):
 	attr instr
 
@@ -32,6 +34,10 @@ otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, A
 otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
+
+# add plugins maps
+find_view_maps(Digitizers.Digitizer, otherViewMap)
+find_view_maps(AWGs.AWG, AWGViewMap)
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
