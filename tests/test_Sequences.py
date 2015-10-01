@@ -98,7 +98,7 @@ class AWGTestHelper(object):
 			self.truth_dir = self.truth_dir + os.path.sep + footer
 
 		if not os.path.isdir(self.awg_dir):
-			os.mkdir(self.awg_dir)
+			os.makedirs(self.awg_dir)
 		config.AWGDir = self.awg_dir
 
 	def compare_sequences(self, seqDir):

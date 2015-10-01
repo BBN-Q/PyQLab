@@ -11,7 +11,45 @@ from Sweeps import *
 from test_Sequences import APS2Helper
 import ExpSettingsVal
 
+
+testsRunning = 0
+
 class JSONTestHelper(object):
+
+	
+	testFileNames = [Libraries.channelLib.libFile, 
+					 Libraries.instrumentLib.libFile,
+					 Libraries.measLib.libFile,
+					 Libraries.sweepLib.libFile]
+
+	@classmethod
+	def backupFiles(cls):		
+		global testsRunning
+		testsRunning = testsRunning + 1
+		if testsRunning != 1:
+			return
+		for fileName in cls.testFileNames:
+			print "Testing for file {0}".format(fileName)
+			if os.path.exists(fileName):
+				print "Backing up file {0}".format(fileName)
+				if os.path.exists(fileName + '.org'):
+					os.remove(fileName + '.org')
+		 		os.rename(fileName, fileName + '.org')
+
+	@classmethod
+	def restoreFiles(cls):
+		global testsRunning
+		testsRunning = testsRunning - 1
+		if testsRunning > 0:
+			return
+		for fileName in cls.testFileNames:
+			print "Testing for file {0}".format(fileName)
+			if os.path.exists(fileName):
+				os.remove(fileName)
+			if os.path.exists(fileName+ '.org'):
+				print "Restoring file {0}".format(fileName)
+	 			os.rename(fileName + '.org', fileName)
+
 	def validate_json_dictionary(self, testDict, validDict):
 
 		# top level
@@ -56,27 +94,18 @@ class JSONTestHelper(object):
 
 class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
+	
 	@classmethod
 	def setUpClass(cls):
-		cls.removeFiles()
-
-	def setUp(self):
-		TestAWGJSON.removeFiles()
-		APS2Helper.__init__(self)
-		APS2Helper.setUp(self)
+		cls.backupFiles()
 
 	@classmethod
 	def tearDownClass(cls):
-		cls.removeFiles()
+		cls.restoreFiles()
 
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.channelLib.libFile):
-		# 	os.remove(Libraries.channelLib.libFile)
-		#
-		# if os.path.exists(Libraries.instrumentLib.libFile):
-		# 	os.remove(Libraries.instrumentLib.libFile)
+	def setUp(self):
+		APS2Helper.__init__(self)
+		APS2Helper.setUp(self)
 
 	def test_channels_instruments_library(self):
 		# test channels and instruments together as they are coupled
@@ -101,12 +130,18 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 
 class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
+	
+
 	@classmethod
 	def setUpClass(cls):
-		cls.removeFiles()
+		cls.backupFiles()
+
+	@classmethod
+	def tearDownClass(cls):
+		cls.restoreFiles()
 
 	def setUp(self):
-		TestMeasJSON.removeFiles()
+		
 		self.measurements = {}
 		self.measurements['R1'] = RawStream(label='R1', saveRecords = True,recordsFilePath = '/tmp/records', channel='1')
 		self.measurements['M1'] = DigitalDemod(label='M1',  saveRecords = True,recordsFilePath = '/tmp/records', IFfreq=10e6, samplingRate=250e6)
@@ -114,17 +149,7 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		self.measurements['KI1'] = KernelIntegration(label='KI1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
 		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integrationTime = 100)
 		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
-
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
-
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.measLib.libFile):
-		# 	os.remove(Libraries.measLib.libFile)
-
+	
 	def test_measurements_library(self):
 		Libraries.measLib.filterDict = self.measurements
 
@@ -140,12 +165,19 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 
+	
+
 	@classmethod
 	def setUpClass(cls):
-		cls.removeFiles()
+		cls.backupFiles()
+
+	@classmethod
+	def tearDownClass(cls):
+		cls.restoreFiles()
+
 
 	def setUp(self):
-		TestSweepJSON.removeFiles()
+
 		self.sweeps = {}
 		self.sweeps['PS'] = PointsSweep(label='PS', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['PW'] = Power(label='PW', instr = 'CSSRC',
@@ -173,16 +205,6 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 		self.sweeps['A'] = Attenuation(channel= 1 , instr = 'AInst', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['D'] = DC( instr = 'DCInst', start = 1.0 , stop = 10.0, numPoints = 10 )
 		self.sweeps['T'] = Threshold( instr = 'TInst', stream = '(1,1)', start = 1.0 , stop = 10.0, numPoints = 10 )
-
-	@classmethod
-	def tearDownClass(cls):
-		cls.removeFiles()
-
-	@classmethod
-	def removeFiles(cls):
-		pass
-		# if os.path.exists(Libraries.sweepLib.libFile):
-		# 	os.remove(Libraries.sweepLib.libFile)
 
 	def test_sweeps_library(self):
 		Libraries.sweepLib.sweepDict = self.sweeps
