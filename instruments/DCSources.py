@@ -8,7 +8,7 @@ class DCSource(Instrument):
 	value = Float(0.0).tag(desc='Output value (current or voltage)')
 
 class YokoGS200(DCSource):
-	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1.0, 10.0, 30.0).tag(desc='Output range')
+	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1, 10, 30).tag(desc='Output range')
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(YokoGS200, self).json_encode(matlabCompatible)
