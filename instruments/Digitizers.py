@@ -82,6 +82,7 @@ class X6(Instrument):
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
 	# channels = Dict(None, X6VirtualChannel)
 	channels = Coerced(dict)
+	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
@@ -125,4 +126,3 @@ if __name__ == "__main__":
 	view = TestX6Window(instr=digitizer)
 	view.show()
 	app.start()
-	

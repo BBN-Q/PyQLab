@@ -18,7 +18,7 @@ class RecordLengthValidator(Validator):
 	Validator for records which much be a mulitple of 64 (Alazar) or 16 (Acquiris)
 	"""
 	def validate(self, text):
-		try: 
+		try:
 			check = int(text)%self.lengthMult
 		except ValueError:
 			return False
@@ -28,7 +28,7 @@ class RecordLengthValidator(Validator):
 			return False
 
 	def fixup(self, text):
-		try: 
+		try:
 			check = int(text)%self.lengthMult
 			return str(int(text)/self.lengthMult)
 		except ValueError:
@@ -59,7 +59,7 @@ enamldef AlazarView(GroupBox):
 					text = 'Address:'
 				Field:
 					text := instr.address
-			GroupBox: 
+			GroupBox:
 				title = 'Horizontal'
 				Form:
 					Label:
@@ -81,7 +81,7 @@ enamldef AlazarView(GroupBox):
 						value <<  instr.samplingRate/1e6
 						value :: instr.samplingRate = value*1e6
 						tool_tip = instr.get_member('samplingRate').metadata['desc']
-			GroupBox: 
+			GroupBox:
 				title = 'Vertical'
 				Form:
 					Label:
@@ -104,7 +104,7 @@ enamldef AlazarView(GroupBox):
 					EnumComboBox:
 						obj := instr
 						enumName = 'bandwidth'
-			GroupBox: 
+			GroupBox:
 				title = 'Averager'
 				Form:
 					Label:
@@ -113,7 +113,7 @@ enamldef AlazarView(GroupBox):
 						validator = RecordLengthValidator(lengthMult=64)
 						value := instr.recordLength
 						tool_tip = instr.get_member('recordLength').metadata['desc']
-					Label: 
+					Label:
 						text = 'Segments'
 					IntField:
 						value := instr.nbrSegments
@@ -128,7 +128,7 @@ enamldef AlazarView(GroupBox):
 					IntField:
 						value := instr.nbrRoundRobins
 						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
-			GroupBox: 
+			GroupBox:
 				title = 'Trigger'
 				Form:
 					Label:
@@ -158,7 +158,7 @@ enamldef TestAlazarWindow(Window): tester:
 	AlazarView:
 		instr := tester.instr
 
-enamldef X6ChannelView(GroupBox): 
+enamldef X6ChannelView(GroupBox):
 	attr chan
 	share_layout=True
 	title = 'Ch. {}'.format(chan.label)
@@ -213,16 +213,21 @@ enamldef X6View(GroupBox):
 					text = 'Device ID'
 				Field:
 					text := instr.address
-			GroupBox: 
+			GroupBox:
 				title = 'Averager'
 				Form:
+					Label:
+						text = 'Acquisition Mode:'
+					EnumComboBox:
+						obj := instr
+						enumName = 'digitizerMode'
 					Label:
 						text = 'Samples'
 					IntField:
 						validator = RecordLengthValidator(lengthMult=16)
 						value := instr.recordLength
 						tool_tip = instr.get_member('recordLength').metadata['desc']
-					Label: 
+					Label:
 						text = 'Segments'
 					IntField:
 						value := instr.nbrSegments
@@ -237,7 +242,7 @@ enamldef X6View(GroupBox):
 					IntField:
 						value := instr.nbrRoundRobins
 						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
-			GroupBox: 
+			GroupBox:
 				title = 'Streams'
 				Form:
 					Label:
