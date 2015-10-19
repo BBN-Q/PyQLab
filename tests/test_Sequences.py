@@ -267,9 +267,9 @@ class TestSequences(object):
 		RabiWidth(self.q1,  np.linspace(0, 5e-6, 11))
 		self.compare_sequences('Rabi')
 
-	def test_Rabi_RabiAmp_TwoQubits(self):
+	def test_Rabi_RabiAmp_NQubits(self):
 		self.set_awg_dir('RabiAmp2')
-		RabiAmp_TwoQubits(self.q1, self.q2, np.linspace(0, 5e-6, 11),  np.linspace(0, 5e-6, 11))
+		RabiAmp_NQubits((self.q1, self.q2), np.linspace(0, 5e-6, 11))
 		self.compare_sequences('Rabi')
 
 	def test_Rabi_RabiAmpPi(self):
@@ -564,8 +564,8 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 		TestSequences.test_Rabi_RabiWidth(self)
 
 	@unittest.expectedFailure
-	def test_Rabi_RabiAmp_TwoQubits(self):
-		TestSequences.test_Rabi_RabiAmp_TwoQubits(self)
+	def test_Rabi_RabiAmp_NQubits(self):
+		TestSequences.test_Rabi_RabiAmp_NQubits(self)
 
 	@unittest.expectedFailure
 	def test_Rabi_RabiAmpPi(self):
