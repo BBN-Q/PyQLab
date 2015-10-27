@@ -52,7 +52,12 @@ enamldef AWGForm(GroupBox): myAWGForm:
     attr awg
     padding = 5
     title = '{} ({})'.format(awg.label, awg.__class__.__name__)
-    constraints = [vbox(hbox(formItems1, formItems2, spacer), channels)]
+    constraints = [
+        vbox(
+            hbox(formItems1, formItems2, spacer),
+            channels
+        )
+    ]
     Form: formItems1:
         hug_width = 'medium'
         Label:
@@ -77,31 +82,33 @@ enamldef AWGForm(GroupBox): myAWGForm:
             enumName = 'triggerSource'
 
     Form: formItems2:
-        Label:
-            text = 'Sequence Reload'
-        CheckBox:
-            checked := myAWGForm.awg.seqForce 
-        Field:
-            text := myAWGForm.awg.seqFile
-        PushButton:
-            text = '...'
-            clicked ::
-                dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file',
-                 callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'], 
-                 path=config.AWGDir)
-                dlg.open()
         Conditional:
-            condition = isinstance(myAWGForm.awg, AWGs.APS)
+            condition = not isinstance(myAWGForm.awg, AWGs.APS2TDM)
             Label:
-                text = 'Mini LL Repeat'
-            IntField:
-                value := myAWGForm.awg.miniLLRepeat
-                tool_tip = myAWGForm.awg.get_member('miniLLRepeat').metadata["desc"]
-        Label:
-            text = 'Delay'
-        FloatField:
-            value := myAWGForm.awg.delay
-            tool_tip = myAWGForm.awg.get_member('delay').metadata["desc"]
+                text = 'Sequence Reload'
+            CheckBox:
+                checked := myAWGForm.awg.seqForce
+            Field:
+                text := myAWGForm.awg.seqFile
+            PushButton:
+                text = '...'
+                clicked ::
+                    dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file',
+                     callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'], 
+                     path=config.AWGDir)
+                    dlg.open()
+            Conditional:
+                condition = isinstance(myAWGForm.awg, AWGs.APS)
+                Label:
+                    text = 'Mini LL Repeat'
+                IntField:
+                    value := myAWGForm.awg.miniLLRepeat
+                    tool_tip = myAWGForm.awg.get_member('miniLLRepeat').metadata["desc"]
+            Label:
+                text = 'Delay'
+            FloatField:
+                value := myAWGForm.awg.delay
+                tool_tip = myAWGForm.awg.get_member('delay').metadata["desc"]
     Container: channels:
         constraints = [hbox(hbox(*inc.objects), spacer)]
         Include: inc:
