@@ -213,6 +213,11 @@ enamldef X6View(GroupBox):
 					text = 'Device ID'
 				Field:
 					text := instr.address
+				Label:
+					text = "Reference Source"
+				EnumComboBox:
+					obj := instr
+					enumName = 'reference'
 			GroupBox:
 				title = 'Averager'
 				Form:

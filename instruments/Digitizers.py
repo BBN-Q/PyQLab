@@ -83,6 +83,7 @@ class X6(Instrument):
 	# channels = Dict(None, X6VirtualChannel)
 	channels = Coerced(dict)
 	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
+	reference = Enum('external', 'internal').tag(desc='Clock source for 10MHz reference to clock generation tree')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
