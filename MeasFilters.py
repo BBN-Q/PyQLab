@@ -109,7 +109,7 @@ class MeasFilterLibrary(Atom):
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
-    version = Int(0)
+    version = Int(1)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
@@ -123,9 +123,9 @@ class MeasFilterLibrary(Atom):
     def write_to_file(self,fileName=None):
         #Move import here to avoid circular import
         import JSONHelpers
-        
+
         libFileName = fileName if fileName != None else self.libFile
-        
+
         if libFileName:
             with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)

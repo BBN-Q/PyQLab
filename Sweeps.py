@@ -128,7 +128,7 @@ class SweepLibrary(Atom):
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
-    version = Int(0)
+    version = Int(1)
 
     sweepManager = Typed(DictManager)
 
@@ -149,9 +149,9 @@ class SweepLibrary(Atom):
 
     def write_to_file(self,fileName=None):
         import JSONHelpers
-        
+
         libFileName = fileName if fileName != None else self.libFile
-        
+
         if libFileName:
             with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)

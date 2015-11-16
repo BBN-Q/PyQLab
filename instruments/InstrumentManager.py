@@ -38,7 +38,7 @@ class InstrumentLibrary(Atom):
     AWGs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
-    version = Int(0)
+    version = Int(3)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -52,7 +52,7 @@ class InstrumentLibrary(Atom):
         self.AWGs = DictManager(itemDict=self.instrDict,
                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
                                 possibleItems=AWGs.AWGList)
-        
+
         self.sources = DictManager(itemDict=self.instrDict,
                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
                                    possibleItems=MicrowaveSources.MicrowaveSourceList)
@@ -73,11 +73,11 @@ class InstrumentLibrary(Atom):
             #Pause the file watcher to stop circular updating insanity
             if self.fileWatcher:
                 self.fileWatcher.pause()
-                
+
                 if libFileName:
                     with open(libFileName, 'w') as FID:
                         json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
-            
+
             if self.fileWatcher:
                 self.fileWatcher.resume()
 
@@ -146,7 +146,7 @@ class InstrumentLibrary(Atom):
 
 if __name__ == '__main__':
 
-    
+
     from MicrowaveSources import AgilentN5183A
     instrLib = InstrumentLibrary(instrDict={'Agilent1':AgilentN5183A(label='Agilent1'), 'Agilent2':AgilentN5183A(label='Agilent2')})
     with enaml.imports():
