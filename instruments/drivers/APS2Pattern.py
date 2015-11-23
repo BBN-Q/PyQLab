@@ -291,12 +291,13 @@ def timestamp_entries(seq):
 		t += seq[ct].length
 
 def synchronize_clocks(seqs):
-	# SYNC instructions "reset the clock", so when we encounter one, we need to
-	# synchronize the accumulated time to the largest value on any channel
-	syncInstructions = [filter(lambda s: isinstance(s, ControlFlow.Sync), seq) for seq in seqs if seq]
+	# Control-flow instructions (CFIs) must occur at the same time on all channels.
+	# Therefore, we need to "reset the clock" by synchronizing the accumulated
+	# time at each CFI to the largest value on any channel
+	syncInstructions = [filter(lambda s: isinstance(s, ControlFlow.ControlInstruction), seq) for seq in seqs if seq]
 
-	# add length to SYNC instructions to make accumulated time match at end of SYNCs
-	# keep running tally of how much each channel has been shifted so far
+	# Add length to control-flow instructions to make accumulated time match at end of CFI.
+	# Keep running tally of how much each channel has been shifted so far.
 	localShift = [0 for _ in syncInstructions]
 	for ct in range(len(syncInstructions[0])):
 		step = [seq[ct] for seq in syncInstructions]
@@ -309,6 +310,11 @@ def synchronize_clocks(seqs):
 	# re-timestamp to propagate changes across the sequences
 	for seq in seqs:
 		timestamp_entries(seq)
+	# then transfer the control flow "lengths" back into start times
+	for seq in syncInstructions:
+		for instr in seq:
+			instr.startTime += instr.length
+			instr.length = 0
 
 def create_seq_instructions(seqs, offsets):
 	'''
@@ -339,19 +345,8 @@ def create_seq_instructions(seqs, offsets):
 		                   seqs[ct])
 	for ct in range(len(seqs)):
 		if seqs[ct]:
-			localControl = filter(lambda s: isinstance(s, (ControlFlow.ControlInstruction, BlockLabel.BlockLabel)),
-				                  seqs[ct])
 			seqs[ct] = filter(lambda s: isinstance(s, Compiler.Waveform), seqs[ct])
-			# Individual channel delays can cause control-flow instructions to appear at
-			# different start times on the various channels (wfs, m1, m2, etc...). Update
-			# control instructions to have the earliest time stamp of any occurence on
-			# any channel.
-			# n.b.: we are assuming that control instructions have been uniformly
-			# broadcast onto all channels, so that it is sufficient to refer to them by
-			# a common index.
-			if ct > 0:
-				for ct, (a, b) in enumerate(zip(controlInstrs, localControl)):
-					controlInstrs[ct].startTime = min(a.startTime, b.startTime)
+
 	seqs.insert(0, controlInstrs)
 
 	# create (seq, startTime) pairs over all sequences
