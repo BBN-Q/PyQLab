@@ -19,3 +19,12 @@ enamldef EnumFloatComboBox(ComboBox):
 	index << itemList.index(str(getattr(obj, floatName)))
 	index :: setattr(obj, floatName, float(itemList[index]))
 	tool_tip = obj.get_member(floatName).metadata["desc"]
+
+enamldef EnumIntComboBox(ComboBox):
+	attr obj
+	attr intName
+	attr itemList = [str(item) for item in list(obj.get_member(intName).items)]
+	items = itemList
+	index << itemList.index(str(getattr(obj, intName)))
+	index :: setattr(obj, intName, int(itemList[index]))
+	tool_tip = obj.get_member(intName).metadata["desc"]
