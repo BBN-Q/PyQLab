@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from widgets import EnumComboBox
+from widgets import EnumComboBox, EnumIntComboBox
 from DictManagerView import DictManagerView
 
 import Sweeps
@@ -76,10 +76,9 @@ enamldef AttenuationSweepForm(GroupBox):
             items << [item for item in possibleInstrs]
         Label:
             text = 'Channel'
-        ComboBox:
-            items = ['1','2','3']
-            index << sweep.channel
-            #index :: sweep.stream = index 
+        EnumIntComboBox:
+            obj := sweep
+            intName = 'channel'
 
 enamldef SegmentNumForm(GroupBox):
     attr sweep
