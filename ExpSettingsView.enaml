@@ -102,12 +102,12 @@ enamldef ExpSettingsView(MainWindow): main:
 						print('% s Does not Exist: Creating %s'%(path,path))
 						os.mkdir(path)
 					
-						if expSettings.save_config(path):
-							NotificationPopup(main, window_type='window', displayText="Config Saved").show()
-						else:
-							ep = ErrorPopup(displayText=expSettings.format_errors())
-							ep.show()
-							ep.center_on_widget(main)
+					if expSettings.save_config(path):
+						NotificationPopup(main, window_type='window', displayText="Config Saved").show()
+					else:
+						ep = ErrorPopup(displayText=expSettings.format_errors())
+						ep.show()
+						ep.center_on_widget(main)
 			
 			Action:
 				text = 'Load Config\tCtrl+Shift+O'
