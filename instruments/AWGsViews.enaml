@@ -50,6 +50,7 @@ def get_seq_file_callback(awg):
 
 enamldef AWGForm(GroupBox): myAWGForm:
     attr awg
+    attr instrumentLib
     padding = 5
     title = '{} ({})'.format(awg.label, awg.__class__.__name__)
     constraints = [
@@ -116,12 +117,15 @@ enamldef AWGForm(GroupBox): myAWGForm:
 
 enamldef AWGView(Window): main:
     attr awg
+    attr instrumentLib
     title = awg.label
     Container:
         AWGForm:
             awg := main.awg
+            instrumentLib := main.instrumentLib
 
 enamldef EmptyAWGForm(Container):
     attr awg
+    attr instrumentLib
 
 AWGViewMap = {type(None):EmptyAWGForm, AWGs.AWG:AWGForm}

@@ -59,6 +59,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
 				modelName = 'awg'
+				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
 		
 		Page:
