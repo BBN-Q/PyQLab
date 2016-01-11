@@ -191,12 +191,32 @@ def propagate_frame_changes(seq):
     '''
     Propagates all frame changes through sequence
     '''
-    frame = 0
-    for entry in seq:
+    masterFrame = 0
+    frame = []
+    branch = 0
+    masterBranch = True
+    for (ind,entry) in enumerate(seq):
         if not isinstance(entry, Compiler.Waveform):
+            if isinstance(entry, ControlFlow.Goto): #add a new branch
+                if ind!=(len(seq)-1):
+                    frame.append(masterFrame)
+                    masterBranch = False
+            elif isinstance(entry, BlockLabel.BlockLabel) and not isinstance(seq[ind+1], ControlFlow.ComparisonInstruction): #root sequence
+                masterBranch = True
+                masterFrame = frame[0] if frame else 0
             continue
-        entry.phase = np.mod(frame + entry.phase, 2*pi)
-        frame += entry.frameChange + (-2*np.pi * entry.frequency * entry.length) #minus from negative frequency qubits
+        currentFrame = masterFrame if masterBranch else frame[-1]
+        entry.phase = np.mod(currentFrame + entry.phase, 2*pi)
+        updateFrame = entry.frameChange + (-2*np.pi * entry.frequency * entry.length) #minus from negative frequency qubits
+        if masterBranch:
+            masterFrame += updateFrame
+            if frame:
+                frame =  [x+updateFrame for x in frame]
+        else:
+            frame[-1] += updateFrame
+    if sum(np.array(frame)-frame[0])!=0 and not (isinstance(seq[-2], BlockLabel.BlockLabel) and isinstance(seq[-1], ControlFlow.Goto)): 
+        #all phases must be equal at the end of each branch, unless the sequence is over
+        raise Exception("Branches have different lengths. Phases of following pulses are not consistent.")
     return seq
 
 def quantize_phase(seqs, precision):
