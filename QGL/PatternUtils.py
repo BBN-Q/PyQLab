@@ -214,9 +214,10 @@ def propagate_frame_changes(seq):
                 frame =  [x+updateFrame for x in frame]
         else:
             frame[-1] += updateFrame
-    if sum(np.array(frame)-frame[0])!=0 and not (isinstance(seq[-2], BlockLabel.BlockLabel) and isinstance(seq[-1], ControlFlow.Goto)): 
+    if frame:
+        if sum(np.array(frame)-frame[0])!=0 and not (isinstance(seq[-2], BlockLabel.BlockLabel) and isinstance(seq[-1], ControlFlow.Goto)): 
         #all phases must be equal at the end of each branch, unless the sequence is over
-        raise Exception("Branches have different lengths. Phases of following pulses are not consistent.")
+            raise Exception("Branches have different lengths. Phases of following pulses are not consistent.")
     return seq
 
 def quantize_phase(seqs, precision):
