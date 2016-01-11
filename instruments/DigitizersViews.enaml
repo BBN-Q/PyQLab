@@ -50,6 +50,7 @@ class SampleRateValidator(Validator):
 
 enamldef AlazarView(GroupBox):
 	attr instr
+	attr instrumentLib
 	title = '{} ({})'.format(instr.label, instr.__class__.__name__)
 	ScrollArea:
 		Container:
@@ -204,6 +205,7 @@ enamldef X6ChannelView(GroupBox):
 
 enamldef X6View(GroupBox):
 	attr instr
+	attr instrumentLib
 	title = '{} ({})'.format(instr.label, instr.__class__.__name__)
 	ScrollArea:
 		Container:
