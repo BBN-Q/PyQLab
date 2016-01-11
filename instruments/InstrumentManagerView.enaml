@@ -18,11 +18,13 @@ from plugins import find_view_maps
 
 enamldef EmptyInstrView(Container):
 	attr instr
+	attr instrumentLib
 
 #For standard instruments just display the name and address field
 enamldef DefaultInstrView(GroupBox):
 	hug_width = 'medium'
 	attr instr
+	attr instrumentLib
 	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	Form:
 		Label:
@@ -59,6 +61,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
 				modelName = 'awg'
+				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
 		
 		Page:
@@ -68,6 +71,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.others
 				viewMap = otherViewMap
 				modelName = 'instr'
+				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
 
 enamldef InstrumentManagerWindow(Window): 

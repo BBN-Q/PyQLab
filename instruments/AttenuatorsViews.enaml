@@ -8,6 +8,7 @@ import Attenuators
 
 enamldef DigitalAttenuatorForm(GroupBox):
 	attr instr
+	attr instrumentLib
 	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	padding = 5
 	Form:
