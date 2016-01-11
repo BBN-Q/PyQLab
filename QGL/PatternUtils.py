@@ -201,7 +201,8 @@ def propagate_frame_changes(seq):
                 if ind!=(len(seq)-1):
                     frame.append(masterFrame)
                     masterBranch = False
-            elif isinstance(entry, BlockLabel.BlockLabel) and not isinstance(seq[ind+1], ControlFlow.ComparisonInstruction): #root sequence
+            elif isinstance(entry, BlockLabel.BlockLabel) \
+            and not isinstance(seq[ind+1], ControlFlow.ComparisonInstruction) and not isinstance(seq[ind-1],ControlFlow.Goto): #root sequence
                 masterBranch = True
                 masterFrame = frame[0] if frame else 0
             continue
