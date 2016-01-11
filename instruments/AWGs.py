@@ -16,7 +16,7 @@ from plugins import find_plugins
 
 AWGList = []
 
-plugins = find_plugins(AWG)
+plugins = find_plugins(AWG, verbose=False)
 for plugin in plugins:
     AWGList.append(plugin)
     globals().update({plugin.__name__: plugin})

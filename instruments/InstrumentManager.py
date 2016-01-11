@@ -22,7 +22,7 @@ newOtherInstrs = [Digitizers.AlazarATS9870,
     DCSources.YokoGS200,
     Attenuators.DigitalAttenuator]
 
-plugins = find_plugins(Digitizers.Digitizer)
+plugins = find_plugins(Digitizers.Digitizer, verbose=False)
 for plugin in plugins:
     newOtherInstrs.append(plugin)
     globals().update({plugin.__name__: plugin})

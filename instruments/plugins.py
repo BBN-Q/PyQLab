@@ -17,15 +17,15 @@ def find_view_maps(baseClass, viewMap):
     def addToMap(newMap):
         keys = newMap.viewMap.keys()
         if newMap.viewType.__name__ != baseClass.__name__:
-            print "Not mapping", newMap.viewType.__name__,' to ', baseClass.__name__
+            # print "Not mapping", newMap.viewType.__name__,'to', baseClass.__name__
             return
         filterMap = {key:newMap.viewMap[key] for key in keys if isStrictSubclass(key, baseClass)}
         viewMap.update(filterMap.items())
 
-    for plugin in find_plugins(PluginViewMap):
+    for plugin in find_plugins(PluginViewMap, verbose=False):
         addToMap(plugin)
 
-def find_plugins(baseClass):
+def find_plugins(baseClass, verbose=True):
     plugins = []
     dirPath = os.path.dirname(__file__)
     searchString = '{0}{1}drivers{2}*.py'.format(dirPath, os.sep, os.sep)
@@ -38,6 +38,7 @@ def find_plugins(baseClass):
         for name, clsObj in clsmembers:
             if isStrictSubclass(clsObj, baseClass):
                 plugins.append(clsObj)
-                print 'Registered Driver {0}'.format(name)
+                if verbose:
+                    print 'Registered Driver {0}'.format(name)
     return plugins
                 
