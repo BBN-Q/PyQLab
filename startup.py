@@ -5,5 +5,4 @@ from QGL import *
 import QGL
 import config as PQconfig
 
-QGL.Compiler.channelLib = channelLib
-QGL.Compiler.instrumentLib = instrumentLib
+# QGL.Compiler.channelLib = channelLib

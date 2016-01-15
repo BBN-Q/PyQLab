@@ -4,7 +4,7 @@ from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, Men
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
-from QGL.ChannelsViews import ChannelLibraryView
+from ChannelsViews import ChannelLibraryView
 from instruments.InstrumentManagerView import InstrumentManagerView
 from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
@@ -183,6 +183,8 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				ChannelLibraryView:
 					channelLib := expSettings.channels
+					logicalChannelManager := expSettings.logicalChannelManager
+					physicalChannelManager := expSettings.physicalChannelManager
 					instrumentLib := expSettings.instruments
 			Page:
 				title = 'Instruments'

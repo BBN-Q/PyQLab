@@ -10,11 +10,13 @@ import argparse, sys
 from instruments.InstrumentManager import InstrumentLibrary
 import Sweeps
 import MeasFilters
+import QGL.ChannelLibrary
 import QGL.Channels
 import json
 import os
 import config
 import ExpSettingsVal
+from DictManager import DictManager
 import shutil
 
 class ExpSettings(Atom):
@@ -22,7 +24,9 @@ class ExpSettings(Atom):
     sweeps = Typed(Sweeps.SweepLibrary)
     instruments = Typed(InstrumentLibrary)
     measurements = Typed(MeasFilters.MeasFilterLibrary)
-    channels = Typed(QGL.Channels.ChannelLibrary)
+    channels = Typed(QGL.ChannelLibrary.ChannelLibrary)
+    logicalChannelManager = Typed(DictManager)
+    physicalChannelManager = Typed(DictManager)
     CWMode = Bool(False)
     validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
@@ -36,6 +40,17 @@ class ExpSettings(Atom):
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
 
+        self.logicalChannelManager = DictManager(
+            itemDict = self.channels.channelDict,
+            displayFilter = lambda x : isinstance(x, QGL.Channels.LogicalChannel),
+            possibleItems = QGL.Channels.NewLogicalChannelList
+        )
+        self.physicalChannelManager = DictManager(
+            itemDict = self.channels.channelDict,
+            displayFilter = lambda x : isinstance(x, QGL.Channels.PhysicalChannel),
+            possibleItems = QGL.Channels.NewPhysicalChannelList
+        )
+
     # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
     def update_instr_list(self):
@@ -45,7 +60,6 @@ class ExpSettings(Atom):
                 self.sweeps.possibleInstrs.append(key)
 
     def load_from_file(self, fileName):
-        import JSONHelpers
         pass
 
     def write_to_file(self,fileName=None):
@@ -159,9 +173,9 @@ if __name__ == '__main__':
                               channels=Libraries.channelLib)
 
     # setup on change AWG
+    # TODO: isn't this already handled byteh ExpSettings constructor?
     expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
     
-
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
     parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)    
