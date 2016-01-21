@@ -31,12 +31,12 @@ def find_plugins(baseClass, verbose=True):
     searchString = '{0}{1}drivers{2}*.py'.format(dirPath, os.sep, os.sep)
     for file in glob(searchString):
         driverName = file.split(os.sep)[-1].split('.')[0]
-        driverName = 'instruments.drivers.' + driverName
-        driver = import_module(driverName)
+        fullDriverName = 'instruments.drivers.' + driverName
+        driver = import_module(fullDriverName)
         clsmembers = inspect.getmembers(driver, inspect.isclass)
         # register subclasses of AWG excluding AWG
         for name, clsObj in clsmembers:
-            if isStrictSubclass(clsObj, baseClass):
+            if isStrictSubclass(clsObj, baseClass) and name == driverName:
                 plugins.append(clsObj)
                 if verbose:
                     print 'Registered Driver {0}'.format(name)
