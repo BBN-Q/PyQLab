@@ -9,7 +9,7 @@ from enaml.qt.qt_application import QtApplication
 
 from instruments.MicrowaveSources import MicrowaveSource
 from instruments.Instrument import Instrument
-from instruments.plugins import register_plugins
+from instruments.plugins import find_plugins
 
 from DictManager import DictManager
 
@@ -195,8 +195,15 @@ class SweepLibrary(Atom):
                     'version': self.version
                 }
 
+# local plugin registration to enable access by Sweeps.plugin
 def find_sweeps_plugins():
-    register_plugins(Sweep, newSweepClasses)
+    plugins = find_plugins(Sweep, verbose=False)
+    for plugin in plugins:
+        if plugin not in newSweepClasses:
+            newSweepClasses.append(plugin)
+        if plugin.__name__ not in globals().keys():
+            globals().update({plugin.__name__: plugin})
+            print 'Registered Plugin {0}'.format(plugin.__name__)
 
 if __name__ == "__main__":
 

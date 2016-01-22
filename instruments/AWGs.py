@@ -12,9 +12,18 @@ from enaml.qt.qt_application import QtApplication
 
 from instruments.AWGBase import AWGChannel, AWG, AWGDriver
 
-from plugins import register_plugins
+from plugins import find_plugins
 
-AWGList = register_plugins(AWG, [])
+AWGList = []
+
+# local plugin registration to enable access by AWGs.plugin
+plugins = find_plugins(AWG, verbose=False)
+for plugin in plugins:
+    if plugin not in AWGList:
+        AWGList.append(plugin)
+        if plugin.__name__ not in globals().keys():
+            globals().update({plugin.__name__: plugin})
+            print 'Registered Plugin {0}'.format(plugin.__name__)
 
 if __name__ == "__main__":
     with enaml.imports():
