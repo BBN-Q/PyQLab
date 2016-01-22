@@ -36,7 +36,7 @@ def find_plugins(baseClass, verbose=True):
         clsmembers = inspect.getmembers(driver, inspect.isclass)
         # register subclasses of AWG excluding AWG
         for name, clsObj in clsmembers:
-            if isStrictSubclass(clsObj, baseClass) and name == driverName:
+            if isStrictSubclass(clsObj, baseClass):
                 plugins.append(clsObj)
                 if verbose:
                     print 'Registered Driver {0}'.format(name)
