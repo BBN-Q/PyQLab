@@ -14,9 +14,7 @@ from instruments.AWGBase import AWGChannel, AWG, AWGDriver
 
 from plugins import register_plugins
 
-AWGList = []
-
-register_plugins(AWG, AWGList)
+AWGList = register_plugins(AWG, [])
 
 if __name__ == "__main__":
     with enaml.imports():

@@ -46,8 +46,9 @@ def find_plugins(baseClass, verbose=True):
 def register_plugins(baseClass, pluginList):
     plugins = find_plugins(baseClass, verbose=False)
     for plugin in plugins:
-        if pluginList and plugin not in pluginList:
+        if pluginList is not None and plugin not in pluginList:
             pluginList.append(plugin)
         if plugin.__name__ not in globals().keys():
             globals().update({plugin.__name__: plugin})
             print 'Registered Plugin {0}'.format(plugin.__name__)
+    return pluginList
