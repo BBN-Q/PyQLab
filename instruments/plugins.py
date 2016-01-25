@@ -31,8 +31,8 @@ def find_plugins(baseClass, verbose=True):
     searchString = '{0}{1}drivers{2}*.py'.format(dirPath, os.sep, os.sep)
     for file in glob(searchString):
         driverName = file.split(os.sep)[-1].split('.')[0]
-        driverName = 'instruments.drivers.' + driverName
-        driver = import_module(driverName)
+        fullDriverName = 'instruments.drivers.' + driverName
+        driver = import_module(fullDriverName)
         clsmembers = inspect.getmembers(driver, inspect.isclass)
         # register subclasses of AWG excluding AWG
         for name, clsObj in clsmembers:
@@ -42,3 +42,13 @@ def find_plugins(baseClass, verbose=True):
                     print 'Registered Driver {0}'.format(name)
     return plugins
                 
+                
+def register_plugins(baseClass, pluginList):
+    plugins = find_plugins(baseClass, verbose=False)
+    for plugin in plugins:
+        if pluginList is not None and plugin not in pluginList:
+            pluginList.append(plugin)
+        if plugin.__name__ not in globals().keys():
+            globals().update({plugin.__name__: plugin})
+            print 'Registered Plugin {0}'.format(plugin.__name__)
+    return pluginList
