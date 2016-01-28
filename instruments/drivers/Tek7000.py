@@ -6,3 +6,4 @@ from TekPattern import *
 class Tek7000(AWG):
 	numChannels = Int(default=2)
 	seqFileExt = Constant('.awg')
+	translator = Constant('TekPattern')

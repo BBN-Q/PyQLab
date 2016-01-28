@@ -6,6 +6,7 @@ from APS2Pattern import *
 class APS2(AWG):
 	numChannels = Int(default=2)
 	seqFileExt = Constant('.h5')
+	translator = Constant('APS2Pattern')
 	triggerSource = Enum('Internal', 'External', 'System').tag(desc='Source of trigger')
 
 	naming_convention = ['12', '12m1', '12m2', '12m3', '12m4']

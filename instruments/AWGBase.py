@@ -13,19 +13,7 @@ import glob
 import copy
 
 class AWGDriver:
-
-    empty_channel_set = {}
     naming_convention = []
-
-    def read_sequence_file(self, filename):
-        pass
-
-    def write_sequence_file(self, data, filename):
-        pass
-
-    def get_empty_channel_set(self):
-        # return copy of empty_channel_set so different AWGs will not share memory
-        return copy.copy(self.empty_channel_set)
 
     def get_naming_convention(self):
         # return copy of empty_channel_set so different AWGs will not share memory
@@ -45,8 +33,10 @@ class AWG(Instrument, AWGDriver):
     numChannels = Int()
     channels = List(AWGChannel)
     seqFile = Str().tag(desc='Path to sequence file.')
+    seqFileExt = Constant('')
     seqForce = Bool(True).tag(desc='Whether to reload the sequence')
     delay = Float(0.0).tag(desc='time shift to align multiple AWGs')
+    translator = Constant('')
 
     def __init__(self, **traits):
         super(AWG, self).__init__(**traits)
@@ -57,8 +47,9 @@ class AWG(Instrument, AWGDriver):
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(AWG, self).json_encode(matlabCompatible)
 
-        #The seq file extension is constant so don't encode
+        # Skip encoding of constants
         del jsonDict["seqFileExt"]
+        del jsonDict["translator"]
 
         if matlabCompatible:
             channels = jsonDict.pop('channels', None)
