@@ -5,7 +5,7 @@ from enaml.qt.qt_application import QtApplication
 from Instrument import Instrument
 import MicrowaveSources
 import AWGs
-import FileWatcher
+from JSONLibraryUtils import FileWatcher, LibraryCoders
 
 import importlib
 
@@ -66,8 +66,6 @@ class InstrumentLibrary(Atom):
         return self.instrDict[instrName]
 
     def write_to_file(self,fileName=None):
-        #Move import here to avoid circular import
-        import JSONHelpers
         libFileName = fileName if fileName != None else self.libFile
         if self.libFile:
             #Pause the file watcher to stop circular updating insanity
@@ -76,18 +74,16 @@ class InstrumentLibrary(Atom):
 
                 if libFileName:
                     with open(libFileName, 'w') as FID:
-                        json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+                        json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
 
             if self.fileWatcher:
                 self.fileWatcher.resume()
 
     def load_from_library(self):
-        #Move import here to avoid circular import
-        import JSONHelpers
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                    tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
                     if isinstance(tmpLib, InstrumentLibrary):
                         self.instrDict.update(tmpLib.instrDict)
                         # grab library version

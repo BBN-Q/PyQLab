@@ -63,10 +63,9 @@ class ExpSettings(Atom):
         pass
 
     def write_to_file(self,fileName=None):
-        import JSONHelpers
         curFileName = fileName if fileName != None else self.curFileName
         with open(curFileName, 'w') as FID:
-            json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
+            json.dump(self, FID, cls=ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
     def write_libraries(self):
         """Write all the libraries to their files.
@@ -162,6 +161,34 @@ class ExpSettings(Atom):
 
     def format_errors(self):
         return '\n'.join(self.validation_errors)
+
+class ScripterEncoder(json.JSONEncoder):
+    """
+    Helper for QLab to encode all the classes for the matlab experiment script.
+    """
+    def __init__(self, CWMode=False, **kwargs):
+        super(ScripterEncoder, self).__init__(**kwargs)
+        self.CWMode = CWMode
+
+    def default(self, obj):
+        if isinstance(obj, Atom):
+            #Check for a json_encode option
+            try:
+                jsonDict = obj.json_encode(matlabCompatible=True)
+            except AttributeError:
+                jsonDict = obj.__getstate__()
+            except:
+                print("Unexpected error encoding to JSON")
+                raise
+
+            #Patch up some issues on the JSON dictionary
+            #Matlab doesn't use the label
+            jsonDict.pop('label', None)
+
+            return jsonDict
+
+        else:
+            return super(ScripterEncoder, self).default(obj)
 
 if __name__ == '__main__':
     import Libraries
