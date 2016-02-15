@@ -179,7 +179,7 @@ def test_physical_channels():
     physicalChannels = [channelName for channelName in channels.keys() if is_physical_channel(channelName)]
 
     for channel in physicalChannels:
-        awg = channels[channel].AWG.label
+        awg = channels[channel].AWG
         if awg == '':
             errMsg = 'Physical Channel "{0}" requires an AWG assignment'.format(channel)
             errors.append(errMsg)
@@ -219,9 +219,10 @@ def invalid_awg_name_convention_common(label, channelName, conventionList):
         return errorStr.format(label, channelName, conventionList)
     return None
 
-def invalid_awg_name_convention(AWG, channelName):
+def invalid_awg_name_convention(awgLabel, channelName):
+    AWG = instruments[awgLabel]
     convention = AWG.get_naming_convention()
-    return invalid_awg_name_convention_common(AWG.label, channelName,convention)
+    return invalid_awg_name_convention_common(awgLabel, channelName,convention)
 
 # GUI validator
 def is_valid_awg_channel_name(channelName):
@@ -232,7 +233,7 @@ def is_valid_awg_channel_name(channelName):
 
     if awgName not in instruments.keys():
         return False
-    return (invalid_awg_name_convention(instruments[awgName], awgChan) is None)
+    return (invalid_awg_name_convention(awgName, awgChan) is None)
 
 #####################################################################################
 
