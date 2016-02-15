@@ -7,9 +7,9 @@ from instruments.InstrumentManager import InstrumentLibrary
 from QGL.ChannelLibrary import ChannelLibrary
 from Sweeps import SweepLibrary
 from MeasFilters import MeasFilterLibrary
-import LibraryMigrator
+from JSONLibraryUtils import JSONMigrators
 
-migrationMsg = LibraryMigrator.migrate_all()
+migrationMsg = JSONMigrators.migrate_all(config)
 for msg in migrationMsg:
     print msg
 
