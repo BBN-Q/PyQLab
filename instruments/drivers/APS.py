@@ -1,8 +1,6 @@
 from instruments.AWGBase import AWG, AWGDriver
 from atom.api import Int, Constant
 
-from APSPattern import *
-
 class APS(AWG):
 	numChannels = Int(default=4)
 	miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')

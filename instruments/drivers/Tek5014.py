@@ -1,8 +1,6 @@
 from instruments.AWGBase import AWG, AWGDriver
 from atom.api import Int, Constant
 
-from TekPattern import *
-
 class Tek5014(AWG, AWGDriver):
 	numChannels = Int(default=4)
 	seqFileExt = Constant('.awg')
