@@ -1,8 +1,6 @@
 from instruments.AWGBase import AWG, AWGDriver
 from atom.api import Int, Constant, Enum
 
-from APS2Pattern import *
-
 class APS2(AWG):
 	numChannels = Int(default=2)
 	seqFileExt = Constant('.h5')
