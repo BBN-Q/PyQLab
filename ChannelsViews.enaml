@@ -8,8 +8,6 @@ from DictManagerView import DictManagerView
 from widgets import EnumComboBox
 
 import QGL.Channels
-from instruments.AWGs import AWG
-from instruments.MicrowaveSources import MicrowaveSource
 
 import QGL.PulseShapes
 from types import FunctionType
@@ -17,26 +15,21 @@ psList = [f for f in QGL.PulseShapes.__dict__.values() if isinstance(f, Function
 
 from ExpSettingsVal import is_valid_awg_channel_name
 
-def setIfNotEmpty(lvalue, library, item):
-    if item != '':
-        lvalue = library[item]
-    else:
-        lvalue.label = ''
-    return lvalue
-
 enamldef LogicalMarkerChannelView(GroupBox): curView:
     attr chan
     attr channelLib
     attr instrumentLib
+    attr physicalChannels
+    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalMarkerChannel), channelLib.values())
     title := '{} (LogicalMarker)'.format(chan.label)
     Form:
         Label:
             text = 'Physical Chan.'
         ComboBox:
-            items << [item.label for item in curView.channelLib.values() if isinstance(item, QGL.Channels.PhysicalMarkerChannel)]
-            index << filter(lambda item : isinstance(item, QGL.Channels.PhysicalMarkerChannel), curView.channelLib.values()).index(chan.physChan) if chan.physChan in curView.channelLib.values() else -1
+            items << [c.label for c in physicalChannels]
+            index = items.index(chan.physChan.label) if chan.physChan else -1
             index ::
-                chan.physChan = filter(lambda item : isinstance(item, QGL.Channels.PhysicalMarkerChannel), curView.channelLib.values())[index]
+                chan.physChan = selected_item
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
@@ -76,9 +69,10 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList
-            index << instrumentLib.AWGs.displayList.index(chan.AWG.label) if (chan.AWG.label in instrumentLib.AWGs.displayList) else -1
+            index = items.index(chan.AWG) if chan.AWG in items else -1
             index ::
-                chan.AWG = setIfNotEmpty(chan.AWG, instrumentLib, selected_item)
+                chan.AWG = selected_item
+                chan.translator = instrumentLib[selected_item].translator
 
 enamldef PhysicalQuadratureChannelView(GroupBox): curView:
     attr chan
@@ -90,16 +84,17 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList
-            index << instrumentLib.AWGs.displayList.index(chan.AWG.label) if (chan.AWG.label in instrumentLib.AWGs.displayList) else -1
+            index = items.index(chan.AWG) if chan.AWG in items else -1
             index ::
-                chan.AWG = setIfNotEmpty(chan.AWG, instrumentLib, selected_item)
+                chan.AWG = selected_item
+                chan.translator = instrumentLib[selected_item].translator
         Label:
             text = 'Source'
         ComboBox:
-            items << instrumentLib.sources.displayList
-            index << instrumentLib.sources.displayList.index(chan.generator.label) if (chan.generator and chan.generator.label in instrumentLib.sources.displayList) else -1
+            items << [''] + instrumentLib.sources.displayList
+            index = items.index(chan.generator) if chan.generator in items else 0
             index ::
-                chan.generator = setIfNotEmpty(chan.generator, instrumentLib, selected_item)
+                chan.generator = selected_item
         Label:
             text = 'Delay (s)'
         FloatField:
@@ -117,6 +112,12 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
     attr channelLib
+    attr physicalChannels
+    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalQuadratureChannel), channelLib.values())
+    attr logicalChannels
+    logicalChannels << filter(lambda x: isinstance(x, QGL.Channels.LogicalChannel), channelLib.values())
+    attr qubits
+    qubits << filter(lambda x: isinstance(x, QGL.Channels.Qubit), channelLib.values())
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
@@ -137,26 +138,26 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             Label:
                 text = 'Trigger Chan.'
             ComboBox:
-                items << channelLib.logicalChannelManager.displayList
-                index << channelLib.logicalChannelManager.displayList.index(chan.trigChan.label) if (chan.trigChan and chan.trigChan.label in channelLib.logicalChannelManager.displayList) else -1
+                items << [''] + [c.label for c in logicalChannels]
+                index = items.index(chan.trigChan.label)
                 index ::
-                    chan.trigChan = setIfNotEmpty(chan.trigChan, channelLib, selected_item)
+                    chan.trigChan = selected_item
         Conditional:
             condition = isinstance(chan, QGL.Channels.Edge)
             Label:
                 text = 'Source Qubit'
             ComboBox:
-                items << channelLib.logicalChannelManager.displayList
-                index << channelLib.logicalChannelManager.displayList.index(chan.source.label) if (chan.source and chan.source.label in channelLib.logicalChannelManager.displayList) else -1
+                items << [c.label for c in qubits]
+                index = items.index(chan.source.label) if chan.source else -1
                 index ::
-                    chan.source = setIfNotEmpty(chan.source, channelLib, selected_item)
+                    chan.source = selected_item
             Label:
                 text = 'Target Qubit'
             ComboBox:
-                items << channelLib.logicalChannelManager.displayList
-                index << channelLib.logicalChannelManager.displayList.index(chan.target.label) if (chan.target and chan.target.label in channelLib.logicalChannelManager.displayList) else -1
+                items << [c.label for c in qubits]
+                index = items.index(chan.target.label) if chan.target else -1
                 index ::
-                    chan.target = setIfNotEmpty(chan.target, channelLib, selected_item)
+                    chan.target = selected_item
         Label:
             text = 'Frequency (MHz)'
         FloatField:
@@ -166,17 +167,17 @@ enamldef LogicalQuadratureView(GroupBox): curView:
         Label:
             text = 'Physical Chan.'
         ComboBox:
-            items << channelLib.physicalChannelManager.displayList
-            index << channelLib.physicalChannelManager.displayList.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in channelLib.physicalChannelManager.displayList) else -1
+            items << [c.label for c in physicalChannels]
+            index = items.index(chan.physChan.label) if chan.physChan else -1
             index ::
-                chan.physChan = setIfNotEmpty(chan.physChan, channelLib, selected_item)
+                chan.physChan = selected_item
         Label:
             text = 'Gate Chan.'
         ComboBox:
-            items << channelLib.logicalChannelManager.displayList
-            index << channelLib.logicalChannelManager.displayList.index(chan.gateChan.label) if (chan.gateChan and chan.gateChan.label in channelLib.logicalChannelManager.displayList) else -1
+            items << [''] + [c.label for c in logicalChannels]
+            index = items.index(chan.gateChan.label) if chan.gateChan else 0
             index ::
-                chan.gateChan = setIfNotEmpty(chan.gateChan, channelLib, selected_item)
+                chan.gateChan = selected_item
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
@@ -212,6 +213,8 @@ ChannelViewMap = {
 
 enamldef ChannelLibraryView(Container): channelLibCont:
     attr channelLib
+    attr logicalChannelManager
+    attr physicalChannelManager
     attr instrumentLib
     Notebook:
         tab_style = 'preferences'
@@ -219,24 +222,20 @@ enamldef ChannelLibraryView(Container): channelLibCont:
             title = 'Logical'
             closable = False
             DictManagerView:
-                dictManager = channelLib.logicalChannelManager
-                # displayFilter = lambda x : isinstance(x, QGL.Channels.LogicalChannel)
+                dictManager = logicalChannelManager
                 modelName = 'chan'
                 viewMap = ChannelViewMap
                 viewkwargs = {'channelLib': channelLib}
-                # newClassList = QGL.Channels.NewLogicalChannelList
         Page:
             title = "Physical"
             closable = False
             DictManagerView:
-                dictManager = channelLib.physicalChannelManager
-                # displayFilter = lambda x : isinstance(x, QGL.Channels.PhysicalChannel)
+                dictManager = physicalChannelManager
                 modelName = 'chan'
                 viewMap = ChannelViewMap
                 viewkwargs = {'instrumentLib': instrumentLib,
                                 'channelLib': channelLib}
                 labelValidator = is_valid_awg_channel_name
-                # newClassList = QGL.Channels.NewPhysicalChannelList
 
 enamldef ChannelLibraryWindow(Window): channelLibWin:
     attr channelLib

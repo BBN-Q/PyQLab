@@ -16,6 +16,7 @@ from DictManager import DictManager
 import numpy as np
 import json
 import floatbits
+from JSONLibraryUtils import LibraryCoders
 
 class Sweep(Atom):
     label = Str()
@@ -150,21 +151,18 @@ class SweepLibrary(Atom):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
     def write_to_file(self,fileName=None):
-        import JSONHelpers
-
         libFileName = fileName if fileName != None else self.libFile
 
         if libFileName:
             with open(libFileName, 'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+                json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
-        import JSONHelpers
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
                     try:
-                         tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                         tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
                     except ValueError, e:
                          print ("WARNING: JSON object issue: %s in %s" % (e,self.libFile))
                          return

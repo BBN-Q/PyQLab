@@ -7,8 +7,11 @@ from atom.api import Atom, atomlist
 
 import Libraries
 from MeasFilters import RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector
+from instruments.Digitizers import AlazarATS9870, X6
+from instruments.drivers.APS import APS
+from instruments.drivers.APS2 import APS2
+from instruments.MicrowaveSources import HolzworthHS9000, Labbrick
 from Sweeps import *
-from test_Sequences import APS2Helper
 import ExpSettingsVal
 
 
@@ -79,6 +82,8 @@ class JSONTestHelper(object):
 				self.validate_atomlist(testState[state], truthState[state])
 			elif isinstance(truthState[state], np.ndarray):
 				np.testing.assert_allclose(testState[state], truthState[state], rtol=1e-5, atol=0)
+			elif isinstance(truthState[state], dict):
+				self.validate_library(truthState[state], testState[state])
 			else:
 				self.assertEqual(testState[state], truthState[state])
 
@@ -92,9 +97,8 @@ class JSONTestHelper(object):
 				print "Did not test: ", element
 
 
-class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
+class TestInstrumentJSON(unittest.TestCase, JSONTestHelper):
 
-	
 	@classmethod
 	def setUpClass(cls):
 		cls.backupFiles()
@@ -104,33 +108,29 @@ class TestAWGJSON(unittest.TestCase, APS2Helper, JSONTestHelper):
 		cls.restoreFiles()
 
 	def setUp(self):
-		APS2Helper.__init__(self)
-		APS2Helper.setUp(self)
+		self.instruments = {}
+		self.instruments['HZ-1'] = HolzworthHS9000(label='HZ-1')
+		self.instruments['LB1'] = Labbrick(label='LB1')
+		self.instruments['Alazar1'] = AlazarATS9870(label='Alazar1')
+		self.instruments['X6-1'] = X6(label='X6-1')
+		self.instruments['APS1'] = APS(label='APS1')
+		self.instruments['APS2'] = APS2(label='APS2')
+		# TODO: add other instruments
 
 	def test_channels_instruments_library(self):
-		# test channels and instruments together as they are coupled
+		# skip validation for now because of coupling with Channels
+		# ExpSettingsVal.instruments = self.instruments
+		# ExpSettingsVal.list_config()
+		# ExpSettingsVal.validate_lib()
 
-		Libraries.channelLib.channelDict = self.channels
 		Libraries.instrumentLib.instrDict = self.instruments
-
-		ExpSettingsVal.list_config()
-		ExpSettingsVal.validate_lib()
-
-		Libraries.channelLib.write_to_file()
 		Libraries.instrumentLib.write_to_file()
-
-		Libraries.channelLib.channelDict = {}
-		Libraries.channelLib.load_from_library()
-
 		Libraries.instrumentLib.instrDict = {}
 		Libraries.instrumentLib.load_from_library()
 
-		self.validate_library(Libraries.channelLib.channelDict, self.channels)
 		self.validate_library(Libraries.instrumentLib.instrDict, self.instruments)
 
 class TestMeasJSON(unittest.TestCase, JSONTestHelper):
-
-	
 
 	@classmethod
 	def setUpClass(cls):
@@ -151,21 +151,19 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
 	
 	def test_measurements_library(self):
-		Libraries.measLib.filterDict = self.measurements
-
+		ExpSettingsVal.measurements = self.measurements
 		ExpSettingsVal.list_config()
 		ExpSettingsVal.validate_lib()
 
+		Libraries.measLib.filterDict = self.measurements
 		Libraries.measLib.write_to_file()
 		Libraries.measLib.filterDict = {}
 		Libraries.measLib.load_from_library()
 
-		# can not test instrumentLib directly here must test enclosed dictionary
+		# cannot test measLib directly; must test enclosed dictionary
 		self.validate_library(Libraries.measLib.filterDict, self.measurements)
 
 class TestSweepJSON(unittest.TestCase, JSONTestHelper):
-
-	
 
 	@classmethod
 	def setUpClass(cls):
@@ -207,16 +205,16 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 		self.sweeps['T'] = Threshold( instr = 'TInst', stream = '(1,1)', start = 1.0 , stop = 10.0, numPoints = 10 )
 
 	def test_sweeps_library(self):
-		Libraries.sweepLib.sweepDict = self.sweeps
-
+		ExpSettingsVal.sweeps = self.sweeps
 		ExpSettingsVal.list_config()
 		ExpSettingsVal.validate_lib()
 
+		Libraries.sweepLib.sweepDict = self.sweeps
 		Libraries.sweepLib.write_to_file()
 		Libraries.sweepLib.sweepDict = {}
 		Libraries.sweepLib.load_from_library()
 
-		# can not test instrumentLib directly here must test enclosed dictionary
+		# cannot test sweepLib directly; must test enclosed dictionary
 		self.validate_library(Libraries.sweepLib.sweepDict, self.sweeps)
 
 if __name__ == "__main__":
