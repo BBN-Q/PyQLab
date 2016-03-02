@@ -12,13 +12,14 @@ before_install:
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda2/bin:$PATH
   - conda update --yes conda
-  - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION numpy bokeh enaml atom h5py scipy networkx
+  - travis_retry conda install --yes python=$TRAVIS_PYTHON_VERSION numpy bokeh enaml atom h5py scipy networkx future jupyter
   - pip install coveralls
 
 # use conda to install packages
 install:
  # Coverage packages are on my binstar channel
   - pip install watchdog
+  - pip install git+https://github.com/BBN-Q/QGL.git
 
 # execute scripts
 script:
