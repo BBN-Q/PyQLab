@@ -231,7 +231,7 @@ enamldef X6View(GroupBox):
 					Label:
 						text = 'Samples'
 					IntField:
-						validator = RecordLengthValidator(lengthMult=16)
+						validator = RecordLengthValidator(lengthMult=128)
 						value := instr.recordLength
 						tool_tip = instr.get_member('recordLength').metadata['desc']
 					Label:
