@@ -193,15 +193,30 @@ enamldef X6ChannelView(GroupBox):
 			text := chan.demodKernel
 			tool_tip = chan.get_member('demodKernel').metadata["desc"]
 		Label:
+			text = 'Demod Kernel Bias'
+		Field:
+			text := chan.demodKernelBias
+			tool_tip = chan.get_member('demodKernelBias').metadata["desc"]
+		Label:
 			text = 'Raw Kernel'
 		Field:
 			text := chan.rawKernel
 			tool_tip = chan.get_member('rawKernel').metadata["desc"]
 		Label:
+			text = 'Raw Kernel Bias'
+		Field:
+			text := chan.rawKernelBias
+			tool_tip = chan.get_member('rawKernelBias').metadata["desc"]
+		Label:
 			text = 'Threshold'
 		FloatField:
 			value := chan.threshold
 			tool_tip = chan.get_member('threshold').metadata["desc"]
+		Label:
+			text = 'Invert threshold'
+		CheckBox:
+			checked := chan.thresholdInvert
+			tool_tip = chan.get_member('thresholdInvert').metadata["desc"]
 
 enamldef X6View(GroupBox):
 	attr instr
