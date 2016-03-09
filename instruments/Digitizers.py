@@ -72,7 +72,7 @@ class X6VirtualChannel(Atom):
 			except:
 				jsonDict['demodKernel'] = []
 			try:
-				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias)))
+				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
 			except:
 				jsonDict['demodKernelBias'] = []
 			try:
@@ -80,7 +80,7 @@ class X6VirtualChannel(Atom):
 			except:
 				jsonDict['rawKernel'] = []
 			try:
-				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias)))
+				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
 			except:
 				jsonDict['rawKernelBias'] = []
 		return jsonDict
