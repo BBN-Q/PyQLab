@@ -27,7 +27,7 @@ enamldef LogicalMarkerChannelView(GroupBox): curView:
             text = 'Physical Chan.'
         ComboBox:
             items << [c.label for c in physicalChannels]
-            index = items.index(chan.physChan.label) if chan.physChan else -1
+            index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
             index ::
                 chan.physChan = selected_item
         Looper:
@@ -168,7 +168,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             text = 'Physical Chan.'
         ComboBox:
             items << [c.label for c in physicalChannels]
-            index = items.index(chan.physChan.label) if chan.physChan else -1
+            index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
             index ::
                 chan.physChan = selected_item
         Label:
