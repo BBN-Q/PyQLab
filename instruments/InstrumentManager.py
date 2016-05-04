@@ -36,6 +36,7 @@ class InstrumentLibrary(Atom):
 
     #Some helpers to manage types of instruments
     AWGs = Typed(DictManager)
+    pseudoAWGs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
     version = Int(3)
@@ -52,6 +53,11 @@ class InstrumentLibrary(Atom):
         self.AWGs = DictManager(itemDict=self.instrDict,
                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
                                 possibleItems=AWGs.AWGList)
+
+        # To enable routing physical marker channels to more generic devices
+        self.pseudoAWGs = DictManager(itemDict=self.instrDict,
+                                displayFilter=lambda x: hasattr(x, 'channel_type') and x.channel_type == 'AWG',
+                                possibleItems=newOtherInstrs)
 
         self.sources = DictManager(itemDict=self.instrDict,
                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
