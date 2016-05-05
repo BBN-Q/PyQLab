@@ -36,7 +36,7 @@ class InstrumentLibrary(Atom):
 
     #Some helpers to manage types of instruments
     AWGs = Typed(DictManager)
-    pseudoAWGs = Typed(DictManager)
+    markedInstrs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
     version = Int(3)
@@ -54,11 +54,6 @@ class InstrumentLibrary(Atom):
                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
                                 possibleItems=AWGs.AWGList)
 
-        # To enable routing physical marker channels to more generic devices
-        self.pseudoAWGs = DictManager(itemDict=self.instrDict,
-                                displayFilter=lambda x: hasattr(x, 'channel_type') and x.channel_type == 'AWG',
-                                possibleItems=newOtherInstrs)
-
         self.sources = DictManager(itemDict=self.instrDict,
                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
                                    possibleItems=MicrowaveSources.MicrowaveSourceList)
@@ -66,6 +61,11 @@ class InstrumentLibrary(Atom):
         self.others = DictManager(itemDict=self.instrDict,
                                   displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
                                   possibleItems=newOtherInstrs)
+
+        # To enable routing physical marker channels to more generic devices
+        self.markedInstrs = DictManager(itemDict=self.instrDict,
+                                displayFilter=lambda x: not isinstance(x, AWGs.AWG) and hasattr(x, 'takes_marker') and x.takes_marker,
+                                possibleItems=newOtherInstrs)
 
     #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
