@@ -68,7 +68,7 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
         Label:
             text = 'AWG'
         ComboBox:
-            items << instrumentLib.AWGs.displayList + instrumentLib.pseudoAWGs.displayList
+            items << instrumentLib.AWGs.displayList + instrumentLib.markedInstrs.displayList
             index = items.index(chan.AWG) if chan.AWG in items else -1
             index ::
                 chan.AWG = selected_item
