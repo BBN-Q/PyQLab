@@ -29,7 +29,7 @@ enamldef LogicalMarkerChannelView(GroupBox): curView:
             items << [c.label for c in physicalChannels]
             index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
             index ::
-                chan.physChan = selected_item
+                chan.physChan = channelLib[selected_item]
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
@@ -143,7 +143,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 items << [''] + [c.label for c in logicalChannels]
                 index = items.index(chan.trigChan.label)
                 index ::
-                    chan.trigChan = selected_item
+                    chan.trigChan = channelLib[selected_item]
         Conditional:
             condition = isinstance(chan, QGL.Channels.Edge)
             Label:
@@ -152,14 +152,14 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 items << [c.label for c in qubits]
                 index = items.index(chan.source.label) if chan.source else -1
                 index ::
-                    chan.source = selected_item
+                    chan.source = channelLib[selected_item]
             Label:
                 text = 'Target Qubit'
             ComboBox:
                 items << [c.label for c in qubits]
                 index = items.index(chan.target.label) if chan.target else -1
                 index ::
-                    chan.target = selected_item
+                    chan.target = channelLib[selected_item]
         Label:
             text = 'Frequency (MHz)'
         FloatField:
@@ -172,14 +172,14 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             items << [c.label for c in physicalChannels]
             index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
             index ::
-                chan.physChan = selected_item
+                chan.physChan = channelLib[selected_item]
         Label:
             text = 'Gate Chan.'
         ComboBox:
             items << [''] + [c.label for c in logicalChannels]
             index = items.index(chan.gateChan.label) if chan.gateChan else 0
             index ::
-                chan.gateChan = selected_item
+                chan.gateChan = channelLib[selected_item]
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
