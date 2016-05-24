@@ -162,6 +162,30 @@ class ExpSettings(Atom):
     def format_errors(self):
         return '\n'.join(self.validation_errors)
 
+    def populate_physical_channels(self):
+        import instruments.AWGs
+        for instr in self.instruments.instrDict.values():
+            if not isinstance(instr, instruments.AWGs.AWG):
+                continue
+            channels = instr.get_naming_convention()
+            for ch in channels:
+                label = instr.label + '-' + ch
+                if label in self.channels:
+                    continue
+                # TODO: less kludgy lookup of appropriate channel type
+                if 'm' in ch.lower():
+                    pc = QGL.Channels.PhysicalMarkerChannel()
+                else:
+                    pc = QGL.Channels.PhysicalQuadratureChannel()
+                pc.label = label
+                pc.AWG = instr.label
+                pc.translator = instr.translator
+                pc.samplingRate = instr.samplingRate
+                self.channels[label] = pc
+        print self.channels.channelDict
+        self.physicalChannelManager.update_display_list(None)
+
+
 class ScripterEncoder(json.JSONEncoder):
     """
     Helper for QLab to encode all the classes for the matlab experiment script.
