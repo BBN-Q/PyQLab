@@ -10,6 +10,7 @@ from DictManagerView import DictManagerView
 import Sweeps
 
 from instruments.AWGs import AWG
+from instruments.plugins import find_view_maps
 
 enamldef PointsSweepForm(GroupBox):
     attr sweep
@@ -352,6 +353,9 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.DC:PointsSweepForm,
                     Sweeps.HeterodyneFrequency:HeterodyneSweepForm,
                     Sweeps.Threshold:ThresholdSweepForm}
+
+# add plugins maps
+find_view_maps(Sweeps.Sweep, sweepViewMap)
 
 enamldef SweepManager(Container): sweepManager:
     attr sweepLib
