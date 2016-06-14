@@ -182,7 +182,6 @@ class ExpSettings(Atom):
                 pc.translator = instr.translator
                 pc.samplingRate = instr.samplingRate
                 self.channels[label] = pc
-        print self.channels.channelDict
         self.physicalChannelManager.update_display_list(None)
 
 

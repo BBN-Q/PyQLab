@@ -21,11 +21,11 @@ class QtListStrWidget(RawWidget):
     #: The list of str being viewed
     items = d_(List(Unicode()))
 
-    checked_states = d_(ContainerList(Bool()))
+    checked_states = d_(List(Bool()))
 
     #: The index of the currently selected str
     selected_index = d_(Int(-1))
-    
+
     #: The currently selected str
     selected_item = d_(Unicode())
 
@@ -35,16 +35,12 @@ class QtListStrWidget(RawWidget):
     #: Whether or not the items should be editable
     editable = d_(Bool(True))
 
-    #
     validator = d_(Callable())
-
-    #: .
     hug_width = set_default('weak')
-
     item_changed = Signal()
     enable_changed = Signal()
 
-    
+
     #--------------------------------------------------------------------------
     # Initialization API
     #--------------------------------------------------------------------------
@@ -63,7 +59,7 @@ class QtListStrWidget(RawWidget):
         if self.items:
             self.selected_index = 0
             self.selected_item = self.items[0]
-            widget.setCurrentRow(0) 
+            widget.setCurrentRow(0)
 
         widget.itemSelectionChanged.connect(self.on_selection)
         widget.itemChanged.connect(self.on_edit)
@@ -84,34 +80,35 @@ class QtListStrWidget(RawWidget):
     # Signal Handlers
     #--------------------------------------------------------------------------
     def on_selection(self):
-        """ 
+        """
         The signal handler for the index changed signal.
         """
         widget = self.get_widget()
         self.selected_index = widget.currentRow()
-        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''            
-        
+        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
+
     def on_edit(self, item):
-        """ 
+        """
         The signal handler for the item changed signal.
         """
         widget = self.get_widget()
         itemRow = widget.indexFromItem(item).row()
         oldLabel = self.items[itemRow]
         newLabel = item.text()
-        
-        #only signal the enable change when the labels are the same and is in
-        #the item list, also only signal a name change when the labels are not
-        #the same and the newlabel is not in the item list
+
+        # only signal the enable change when the labels are the same and is in
+        # the item list, also only signal a name change when the labels are not
+        # the same and the newlabel is not in the item list
         if newLabel == oldLabel and newLabel in self.items:
-            self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
-            self.enable_changed(item.text(), self.checked_states[itemRow])
+            if itemRow < len(self.checked_states):
+                self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
+                self.enable_changed(item.text(), self.checked_states[itemRow])
         elif oldLabel != newLabel and newLabel not in self.items:
             self.item_changed(oldLabel, newLabel)
             self.selected_item = item.text()
             self.items[itemRow] = item.text()
             self.apply_validator(item, newLabel)
-        
+
     #--------------------------------------------------------------------------
     # ProxyListStrView API
     #--------------------------------------------------------------------------
@@ -124,7 +121,7 @@ class QtListStrWidget(RawWidget):
         nitems = len(items)
         for idx, item in enumerate(items[:count]):
             itemWidget = widget.item(idx)
-            #Update checked state before the text so that we can distinguish a checked state change from a label change
+            # Update checked state before the text so that we can distinguish a checked state change from a label change
             itemWidget.setCheckState(Qt.Checked if self.checked_states[idx] else Qt.Unchecked)
             itemWidget.setText(item)
             self.apply_validator(itemWidget, item)
@@ -154,12 +151,12 @@ class QtListStrWidget(RawWidget):
 
         """
         # The superclass handler implementation is sufficient.
-        widget =self.get_widget()
+        widget = self.get_widget()
         if widget != None:
             if change["name"] == "items":
                 if change["type"] == "update":
                     if len(change["oldvalue"]) > len(change["value"]):
-                        #We've lost an item
+                        # We've lost an item
                         removedKey = set(change["oldvalue"]) - set(change["value"])
                         removedIndex = change["oldvalue"].index(list(removedKey)[0])
                         del self.checked_states[removedIndex]
@@ -167,11 +164,10 @@ class QtListStrWidget(RawWidget):
                         self.checked_states.append(True)
 
             self.set_items(self.items)
-            
-            
-            #update the selected item because the current row has changed 
-            self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''            
-      
+
+            # update the selected item because the current row has changed
+            self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
+
 
 # Helper methods
 def _set_item_flag(item, flag, enabled):
