@@ -1,6 +1,6 @@
 '''
-ExpSettingsVal - 
-Validates Experimental Settings against a set of rules known to cause 
+ExpSettingsVal -
+Validates Experimental Settings against a set of rules known to cause
 the Compiler (Compiler.py) to fail if they are not followed
 
 Created on April 17, 2015
@@ -25,15 +25,16 @@ limitations under the License.
 import h5py
 import Libraries
 import QGL.Channels
+import QGL.ChannelLibrary
 
 from atom.api import Str
 
 import re
 import itertools
-import Sweeps 
+import Sweeps
 import floatbits
 
-channels = Libraries.channelLib
+channels = QGL.ChannelLibrary.channelLib
 instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
 sweeps = Libraries.sweepLib.sweepDict
@@ -45,7 +46,7 @@ sweeps = Libraries.sweepLib.sweepDict
 #   1 digitizerTrig
 #   2 slaveTrig
 #
-# Logical Channels: 
+# Logical Channels:
 #   1 PhysicalChannel but be in library
 #    2 LogicalMarkerChannel must map to PhysicalMarkerChannel
 #   3 Not LogicalMarkerChannel not map to PhysicalMarkerChannel
@@ -63,7 +64,7 @@ sweeps = Libraries.sweepLib.sweepDict
 #   1 Instrument names must be valid Matlab Identifiers
 
 # Conventions to be added
-# 
+#
 #
 
 #####################################################################################
@@ -71,37 +72,37 @@ sweeps = Libraries.sweepLib.sweepDict
 
 # Matlab valid identifier -- Starts with a letter, followed by letters, digits, or underscores.
 # Maximum length is the return value from the namelengthmax function
-# namelengthmax returned 63 on Matlab 2015a 64-bit linux 
+# namelengthmax returned 63 on Matlab 2015a 64-bit linux
 MATLAB_NAME_LENGTH_MAX = 63
 MATLAB_FORMAT_STRING = "\A[a-zA-Z]\w{0,%i}?\Z" % (MATLAB_NAME_LENGTH_MAX - 1)
 MATLAB_VALID_NAME_REGEX = re.compile(MATLAB_FORMAT_STRING)
 
 #####################################################################################
-## Helper functions for list comprehension 
+## Helper functions for list comprehension
 
 def is_logicalmarker_channel(name):
-    return is_channel_type(name, QGL.Channels.LogicalMarkerChannel)    
+    return is_channel_type(name, QGL.Channels.LogicalMarkerChannel)
 
 def is_physical_channel(name):
     return is_channel_type(name, QGL.Channels.PhysicalChannel)
 
 def is_physicalmarker_channel(name):
-    return is_channel_type(name, QGL.Channels.PhysicalMarkerChannel)    
+    return is_channel_type(name, QGL.Channels.PhysicalMarkerChannel)
 
 def is_physicalIQ_channel(name):
-    return is_channel_type(name, QGL.Channels.PhysicalQuadratureChannel)    
+    return is_channel_type(name, QGL.Channels.PhysicalQuadratureChannel)
 
 def is_qubit_channel(name):
-    return is_channel_type(name, QGL.Channels.Qubit)    
+    return is_channel_type(name, QGL.Channels.Qubit)
 
 def is_measurement_channel(name):
-    return is_channel_type(name, QGL.Channels.Measurement)    
+    return is_channel_type(name, QGL.Channels.Measurement)
 
 def requires_physical_channel(name):
-    return is_channel_type(name, QGL.Channels.LogicalChannel) 
+    return is_channel_type(name, QGL.Channels.LogicalChannel)
 
 def is_channel_type(name, channelType):
-    return isinstance(Libraries.channelLib[name], channelType)    
+    return isinstance(channels[name], channelType)
 
 
 #####################################################################################
@@ -114,7 +115,7 @@ def test_require_physical():
        Physical channel.
     """
     errors = []
-    channels = Libraries.channelLib
+    channels = QGL.ChannelLibrary.channelLib
     testChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
 
     for channel in testChannels:
@@ -144,12 +145,12 @@ def test_logical_channels():
         LogicalMarkerChannel must map to PhysicalMarkerChannel.
     """
     errors = []
-    channels = Libraries.channelLib
+    channels = QGL.ChannelLibrary.channelLib
 
     # require all LogicalMarkerChannels to map to PhysicalMarkerChannels
     # and require all not LogicalMarkerChannels to map to not PhysicalMarkerChannels
     logicalChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
-    
+
     for channel in logicalChannels:
         errorHeader = '{0} Markerness of {1} and {2} do not match'
         if not channels[channel].physChan:
@@ -175,7 +176,7 @@ def test_physical_channels():
     """
     errors = []
 
-    channels = Libraries.channelLib
+    channels = QGL.ChannelLibrary.channelLib
     physicalChannels = [channelName for channelName in channels.keys() if is_physical_channel(channelName)]
 
     for channel in physicalChannels:
@@ -193,12 +194,12 @@ def test_physical_channels():
         if validName:
             awgName, awgChan = channel.rsplit('-',1)
             if awgName not in instruments.keys():
-                errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)                
+                errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)
                 errors.append(errMsg)
             if awgName != awg:
                 errMsg =  'Physical Channel "{0}" Label AWGName {1} != AWG.label {2}'.format(channel, awgName, awg)
                 errors.append(errMsg)
-            
+
             # apply device specific channel namming conventions
             # force converions of awgChan to unicode so multimethod dispatch will
             # work with str or unicode
@@ -206,7 +207,7 @@ def test_physical_channels():
             if errMsg:
                 errors.append(errMsg)
         else:
-            errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)                
+            errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)
             errors.append(errMsg)
 
     return errors
@@ -241,25 +242,25 @@ def is_valid_instrument_name(label):
     # instrument must be a valid Matlab identifier
     return (MATLAB_VALID_NAME_REGEX.match(label) is not None)
 
-def validate_instrumentLib(): 
-    
+def validate_instrumentLib():
+
     errors = []
 
-    invalidNames = [instrument for instrument in instruments.keys() if not is_valid_instrument_name(instrument)] 
+    invalidNames = [instrument for instrument in instruments.keys() if not is_valid_instrument_name(instrument)]
 
     if invalidNames != []:
         for name in invalidNames:
             errMsg =  "Instrument name {0} is not a valid Matlab Name".format(name)
             errors.append(errMsg)
-    
+
     return errors
 #####################################################################################
 
-def validate_sweepLib():     
+def validate_sweepLib():
     errors = []
 
     for key in sweeps.keys():
-        if isinstance(sweeps[key],Sweeps.PointsSweep):            
+        if isinstance(sweeps[key],Sweeps.PointsSweep):
             try:
                 numPoints = int((sweeps[key].stop - sweeps[key].start)/floatbits.prevfloat(sweeps[key].step)) + 1
             except ValueError, e:
@@ -275,12 +276,12 @@ def validate_channelLib():
     if 'digitizerTrig' not in channels.keys():
         errMsg = 'A LogicalMarkerChannel named digitizerTrig is required'
         errors.append([errMsg])
-            
+
     # test gate pulses
 
     if 'slaveTrig' not in channels.keys():
         errMsg = 'A LogicalMarkerChannel named slaveTrig is required'
-        errors.append([errMsg])        
+        errors.append([errMsg])
 
     # test map_logical_to_physical
     rp_errors = test_require_physical()
@@ -289,10 +290,10 @@ def validate_channelLib():
 
     if pc_errors != []:
         errors.append(pc_errors)
-    if lc_errors != []:        
+    if lc_errors != []:
         errors.append(lc_errors)
-    if rp_errors != []:        
-        errors.append(rp_errors)        
+    if rp_errors != []:
+        errors.append(rp_errors)
 
     errors = list(itertools.chain(*errors))
     return errors
@@ -307,23 +308,23 @@ def validate_dynamic_lib(channelsLib, instrumentLib):
 def validate_lib():
     errors = []
 
-    channel_errors = validate_channelLib() 
+    channel_errors = validate_channelLib()
     if channel_errors != []:
         errors.append(channel_errors)
 
-    instrument_errors = validate_instrumentLib() 
+    instrument_errors = validate_instrumentLib()
     if instrument_errors != []:
         errors.append(instrument_errors)
 
-    sweep_errors = validate_sweepLib() 
+    sweep_errors = validate_sweepLib()
     if sweep_errors != []:
        errors.append(sweep_errors)
-        
+
     errors = list(itertools.chain(*errors))
     return errors
 
 def default_repr(items, item):
-    return '\t{0}: {1}'.format(item, 
+    return '\t{0}: {1}'.format(item,
                             items[item].__class__.__name__)
 
 def default_list_repr(items, name):
@@ -338,13 +339,13 @@ def list_channels():
 
 def list_instruments():
     default_list_repr(instruments, 'instruments')
-    
+
 def list_measurements():
     default_list_repr(measurements, 'measurements')
-    
+
 def list_sweeps():
     default_list_repr(sweeps, 'sweeps')
-        
+
 
 def list_config():
     list_channels()
@@ -362,7 +363,7 @@ def draw_wiring_digram():
     print "digraph Exp {"
 
     for channel in topLevelChannels:
-        print '"{0}"'.format(channel), 
+        print '"{0}"'.format(channel),
         if channels[channel].physChan is not None:
             print ' -> "{0}"'.format(channels[channel].physChan.label),
             if channels[channel].physChan.AWG is not None:
@@ -384,7 +385,7 @@ def draw_wiring_digram():
 
     instrumentNames = [channelName for channelName in instruments.keys()]
     for channel in instrumentNames:
-        print '"{0}" [color=green,style=filled];'.format(channel)        
+        print '"{0}" [color=green,style=filled];'.format(channel)
 
     print "}"
 
@@ -398,7 +399,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', dest='list', action='store_true')
 
     args = parser.parse_args()
-    
+
     if args.draw_digram:
         draw_wiring_digram()
 
