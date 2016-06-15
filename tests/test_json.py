@@ -19,14 +19,13 @@ testsRunning = 0
 
 class JSONTestHelper(object):
 
-	
-	testFileNames = [Libraries.channelLib.libFile, 
-					 Libraries.instrumentLib.libFile,
+
+	testFileNames = [Libraries.instrumentLib.libFile,
 					 Libraries.measLib.libFile,
 					 Libraries.sweepLib.libFile]
 
 	@classmethod
-	def backupFiles(cls):		
+	def backupFiles(cls):
 		global testsRunning
 		testsRunning = testsRunning + 1
 		if testsRunning != 1:
@@ -141,7 +140,7 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		cls.restoreFiles()
 
 	def setUp(self):
-		
+
 		self.measurements = {}
 		self.measurements['R1'] = RawStream(label='R1', saveRecords = True,recordsFilePath = '/tmp/records', channel='1')
 		self.measurements['M1'] = DigitalDemod(label='M1',  saveRecords = True,recordsFilePath = '/tmp/records', IFfreq=10e6, samplingRate=250e6)
@@ -149,7 +148,7 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 		self.measurements['KI1'] = KernelIntegration(label='KI1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
 		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integrationTime = 100)
 		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
-	
+
 	def test_measurements_library(self):
 		ExpSettingsVal.measurements = self.measurements
 		ExpSettingsVal.list_config()

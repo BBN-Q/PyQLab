@@ -22,10 +22,9 @@ if not os.path.isfile(PyQLabCfgFile):
 with open(PyQLabCfgFile, 'r') as f:
 	PyQLabCfg = json.load(f)
 
-#pull out the variables 
+#pull out the variables
 #abspath allows the use of relative file names in the config file
 AWGDir = os.path.abspath(PyQLabCfg['AWGDir'])
-channelLibFile = os.path.abspath(PyQLabCfg['ChannelLibraryFile'])
 instrumentLibFile = os.path.abspath(PyQLabCfg['InstrumentLibraryFile'])
 sweepLibFile = os.path.abspath(PyQLabCfg['SweepLibraryFile'])
 measurementLibFile = os.path.abspath(PyQLabCfg['MeasurementLibraryFile'])

@@ -71,7 +71,7 @@ class ExpSettings(Atom):
         """Write all the libraries to their files.
 
         """
-        
+
         if self.validate:
             self.validation_errors = ExpSettingsVal.validate_lib()
             if self.validation_errors != []:
@@ -85,9 +85,9 @@ class ExpSettings(Atom):
         self.sweeps.write_to_file()
 
         return True
-        
+
     def save_config(self,path):
-        
+
         if self.validate:
             self.validation_errors = ExpSettingsVal.validate_lib()
             if self.validation_errors != []:
@@ -95,23 +95,23 @@ class ExpSettings(Atom):
                 return False
         elif not self.validate:
             print "JSON Files validation disabled"
-            
+
         try:
-            self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))        
+            self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))
             self.measurements.write_to_file(fileName=path+ os.sep + os.path.basename(self.measurements.libFile))
             self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
             self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
             self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
         except:
             return False
-        
-        
+
+
         return True
-        
+
     def load_config(self,path):
-        
+
         print("LOADING FROM:",path)
-        
+
         try:
             shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
@@ -122,9 +122,9 @@ class ExpSettings(Atom):
             print('Error: %s' % e)
         except IOError as e:
             print('Error: %s' % e.strerror)
-            
+
         return True
-        
+
 
     def apply_quickpick(self, name):
         try:
@@ -133,7 +133,7 @@ class ExpSettings(Atom):
         except IOError:
             print('No quick pick file found.')
             return
-        
+
         quickPick = quickPicks[name]
 
         #Apply sequence name
@@ -192,20 +192,20 @@ class ScripterEncoder(json.JSONEncoder):
 
 if __name__ == '__main__':
     import Libraries
-    
+
     from ExpSettingsGUI import ExpSettings
     expSettings = ExpSettings(sweeps=Libraries.sweepLib,
                               instruments=Libraries.instrumentLib,
                               measurements=Libraries.measLib,
-                              channels=Libraries.channelLib)
+                              channels=QGL.ChannelLibrary.channelLib)
 
     # setup on change AWG
     # TODO: isn't this already handled byteh ExpSettings constructor?
     expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
-    
+
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)    
+    parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)
     options =  parser.parse_args(sys.argv[1:])
     if options.scripterFile:
         expSettings.curFileName = options.scripterFile
@@ -217,4 +217,3 @@ if __name__ == '__main__':
     view = ExpSettingsView(expSettings=expSettings)
     view.show()
     app.start()
-
