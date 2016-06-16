@@ -1,4 +1,4 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int, Callable)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -28,6 +28,32 @@ for plugin in plugins:
     globals().update({plugin.__name__: plugin})
     print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
 
+class AWGDictManager(DictManager):
+    """
+    Specialization of DictManager for AWGs to support auto populating channels.
+    """
+    populate_physical_channels = Callable()
+
+    def __init__(self, auto_populate_channels=None, *args, **kwargs):
+        super(AWGDictManager, self).__init__(*args, **kwargs)
+
+    def add_item(self, parent):
+        """
+        Create a new item dialog window and handle the result
+        """
+        with enaml.imports():
+            from widgets.dialogs import AddAWGDialog
+        dialogBox = AddAWGDialog(parent, modelNames=[i.__name__ for i in self.possibleItems], objText="AWG")
+        dialogBox.exec_()
+        if dialogBox.result:
+            if dialogBox.newLabel not in self.itemDict.keys():
+                self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
+                self.displayList.append(dialogBox.newLabel)
+                if dialogBox.auto_populate_channels and self.populate_physical_channels is not None:
+                    self.populate_physical_channels(self.itemDict[dialogBox.newLabel])
+            else:
+                print("WARNING: Can't use duplicate label %s"%dialogBox.newLabel)
+
 
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
@@ -50,7 +76,7 @@ class InstrumentLibrary(Atom):
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
         #Setup the dictionary managers for the different instrument types
-        self.AWGs = DictManager(itemDict=self.instrDict,
+        self.AWGs = AWGDictManager(itemDict=self.instrDict,
                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
                                 possibleItems=AWGs.AWGList)
 

@@ -39,6 +39,8 @@ class ExpSettings(Atom):
 
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
+        # link adding AWG to auto-populating channels
+        self.instruments.AWGs.populate_physical_channels = lambda awg : self.populate_physical_channels(awg)
 
         self.logicalChannelManager = DictManager(
             itemDict = self.channels.channelDict,
@@ -162,26 +164,22 @@ class ExpSettings(Atom):
     def format_errors(self):
         return '\n'.join(self.validation_errors)
 
-    def populate_physical_channels(self):
-        import instruments.AWGs
-        for instr in self.instruments.instrDict.values():
-            if not isinstance(instr, instruments.AWGs.AWG):
+    def populate_physical_channels(self, awg):
+        channels = awg.get_naming_convention()
+        for ch in channels:
+            label = awg.label + '-' + ch
+            if label in self.channels:
                 continue
-            channels = instr.get_naming_convention()
-            for ch in channels:
-                label = instr.label + '-' + ch
-                if label in self.channels:
-                    continue
-                # TODO: less kludgy lookup of appropriate channel type
-                if 'm' in ch.lower():
-                    pc = QGL.Channels.PhysicalMarkerChannel()
-                else:
-                    pc = QGL.Channels.PhysicalQuadratureChannel()
-                pc.label = label
-                pc.AWG = instr.label
-                pc.translator = instr.translator
-                pc.samplingRate = instr.samplingRate
-                self.channels[label] = pc
+            # TODO: less kludgy lookup of appropriate channel type
+            if 'm' in ch.lower():
+                pc = QGL.Channels.PhysicalMarkerChannel()
+            else:
+                pc = QGL.Channels.PhysicalQuadratureChannel()
+            pc.label = label
+            pc.AWG = awg.label
+            pc.translator = awg.translator
+            pc.samplingRate = awg.samplingRate
+            self.channels[label] = pc
         self.physicalChannelManager.update_display_list(None)
 
 
