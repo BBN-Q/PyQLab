@@ -50,7 +50,8 @@ class ExpSettings(Atom):
         self.physicalChannelManager = DictManager(
             itemDict = self.channels.channelDict,
             displayFilter = lambda x : isinstance(x, QGL.Channels.PhysicalChannel),
-            possibleItems = QGL.Channels.NewPhysicalChannelList
+            possibleItems = QGL.Channels.NewPhysicalChannelList,
+            otherActions = {"Auto": self.populate_physical_channels}
         )
 
     # TODO: get this to work

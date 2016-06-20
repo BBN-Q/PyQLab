@@ -13,6 +13,7 @@ class DictManager(Atom):
     possibleItems = List() # a list of classes that can possibly be added to this list
     displayList = ContainerList()
     onChangeDelegate = Callable()
+    otherActions = Dict(Unicode(), Callable())
 
     def __init__(self, itemDict={}, displayFilter=lambda x: True, **kwargs):
         self.displayFilter = displayFilter
