@@ -141,10 +141,6 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered ::
 					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
 			Action:
-				text = "Populate physical channels"
-				triggered ::
-					expSettings.populate_physical_channels()
-			Action:
 				text = 'Store to quick pick\tCtrl+O'
 				enabled = False
 				triggered :: print 'clicked store to quick pick'
