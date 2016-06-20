@@ -39,6 +39,8 @@ class ExpSettings(Atom):
 
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
+        # link adding AWG to auto-populating channels
+        self.instruments.AWGs.populate_physical_channels = lambda awg : self.populate_physical_channels(awg)
 
         self.logicalChannelManager = DictManager(
             itemDict = self.channels.channelDict,
@@ -48,7 +50,8 @@ class ExpSettings(Atom):
         self.physicalChannelManager = DictManager(
             itemDict = self.channels.channelDict,
             displayFilter = lambda x : isinstance(x, QGL.Channels.PhysicalChannel),
-            possibleItems = QGL.Channels.NewPhysicalChannelList
+            possibleItems = QGL.Channels.NewPhysicalChannelList,
+            otherActions = {"Auto": self.populate_physical_channels}
         )
 
     # TODO: get this to work
@@ -161,6 +164,29 @@ class ExpSettings(Atom):
 
     def format_errors(self):
         return '\n'.join(self.validation_errors)
+
+    def populate_physical_channels(self, awgs=None):
+        import instruments.AWGs
+        if awgs == None:
+            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG), self.instruments.instrDict.values())
+        for awg in awgs:
+            channels = awg.get_naming_convention()
+            for ch in channels:
+                label = awg.label + '-' + ch
+                if label in self.channels:
+                    continue
+                # TODO: less kludgy lookup of appropriate channel type
+                if 'm' in ch.lower():
+                    pc = QGL.Channels.PhysicalMarkerChannel()
+                else:
+                    pc = QGL.Channels.PhysicalQuadratureChannel()
+                pc.label = label
+                pc.AWG = awg.label
+                pc.translator = awg.translator
+                pc.samplingRate = awg.samplingRate
+                self.channels[label] = pc
+        self.physicalChannelManager.update_display_list(None)
+
 
 class ScripterEncoder(json.JSONEncoder):
     """

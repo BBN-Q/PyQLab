@@ -53,7 +53,7 @@ enamldef InstrumentManagerView(Container):
 				viewMap = MicrowaveSourceViewMap
 				modelName = 'uwSource'
 				labelValidator = is_valid_instrument_name
-		
+
 		Page:
 			title = "AWG's"
 			closable = False
@@ -63,7 +63,7 @@ enamldef InstrumentManagerView(Container):
 				modelName = 'awg'
 				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
-		
+
 		Page:
 			title = "Other"
 			closable = False
@@ -74,10 +74,8 @@ enamldef InstrumentManagerView(Container):
 				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
 
-enamldef InstrumentManagerWindow(Window): 
+enamldef InstrumentManagerWindow(Window):
 	attr instrLib
 	title = 'Instrument Library'
 	InstrumentManagerView:
 		instrLib = parent.instrLib
-
-

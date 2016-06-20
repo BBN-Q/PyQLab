@@ -6,6 +6,7 @@ from widgets import QtListStrWidget
 from enaml.widgets.api import Window, Container, PushButton, Form, Label, Field, ComboBox
 from enaml.stdlib.mapped_view import MappedView
 from enaml.core.declarative import d_
+from enaml.core.api import Looper
 
 from enaml.layout.api import hbox, vbox, spacer
 
@@ -24,7 +25,7 @@ enamldef DictManagerView(Container): dictView:
 		hbox(
 			vbox(
 				itemList,
-				hbox(addButton, removeButton, spacer),
+				hbox(addButton, removeButton, *sum(otherButtons.items, [spacer])),
 				spacer
 				),
 			selectedItemView,
@@ -35,8 +36,8 @@ enamldef DictManagerView(Container): dictView:
 	QtListStrWidget: itemList:
 		items := dictManager.displayList
 		validator = labelValidator
-		checked_states = [dictManager.itemDict[i].enabled for i in dictManager.displayList]
-		initialized :: 
+		checked_states << [dictManager.itemDict[i].enabled for i in dictManager.displayList]
+		initialized ::
 			itemList.item_changed.connect(dictManager.name_changed)
 			itemList.enable_changed.connect(dictManager.update_enable)
 
@@ -46,10 +47,14 @@ enamldef DictManagerView(Container): dictView:
 	PushButton: removeButton:
 		text = "Remove"
 		clicked :: dictManager.remove_item(itemList.selected_item)
+	Looper: otherButtons:
+		iterable << dictManager.otherActions.keys()
+		PushButton:
+			text = loop_item
+			clicked :: dictManager.otherActions[loop_item]()
 	Container: selectedItemView:
-		MappedView: 
+		MappedView:
 			model << dictManager.itemDict[itemList.selected_item] if itemList.selected_item else None
 			typemap = dictView.viewMap
 			modelkey = dictView.modelName
 			kwargs = dictView.viewkwargs if dictView.viewkwargs else {}
-

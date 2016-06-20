@@ -59,7 +59,7 @@ enamldef NotificationPopup(PopupView):
 
 enamldef ErrorPopup(Window): error_win:
     title = 'Validation Error'
-    modality = 'application_modal' 
+    modality = 'application_modal'
     attr displayText = ''
 
     Container:
@@ -92,7 +92,7 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep = ErrorPopup(displayText=expSettings.format_errors())
 						ep.show()
 						ep.center_on_widget(main)
-						
+
 			Action:
 				text = 'Save Config As\tCtrl+Shift+S'
 				tool_tip = 'Save to a new setting file'
@@ -101,14 +101,14 @@ enamldef ExpSettingsView(MainWindow): main:
 					if not os.path.isdir(path) and path !='':
 						print('% s Does not Exist: Creating %s'%(path,path))
 						os.mkdir(path)
-					
+
 					if expSettings.save_config(path):
 						NotificationPopup(main, window_type='window', displayText="Config Saved").show()
 					else:
 						ep = ErrorPopup(displayText=expSettings.format_errors())
 						ep.show()
 						ep.center_on_widget(main)
-			
+
 			Action:
 				text = 'Load Config\tCtrl+Shift+O'
 				tool_tip = 'Load Config Files from Saved Location'
@@ -120,16 +120,16 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep.show()
 						ep.center_on_widget(main)
 						os.mkdir(path)
-					
+
 					if expSettings.load_config(path):
 						NotificationPopup(main, window_type='window', displayText="New Config Loaded ... Restarting GUI").show()
 						os.execl(sys.executable, sys.executable, * sys.argv)
-						
+
 					else:
 						ep = ErrorPopup(displayText=expSettings.format_errors())
 						ep.show()
 						ep.center_on_widget(main)
-						
+
 			Action:
 				text = "Stash current settings"
 				enabled = False

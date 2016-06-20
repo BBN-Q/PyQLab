@@ -1,4 +1,4 @@
-from enaml.widgets.api import Dialog, Label, Field, ComboBox
+from enaml.widgets.api import Dialog, Label, Field, ComboBox, Form, CheckBox
 
 from enaml.layout.api import hbox, vbox, spacer
 
@@ -22,9 +22,42 @@ enamldef ItemSelector(TaskDialogContentArea):
 
 enamldef DialogBody(TaskDialogBody):
 	alias itemSelector: itemSelector
-	attr objText 
+	attr objText
 	attr modelNames
 	ItemSelector: itemSelector:
+		newLabel = "New"+objText
+		modelNames = parent.modelNames
+	TaskDialogCommandArea:
+		constraints = [ hbox(spacer, bbox) ]
+		DialogButtonBox: bbox:
+			buttons = [
+				DialogButton('OK', 'accept'),
+				DialogButton('Cancel', 'reject'),
+			]
+
+enamldef AWGItemSelector(TaskDialogContentArea):
+	alias newLabel: newLabelField.text
+	alias newModelNum: newModelBox.index
+	alias auto_populate_channels: auto_populate_channels_checkbox.checked
+	attr modelNames
+	Form:
+		Label:
+			text = "New Label"
+		Field: newLabelField:
+			pass
+		Label:
+			text = "New Model"
+		ComboBox: newModelBox:
+			index = 0
+			items = modelNames
+	CheckBox: auto_populate_channels_checkbox:
+		text = "Auto-populate channels"
+
+enamldef AWGDialogBody(TaskDialogBody):
+	alias itemSelector: itemSelector
+	attr objText
+	attr modelNames
+	AWGItemSelector: itemSelector:
 		newLabel = "New"+objText
 		modelNames = parent.modelNames
 	TaskDialogCommandArea:
@@ -46,7 +79,17 @@ enamldef AddItemDialog(Dialog):
 		objText = parent.objText
 		modelNames = parent.modelNames
 
-
+enamldef AddAWGDialog(Dialog):
+	attr modelNames
+	attr objText
+	alias newLabel: dialogBody.itemSelector.newLabel
+	alias newModelNum: dialogBody.itemSelector.newModelNum
+	alias auto_populate_channels: dialogBody.itemSelector.auto_populate_channels
+	# alias newLabel: dialogBody.contentArea.newLabelField
+	title = 'Add a new {}...'.format(objText)
+	AWGDialogBody: dialogBody:
+		objText = parent.objText
+		modelNames = parent.modelNames
 
 # enamldef AddDialog(Window):
 # 	attr newClassList
