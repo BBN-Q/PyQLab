@@ -164,22 +164,26 @@ class ExpSettings(Atom):
     def format_errors(self):
         return '\n'.join(self.validation_errors)
 
-    def populate_physical_channels(self, awg):
-        channels = awg.get_naming_convention()
-        for ch in channels:
-            label = awg.label + '-' + ch
-            if label in self.channels:
-                continue
-            # TODO: less kludgy lookup of appropriate channel type
-            if 'm' in ch.lower():
-                pc = QGL.Channels.PhysicalMarkerChannel()
-            else:
-                pc = QGL.Channels.PhysicalQuadratureChannel()
-            pc.label = label
-            pc.AWG = awg.label
-            pc.translator = awg.translator
-            pc.samplingRate = awg.samplingRate
-            self.channels[label] = pc
+    def populate_physical_channels(self, awgs=None):
+        import instruments.AWGs
+        if awgs == None:
+            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG), self.instruments.instrDict.values())
+        for awg in awgs:
+            channels = awg.get_naming_convention()
+            for ch in channels:
+                label = awg.label + '-' + ch
+                if label in self.channels:
+                    continue
+                # TODO: less kludgy lookup of appropriate channel type
+                if 'm' in ch.lower():
+                    pc = QGL.Channels.PhysicalMarkerChannel()
+                else:
+                    pc = QGL.Channels.PhysicalQuadratureChannel()
+                pc.label = label
+                pc.AWG = awg.label
+                pc.translator = awg.translator
+                pc.samplingRate = awg.samplingRate
+                self.channels[label] = pc
         self.physicalChannelManager.update_display_list(None)
 
 

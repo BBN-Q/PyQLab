@@ -50,7 +50,7 @@ class AWGDictManager(DictManager):
                 self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
                 self.displayList.append(dialogBox.newLabel)
                 if dialogBox.auto_populate_channels and self.populate_physical_channels is not None:
-                    self.populate_physical_channels(self.itemDict[dialogBox.newLabel])
+                    self.populate_physical_channels([self.itemDict[dialogBox.newLabel]])
             else:
                 print("WARNING: Can't use duplicate label %s"%dialogBox.newLabel)
 
