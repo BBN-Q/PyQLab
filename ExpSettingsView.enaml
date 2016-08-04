@@ -10,35 +10,12 @@ from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
 import os, sys, time
 
-
-#See what's in the quick pick file to enumerate it
-import config, json
-try:
-    with open(config.quickpickFile, 'r') as FID:
-        quickPicks = json.load(FID)
-        quickpickList = quickPicks.keys()
-except IOError:
-    print('No quick pick file found.')
-    quickpickList = []
-
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
 			print(expSettings.curFileName)
 	return update_script_file_callback
-
-chosenQuickPick = bytearray("")
-
-enamldef QuickPickMenu(Menu):
-	attr expSettings
-	Looper:
-		iterable << quickpickList
-		Action:
-			text = loop_item
-			triggered ::
-				chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
-				expSettings.apply_quickpick(loop_item)
 
 enamldef NotificationPopup(PopupView):
 	attr displayText = ''
@@ -141,19 +118,6 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered ::
 					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
 			Action:
-				text = 'Store to quick pick\tCtrl+O'
-				enabled = False
-				triggered :: print 'clicked store to quick pick'
-			Menu:
-				title = 'Load from quick pick'
-				Looper:
-					iterable << quickpickList
-					Action:
-						text = loop_item
-						triggered ::
-							chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
-							expSettings.apply_quickpick(loop_item)
-			Action:
 				text = 'Quit\tCtrl+Q'
 				triggered :: main.close()
 		Menu:
@@ -171,9 +135,9 @@ enamldef ExpSettingsView(MainWindow): main:
 		constraints = [
 			vbox(
 			tabs,
-			hbox(quickPick, exp_meta_info, spacer, cbValidateForm, settingsApply)
+			hbox(exp_meta_info, spacer, cbValidateForm, settingsApply)
 			),
-			align("v_center", quickPick, exp_meta_info, cbValidateForm, settingsApply )
+			align("v_center", exp_meta_info, cbValidateForm, settingsApply )
 		]
 		padding = 5
 		Notebook: tabs:
@@ -201,11 +165,6 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
-		PushButton: quickPick:
-			text = "QuickPick"
-			clicked ::
-				QuickPickMenu(expSettings=expSettings).popup()
-				NotificationPopup(main, window_type='window', parent_anchor=(0, 1.0), anchor=(0,1), offset=(10,-10), displayText="{} applied".format(str(chosenQuickPick))).show()
 		GroupBox: exp_meta_info:
 			constraints = [hbox(meta_label, meta_field, meta_button)]
 			Label: meta_label:
@@ -214,7 +173,15 @@ enamldef ExpSettingsView(MainWindow): main:
 				text := expSettings.meta_file
 			PushButton: meta_button:
 				text = "Load"
-				clicked :: expSettings.load_meta()
+				clicked ::
+					expSettings.load_meta()
+					NotificationPopup(
+						main,
+						window_type='window',
+						parent_anchor=(0, 1.0),
+						anchor=(0,1),
+						offset=(10,-10),
+						displayText="Meta file info loaded").show()
 		Form: cbValidateForm:
 			Label:
 				text = "Validate"

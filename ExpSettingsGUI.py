@@ -130,36 +130,6 @@ class ExpSettings(Atom):
 
         return True
 
-
-    def apply_quickpick(self, name):
-        try:
-            with open(config.quickpickFile, 'r') as FID:
-                quickPicks = json.load(FID)
-        except IOError:
-            print('No quick pick file found.')
-            return
-
-        quickPick = quickPicks[name]
-
-        #Apply sequence name
-        if 'seqFile' in quickPick and 'seqDir' in quickPick:
-            for awgName in self.instruments.AWGs.displayList:
-                self.instruments[awgName].seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
-                                 '{}-{}{}'.format(quickPick['seqFile'], awgName, self.instruments[awgName].seqFileExt)))
-
-        #Apply sweep info
-        if 'sweeps' in quickPick:
-            for sweep in quickPick['sweeps']:
-                if sweep in self.sweeps.sweepDict:
-                    for k,v in quickPick['sweeps'][sweep].items():
-                        setattr(self.sweeps.sweepDict[sweep], k, v)
-        if 'sweepOrder' in quickPick:
-            self.sweeps.sweepOrder = quickPick['sweepOrder']
-
-        #Setup the digitizer number of segments
-        if 'nbrSegments' in quickPick:
-            self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
-
     def load_meta(self):
         meta_file = self.meta_file
         if not os.path.isfile(meta_file):
