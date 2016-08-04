@@ -12,7 +12,7 @@ from enaml.qt.qt_application import QtApplication
 class Digitizer(Instrument):
 	pass
 
-class AlazarATS9870(Instrument):
+class AlazarATS9870(Digitizer):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	clockType = Enum('ref')
@@ -85,7 +85,7 @@ class X6VirtualChannel(Atom):
 				jsonDict['rawKernelBias'] = []
 		return jsonDict
 
-class X6(Instrument):
+class X6(Digitizer):
 	recordLength = Int(1024).tag(desc='Number of samples in each record')
 	nbrSegments = Int(1).tag(desc='Number of segments in memory')
 	nbrWaveforms = Int(1).tag(desc='Number of times each segment is repeated')

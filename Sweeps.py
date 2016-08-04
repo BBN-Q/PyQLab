@@ -147,6 +147,12 @@ class SweepLibrary(Atom):
     def __getitem__(self, sweepName):
         return self.sweepDict[sweepName]
 
+    def __contains__(self, key):
+        return key in self.sweepDict
+
+    def __iter__(self):
+        return iter(self.sweepDict)
+
     def _get_sweepList(self):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 

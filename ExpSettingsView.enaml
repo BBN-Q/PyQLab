@@ -1,6 +1,6 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
 					 Menu, Action, FileDialogEx, ComboBox, PushButton, PopupView, Label, \
-					 CheckBox, Form
+					 CheckBox, Form, Field, GroupBox
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
@@ -171,9 +171,9 @@ enamldef ExpSettingsView(MainWindow): main:
 		constraints = [
 			vbox(
 			tabs,
-			hbox(quickPick, spacer, cbValidateForm, settingsApply)
+			hbox(quickPick, exp_meta_info, spacer, cbValidateForm, settingsApply)
 			),
-			align("v_center", quickPick, cbValidateForm, settingsApply )
+			align("v_center", quickPick, exp_meta_info, cbValidateForm, settingsApply )
 		]
 		padding = 5
 		Notebook: tabs:
@@ -206,6 +206,15 @@ enamldef ExpSettingsView(MainWindow): main:
 			clicked ::
 				QuickPickMenu(expSettings=expSettings).popup()
 				NotificationPopup(main, window_type='window', parent_anchor=(0, 1.0), anchor=(0,1), offset=(10,-10), displayText="{} applied".format(str(chosenQuickPick))).show()
+		GroupBox: exp_meta_info:
+			constraints = [hbox(meta_label, meta_field, meta_button)]
+			Label: meta_label:
+				text = "Exp Meta File"
+			Field: meta_field:
+				text := expSettings.meta_file
+			PushButton: meta_button:
+				text = "Load"
+				clicked :: expSettings.load_meta()
 		Form: cbValidateForm:
 			Label:
 				text = "Validate"

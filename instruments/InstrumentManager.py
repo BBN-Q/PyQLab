@@ -97,6 +97,9 @@ class InstrumentLibrary(Atom):
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
+    def __contains__(self, key):
+        return key in self.instrDict
+
     def write_to_file(self,fileName=None):
         libFileName = fileName if fileName != None else self.libFile
         if self.libFile:

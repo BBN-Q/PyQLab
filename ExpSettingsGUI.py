@@ -8,6 +8,7 @@ from enaml.qt.qt_application import QtApplication
 import argparse, sys
 
 from instruments.InstrumentManager import InstrumentLibrary
+from instruments import Digitizers
 import Sweeps
 import MeasFilters
 import QGL.ChannelLibrary
@@ -31,6 +32,7 @@ class ExpSettings(Atom):
     validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
     validation_errors = List()
+    meta_file = Str()
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
@@ -157,6 +159,57 @@ class ExpSettings(Atom):
         #Setup the digitizer number of segments
         if 'nbrSegments' in quickPick:
             self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
+
+    def load_meta(self):
+        meta_file = self.meta_file
+        if not os.path.isfile(meta_file):
+            meta_file = config.AWGDir + os.sep + self.meta_file + '-meta.json'
+        try:
+            with open(meta_file, 'r') as FID:
+                meta_info = json.load(FID)
+        except IOError:
+            print('Meta info file not found')
+            return
+        # load sequence files into AWGs
+        for instr, seqFile in meta_info['instruments'].items():
+            if instr not in self.instruments:
+                print("{} not found".format(instr))
+            self.instruments[instr].seqFile = seqFile
+
+        # setup up digitizers with number of segments
+        for instr in self.instruments.instrDict.values():
+            if isinstance(instr, Digitizers.Digitizer) and hasattr(instr, 'nbrSegments'):
+                instr.nbrSegments = meta_info['num_measurements']
+
+        # setup a SegmentNum or SegmentNumWithCals sweep
+        if len(meta_info['axis_descriptor']) > 1:
+            print('Multi-dimensional sweeps are not handled, yet')
+        axis = meta_info['axis_descriptor'][0]
+        if len(meta_info['cal_descriptor']) > 0:
+            sweep_name = 'SegmentNumWithCals'
+            sweep_class = Sweeps.SegmentNumWithCals
+            num_cals = sum(len(x) for x in meta_info['cal_descriptor'].values())
+        else:
+            sweep_name = 'SegmentNum'
+            sweep_class = Sweeps.SegmentNum
+            num_cals = 0
+        if sweep_name not in self.sweeps:
+            sweep = sweep_class()
+            self.sweeps.sweepDict[sweep_name] = sweep
+            self.sweeps.sweepManager.update_display_list(None)
+        else:
+            sweep = self.sweeps[sweep_name]
+        # TODO what if we don't have an equal step???
+        sweep.start = axis['points'][0]
+        sweep.stop = axis['points'][-1]
+        sweep.numPoints = len(axis['points'])
+        if num_cals > 0:
+            sweep.numCals = num_cals
+        if axis['unit']:
+            sweep.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
+        else:
+            sweep.axisLabel = axis['name']
+        self.sweeps.sweepOrder = [sweep_name]
 
     def json_encode(self, matlabCompatible=True):
         #We encode this for an experiment settings file so no channels
