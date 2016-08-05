@@ -31,13 +31,12 @@ class ExpSettings(Atom):
     CWMode = Bool(False)
     validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
-    validation_errors = List()
+    errors = List()
     meta_file = Str()
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
-        self.validation_errors = []
 
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
@@ -73,15 +72,13 @@ class ExpSettings(Atom):
             json.dump(self, FID, cls=ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
     def write_libraries(self):
-        """Write all the libraries to their files.
-
-        """
+        """ Write all the libraries to their files. """
 
         if self.validate:
-            self.validation_errors = ExpSettingsVal.validate_lib()
-            if self.validation_errors != []:
-                print "JSON Files did not validate"
-                return False
+            self.errors = ExpSettingsVal.validate_lib()
+            if self.errors != []:
+                print("JSON Files did not validate")
+                raise
         elif not self.validate:
             print "JSON Files validation disabled"
         self.channels.write_to_file()
@@ -89,17 +86,15 @@ class ExpSettings(Atom):
         self.measurements.write_to_file()
         self.sweeps.write_to_file()
 
-        return True
-
     def save_config(self,path):
 
         if self.validate:
-            self.validation_errors = ExpSettingsVal.validate_lib()
-            if self.validation_errors != []:
-                print "JSON Files did not validate"
-                return False
+            self.errors = ExpSettingsVal.validate_lib()
+            if self.errors != []:
+                print("JSON Files did not validate")
+                raise
         elif not self.validate:
-            print "JSON Files validation disabled"
+            print("JSON Files validation disabled")
 
         try:
             self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))
@@ -107,30 +102,24 @@ class ExpSettings(Atom):
             self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
             self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
             self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
-        except:
-            return False
-
-
-        return True
+        except Exception as e:
+            self.errors.append(e.message)
 
     def load_config(self,path):
+        self.clear_errors()
 
         print("LOADING FROM:",path)
-
         try:
             shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.measurements.libFile),self.measurements.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.sweeps.libFile),self.sweeps.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.curFileName),self.curFileName)
-        except shutil.Error as e:
-            print('Error: %s' % e)
-        except IOError as e:
-            print('Error: %s' % e.strerror)
-
-        return True
+        except Exception as e:
+            self.errors.append(e.message)
 
     def load_meta(self):
+        self.clear_errors()
         meta_file = self.meta_file
         if not os.path.isfile(meta_file):
             meta_file = config.AWGDir + os.sep + self.meta_file + '-meta.json'
@@ -138,12 +127,13 @@ class ExpSettings(Atom):
             with open(meta_file, 'r') as FID:
                 meta_info = json.load(FID)
         except IOError:
-            print('Meta info file not found')
-            return
+            self.errors.append('Meta info file not found')
+            raise IOError
         # load sequence files into AWGs
         for instr, seqFile in meta_info['instruments'].items():
             if instr not in self.instruments:
-                print("{} not found".format(instr))
+                self.errors.append("{} not found".format(instr))
+                raise KeyError
             self.instruments[instr].seqFile = seqFile
 
         # setup up digitizers with number of segments
@@ -153,7 +143,8 @@ class ExpSettings(Atom):
 
         # setup a SegmentNum or SegmentNumWithCals sweep
         if len(meta_info['axis_descriptor']) > 1:
-            print('Multi-dimensional sweeps are not handled, yet')
+            self.errors.append(("Multi-dimensional sweeps are not handled, yet"))
+            raise ValueError
         axis = meta_info['axis_descriptor'][0]
         if len(meta_info['cal_descriptor']) > 0:
             sweep_name = 'SegmentNumWithCals'
@@ -186,7 +177,10 @@ class ExpSettings(Atom):
         return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
 
     def format_errors(self):
-        return '\n'.join(self.validation_errors)
+        return '\n'.join(self.errors)
+
+    def clear_errors(self):
+        del self.errors[:]
 
     def populate_physical_channels(self, awgs=None):
         import instruments.AWGs

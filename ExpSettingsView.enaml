@@ -35,7 +35,7 @@ enamldef NotificationPopup(PopupView):
 			align = 'center'
 
 enamldef ErrorPopup(Window): error_win:
-    title = 'Validation Error'
+    title = 'Error!'
     modality = 'application_modal'
     attr displayText = ''
 
@@ -79,10 +79,14 @@ enamldef ExpSettingsView(MainWindow): main:
 						print('% s Does not Exist: Creating %s'%(path,path))
 						os.mkdir(path)
 
-					if expSettings.save_config(path):
+					try:
+						expSettings.save_config(path)
 						NotificationPopup(main, window_type='window', displayText="Config Saved").show()
-					else:
-						ep = ErrorPopup(displayText=expSettings.format_errors())
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
 
@@ -98,12 +102,15 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep.center_on_widget(main)
 						os.mkdir(path)
 
-					if expSettings.load_config(path):
+					try:
+						expSettings.load_config(path)
 						NotificationPopup(main, window_type='window', displayText="New Config Loaded ... Restarting GUI").show()
 						os.execl(sys.executable, sys.executable, * sys.argv)
-
-					else:
-						ep = ErrorPopup(displayText=expSettings.format_errors())
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
 
@@ -174,14 +181,22 @@ enamldef ExpSettingsView(MainWindow): main:
 			PushButton: meta_button:
 				text = "Load"
 				clicked ::
-					expSettings.load_meta()
-					NotificationPopup(
-						main,
-						window_type='window',
-						parent_anchor=(0, 1.0),
-						anchor=(0,1),
-						offset=(10,-10),
-						displayText="Meta file info loaded").show()
+					try:
+						expSettings.load_meta()
+						NotificationPopup(
+							main,
+							window_type='window',
+							parent_anchor=(0, 1.0),
+							anchor=(0,1),
+							offset=(10,-10),
+							displayText="Meta file info loaded").show()
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
+						ep.show()
+						ep.center_on_widget(main)
 		Form: cbValidateForm:
 			Label:
 				text = "Validate"
@@ -191,9 +206,13 @@ enamldef ExpSettingsView(MainWindow): main:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
-				if expSettings.write_libraries():
+				try:
+					expSettings.write_libraries()
 					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
-				else:
-					ep = ErrorPopup(displayText=expSettings.format_errors())
+				except Exception as e:
+					err_str = expSettings.format_errors()
+					if not err_str:
+						err_str = e.message
+					ep = ErrorPopup(displayText=err_str)
 					ep.show()
 					ep.center_on_widget(main)
