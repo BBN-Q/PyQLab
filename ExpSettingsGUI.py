@@ -8,6 +8,7 @@ from enaml.qt.qt_application import QtApplication
 import argparse, sys
 
 from instruments.InstrumentManager import InstrumentLibrary
+from instruments import Digitizers
 import Sweeps
 import MeasFilters
 import QGL.ChannelLibrary
@@ -30,12 +31,12 @@ class ExpSettings(Atom):
     CWMode = Bool(False)
     validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
-    validation_errors = List()
+    errors = List()
+    meta_file = Str()
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
-        self.validation_errors = []
 
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
@@ -71,15 +72,13 @@ class ExpSettings(Atom):
             json.dump(self, FID, cls=ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
     def write_libraries(self):
-        """Write all the libraries to their files.
-
-        """
+        """ Write all the libraries to their files. """
 
         if self.validate:
-            self.validation_errors = ExpSettingsVal.validate_lib()
-            if self.validation_errors != []:
-                print "JSON Files did not validate"
-                return False
+            self.errors = ExpSettingsVal.validate_lib()
+            if self.errors != []:
+                print("JSON Files did not validate")
+                raise
         elif not self.validate:
             print "JSON Files validation disabled"
         self.channels.write_to_file()
@@ -87,17 +86,15 @@ class ExpSettings(Atom):
         self.measurements.write_to_file()
         self.sweeps.write_to_file()
 
-        return True
-
     def save_config(self,path):
 
         if self.validate:
-            self.validation_errors = ExpSettingsVal.validate_lib()
-            if self.validation_errors != []:
-                print "JSON Files did not validate"
-                return False
+            self.errors = ExpSettingsVal.validate_lib()
+            if self.errors != []:
+                print("JSON Files did not validate")
+                raise
         elif not self.validate:
-            print "JSON Files validation disabled"
+            print("JSON Files validation disabled")
 
         try:
             self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))
@@ -105,65 +102,85 @@ class ExpSettings(Atom):
             self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
             self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
             self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
-        except:
-            return False
-
-
-        return True
+        except Exception as e:
+            self.errors.append(e.message)
 
     def load_config(self,path):
+        self.clear_errors()
 
         print("LOADING FROM:",path)
-
         try:
             shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.measurements.libFile),self.measurements.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.sweeps.libFile),self.sweeps.libFile)
             shutil.copy(path+ os.sep + os.path.basename(self.curFileName),self.curFileName)
-        except shutil.Error as e:
-            print('Error: %s' % e)
-        except IOError as e:
-            print('Error: %s' % e.strerror)
+        except Exception as e:
+            self.errors.append(e.message)
 
-        return True
-
-
-    def apply_quickpick(self, name):
+    def load_meta(self):
+        self.clear_errors()
+        meta_file = self.meta_file
+        if not os.path.isfile(meta_file):
+            meta_file = config.AWGDir + os.sep + self.meta_file + '-meta.json'
         try:
-            with open(config.quickpickFile, 'r') as FID:
-                quickPicks = json.load(FID)
+            with open(meta_file, 'r') as FID:
+                meta_info = json.load(FID)
         except IOError:
-            print('No quick pick file found.')
-            return
+            self.errors.append('Meta info file not found')
+            raise IOError
+        # load sequence files into AWGs
+        for instr, seqFile in meta_info['instruments'].items():
+            if instr not in self.instruments:
+                self.errors.append("{} not found".format(instr))
+                raise KeyError
+            self.instruments[instr].seqFile = seqFile
 
-        quickPick = quickPicks[name]
+        # setup up digitizers with number of segments
+        for instr in self.instruments.instrDict.values():
+            if isinstance(instr, Digitizers.Digitizer) and hasattr(instr, 'nbrSegments'):
+                instr.nbrSegments = meta_info['num_measurements']
 
-        #Apply sequence name
-        if 'seqFile' in quickPick and 'seqDir' in quickPick:
-            for awgName in self.instruments.AWGs.displayList:
-                self.instruments[awgName].seqFile = os.path.normpath(os.path.join(config.AWGDir, quickPick['seqDir'],
-                                 '{}-{}{}'.format(quickPick['seqFile'], awgName, self.instruments[awgName].seqFileExt)))
-
-        #Apply sweep info
-        if 'sweeps' in quickPick:
-            for sweep in quickPick['sweeps']:
-                if sweep in self.sweeps.sweepDict:
-                    for k,v in quickPick['sweeps'][sweep].items():
-                        setattr(self.sweeps.sweepDict[sweep], k, v)
-        if 'sweepOrder' in quickPick:
-            self.sweeps.sweepOrder = quickPick['sweepOrder']
-
-        #Setup the digitizer number of segments
-        if 'nbrSegments' in quickPick:
-            self.instruments['scope'].nbrSegments = quickPick['nbrSegments']
+        # setup a SegmentNum or SegmentNumWithCals sweep
+        if len(meta_info['axis_descriptor']) > 1:
+            self.errors.append(("Multi-dimensional sweeps are not handled, yet"))
+            raise ValueError
+        axis = meta_info['axis_descriptor'][0]
+        if len(meta_info['cal_descriptor']) > 0:
+            sweep_name = 'SegmentNumWithCals'
+            sweep_class = Sweeps.SegmentNumWithCals
+            num_cals = sum(len(x) for x in meta_info['cal_descriptor'].values())
+        else:
+            sweep_name = 'SegmentNum'
+            sweep_class = Sweeps.SegmentNum
+            num_cals = 0
+        if sweep_name not in self.sweeps:
+            sweep = sweep_class()
+            self.sweeps.sweepDict[sweep_name] = sweep
+            self.sweeps.sweepManager.update_display_list(None)
+        else:
+            sweep = self.sweeps[sweep_name]
+        # TODO what if we don't have an equal step???
+        sweep.start = axis['points'][0]
+        sweep.stop = axis['points'][-1]
+        sweep.numPoints = len(axis['points'])
+        if num_cals > 0:
+            sweep.numCals = num_cals
+        if axis['unit']:
+            sweep.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
+        else:
+            sweep.axisLabel = axis['name']
+        self.sweeps.sweepOrder = [sweep_name]
 
     def json_encode(self, matlabCompatible=True):
         #We encode this for an experiment settings file so no channels
         return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
 
     def format_errors(self):
-        return '\n'.join(self.validation_errors)
+        return '\n'.join(self.errors)
+
+    def clear_errors(self):
+        del self.errors[:]
 
     def populate_physical_channels(self, awgs=None):
         import instruments.AWGs

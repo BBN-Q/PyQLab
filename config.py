@@ -28,4 +28,3 @@ AWGDir = os.path.abspath(PyQLabCfg['AWGDir'])
 instrumentLibFile = os.path.abspath(PyQLabCfg['InstrumentLibraryFile'])
 sweepLibFile = os.path.abspath(PyQLabCfg['SweepLibraryFile'])
 measurementLibFile = os.path.abspath(PyQLabCfg['MeasurementLibraryFile'])
-quickpickFile = os.path.abspath(PyQLabCfg['QuickPickFile']) if 'QuickPickFile' in PyQLabCfg else ''

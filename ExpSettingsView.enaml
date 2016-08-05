@@ -1,6 +1,6 @@
 from enaml.widgets.api import MainWindow, Window, Container, Notebook, Page, MenuBar, \
 					 Menu, Action, FileDialogEx, ComboBox, PushButton, PopupView, Label, \
-					 CheckBox, Form
+					 CheckBox, Form, Field, GroupBox
 from enaml.core.api import Looper
 from enaml.layout.api import hbox, vbox, spacer, align
 
@@ -10,35 +10,12 @@ from SweepsViews import SweepManager
 from MeasFiltersViews import MeasFilterManager
 import os, sys, time
 
-
-#See what's in the quick pick file to enumerate it
-import config, json
-try:
-    with open(config.quickpickFile, 'r') as FID:
-        quickPicks = json.load(FID)
-        quickpickList = quickPicks.keys()
-except IOError:
-    print('No quick pick file found.')
-    quickpickList = []
-
 def get_update_script_file_callback(expSettings):
 	def update_script_file_callback(dlg):
 		if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
 			expSettings.curFileName = dlg.path
 			print(expSettings.curFileName)
 	return update_script_file_callback
-
-chosenQuickPick = bytearray("")
-
-enamldef QuickPickMenu(Menu):
-	attr expSettings
-	Looper:
-		iterable << quickpickList
-		Action:
-			text = loop_item
-			triggered ::
-				chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
-				expSettings.apply_quickpick(loop_item)
 
 enamldef NotificationPopup(PopupView):
 	attr displayText = ''
@@ -58,7 +35,7 @@ enamldef NotificationPopup(PopupView):
 			align = 'center'
 
 enamldef ErrorPopup(Window): error_win:
-    title = 'Validation Error'
+    title = 'Error!'
     modality = 'application_modal'
     attr displayText = ''
 
@@ -102,10 +79,14 @@ enamldef ExpSettingsView(MainWindow): main:
 						print('% s Does not Exist: Creating %s'%(path,path))
 						os.mkdir(path)
 
-					if expSettings.save_config(path):
+					try:
+						expSettings.save_config(path)
 						NotificationPopup(main, window_type='window', displayText="Config Saved").show()
-					else:
-						ep = ErrorPopup(displayText=expSettings.format_errors())
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
 
@@ -121,12 +102,15 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep.center_on_widget(main)
 						os.mkdir(path)
 
-					if expSettings.load_config(path):
+					try:
+						expSettings.load_config(path)
 						NotificationPopup(main, window_type='window', displayText="New Config Loaded ... Restarting GUI").show()
 						os.execl(sys.executable, sys.executable, * sys.argv)
-
-					else:
-						ep = ErrorPopup(displayText=expSettings.format_errors())
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
 
@@ -140,19 +124,6 @@ enamldef ExpSettingsView(MainWindow): main:
 				enabled = False
 				triggered ::
 					NotificationPopup(main, window_type='window', displayText="Stashed settings applied").show()
-			Action:
-				text = 'Store to quick pick\tCtrl+O'
-				enabled = False
-				triggered :: print 'clicked store to quick pick'
-			Menu:
-				title = 'Load from quick pick'
-				Looper:
-					iterable << quickpickList
-					Action:
-						text = loop_item
-						triggered ::
-							chosenQuickPick[:] = bytearray(loop_item.encode("ascii"))
-							expSettings.apply_quickpick(loop_item)
 			Action:
 				text = 'Quit\tCtrl+Q'
 				triggered :: main.close()
@@ -171,9 +142,9 @@ enamldef ExpSettingsView(MainWindow): main:
 		constraints = [
 			vbox(
 			tabs,
-			hbox(quickPick, spacer, cbValidateForm, settingsApply)
+			hbox(exp_meta_info, spacer, cbValidateForm, settingsApply)
 			),
-			align("v_center", quickPick, cbValidateForm, settingsApply )
+			align("v_center", exp_meta_info, cbValidateForm, settingsApply )
 		]
 		padding = 5
 		Notebook: tabs:
@@ -201,11 +172,31 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				SweepManager:
 					sweepLib := expSettings.sweeps
-		PushButton: quickPick:
-			text = "QuickPick"
-			clicked ::
-				QuickPickMenu(expSettings=expSettings).popup()
-				NotificationPopup(main, window_type='window', parent_anchor=(0, 1.0), anchor=(0,1), offset=(10,-10), displayText="{} applied".format(str(chosenQuickPick))).show()
+		GroupBox: exp_meta_info:
+			constraints = [hbox(meta_label, meta_field, meta_button)]
+			Label: meta_label:
+				text = "Exp Meta File"
+			Field: meta_field:
+				text := expSettings.meta_file
+			PushButton: meta_button:
+				text = "Load"
+				clicked ::
+					try:
+						expSettings.load_meta()
+						NotificationPopup(
+							main,
+							window_type='window',
+							parent_anchor=(0, 1.0),
+							anchor=(0,1),
+							offset=(10,-10),
+							displayText="Meta file info loaded").show()
+					except Exception as e:
+						err_str = expSettings.format_errors()
+						if not err_str:
+							err_str = e.message
+						ep = ErrorPopup(displayText=err_str)
+						ep.show()
+						ep.center_on_widget(main)
 		Form: cbValidateForm:
 			Label:
 				text = "Validate"
@@ -215,9 +206,13 @@ enamldef ExpSettingsView(MainWindow): main:
 			text = 'Apply'
 			clicked ::
 				expSettings.write_to_file()
-				if expSettings.write_libraries():
+				try:
+					expSettings.write_libraries()
 					NotificationPopup(main, window_type='window', displayText="Settings saved").show()
-				else:
-					ep = ErrorPopup(displayText=expSettings.format_errors())
+				except Exception as e:
+					err_str = expSettings.format_errors()
+					if not err_str:
+						err_str = e.message
+					ep = ErrorPopup(displayText=err_str)
 					ep.show()
 					ep.center_on_widget(main)
