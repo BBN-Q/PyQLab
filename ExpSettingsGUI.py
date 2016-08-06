@@ -130,11 +130,15 @@ class ExpSettings(Atom):
             self.errors.append('Meta info file not found')
             raise IOError
         # load sequence files into AWGs
+        for awg in self.instruments.AWGs.displayList:
+            self.instruments[awg].enabled = False
         for instr, seqFile in meta_info['instruments'].items():
             if instr not in self.instruments:
                 self.errors.append("{} not found".format(instr))
                 raise KeyError
             self.instruments[instr].seqFile = seqFile
+            self.instruments[instr].enabled = True
+        self.instruments.AWGs.update_display_list(None)
 
         # setup up digitizers with number of segments
         for instr in self.instruments.instrDict.values():

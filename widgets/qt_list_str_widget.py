@@ -146,28 +146,40 @@ class QtListStrWidget(RawWidget):
     # Observers
     #--------------------------------------------------------------------------
     @observe('items')
-    def _update_proxy(self, change):
-        """ An observer which sends state change to the proxy.
+    def _update_items(self, change):
+        """ An observer which sends state change to the proxy. """
 
-        """
-        # The superclass handler implementation is sufficient.
+        #this callback may be called before the widget is initialized
         widget = self.get_widget()
-        if widget != None:
-            if change["name"] == "items":
-                if change["type"] == "update":
-                    if len(change["oldvalue"]) > len(change["value"]):
-                        # We've lost an item
-                        removedKey = set(change["oldvalue"]) - set(change["value"])
-                        removedIndex = change["oldvalue"].index(list(removedKey)[0])
-                        del self.checked_states[removedIndex]
-                    elif len(change["oldvalue"]) < len(change["value"]):
-                        self.checked_states.append(True)
+        if widget == None:
+            return
 
-            self.set_items(self.items)
+        if (change["name"] == "items") and (change["type"] == "update"):
+            if len(change["oldvalue"]) > len(change["value"]):
+                # We've lost an item
+                removedKey = set(change["oldvalue"]) - set(change["value"])
+                removedIndex = change["oldvalue"].index(list(removedKey)[0])
+                del self.checked_states[removedIndex]
+            elif len(change["oldvalue"]) < len(change["value"]):
+                self.checked_states.append(True)
 
-            # update the selected item because the current row has changed
-            self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
+        self.set_items(self.items)
 
+        # update the selected item because the current row has changed
+        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
+
+    @observe('checked_states')
+    def _update_enabled_check_boxes(self, change):
+
+        #this callback may be called before the widget is initialized
+        widget = self.get_widget()
+        if widget == None:
+            return
+
+        if change["name"] == "checked_states":
+            for ct, enabled in enumerate(change["value"]):
+                item = widget.item(ct)
+                item.setCheckState(Qt.Checked if enabled else Qt.Unchecked)
 
 # Helper methods
 def _set_item_flag(item, flag, enabled):
