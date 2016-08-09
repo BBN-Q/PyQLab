@@ -146,14 +146,12 @@ class ExpSettings(Atom):
                 instr.nbrSegments = meta_info['num_measurements']
 
         # setup a SegmentNum or SegmentNumWithCals sweep
-        if len(meta_info['axis_descriptor']) > 1:
-            self.errors.append(("Multi-dimensional sweeps are not handled, yet"))
-            raise ValueError
         axis = meta_info['axis_descriptor'][0]
-        if len(meta_info['cal_descriptor']) > 0:
+        cal_axes = [ax for ax in meta_info['axis_descriptor'] if ax['name'] == 'calibration']
+        if len(cal_axes) > 0:
             sweep_name = 'SegmentNumWithCals'
             sweep_class = Sweeps.SegmentNumWithCals
-            num_cals = sum(len(x) for x in meta_info['cal_descriptor'].values())
+            num_cals = sum(len(ax['points']) for ax in cal_axes)
         else:
             sweep_name = 'SegmentNum'
             sweep_class = Sweeps.SegmentNum
