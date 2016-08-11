@@ -146,9 +146,22 @@ enamldef SegmentNumWithCalsForm(GroupBox):
         IntField:
             value := sweep.numPoints
         Label:
+            text = 'Points'
+        Field:
+            text << unicode(sweep.points)
+            text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
+        Label:
             text = 'Num Cals'
         IntField:
             value := sweep.numCals
+        Container:
+            constraints = [hbox(rb1, rb2, spacer)]
+            RadioButton: rb1:
+                text = 'start/stop/step'
+                checked << not sweep.usePointsList
+            RadioButton: rb2:
+                text = 'points list'
+                checked := sweep.usePointsList
 
 enamldef AWGChannelForm(GroupBox):
     attr sweep

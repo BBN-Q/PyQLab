@@ -96,16 +96,23 @@ class SegmentNum(PointsSweep):
             del jsonDict['points']
         return jsonDict
 
-class SegmentNumWithCals(PointsSweep):
+class SegmentNumWithCals(SegmentNum):
     label = Str(default='SegmentNumWithCals')
     numCals = Int(0)
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(SegmentNumWithCals, self).json_encode(matlabCompatible)
         if matlabCompatible:
+            # pose as a normal SegmentNum sweep with a few extra points
             jsonDict['type'] = 'SegmentNum'
-            jsonDict['stop'] = self.stop + self.step * self.numCals
-            jsonDict['numPoints'] = self.numPoints + self.numCals
+            if self.usePointsList:
+                # approximate a step from end points
+                step = (self.points[-1] - self.points[0]) / max(1, len(self.points)-1)
+                extra_points = self.points[-1] + np.arange(1, self.numCals+1) * step
+                jsonDict['points'] = self.points + list(extra_points)
+            else:
+                jsonDict['stop'] = self.stop + self.step * self.numCals
+                jsonDict['numPoints'] = self.numPoints + self.numCals
         return jsonDict
 
 class Repeat(Sweep):
