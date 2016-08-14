@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    PushButton, SpinBox
+    PushButton, SpinBox, RadioButton
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
@@ -37,7 +37,7 @@ enamldef PointsSweepForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
-        Label: 
+        Label:
             text = 'Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
@@ -69,7 +69,7 @@ enamldef AttenuationSweepForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
-        Label: 
+        Label:
             text = 'Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
@@ -106,6 +106,19 @@ enamldef SegmentNumForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
+        Label:
+            text = 'Points'
+        Field:
+            text << unicode(sweep.points)
+            text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
+        Container:
+            constraints = [hbox(rb1, rb2, spacer)]
+            RadioButton: rb1:
+                text = 'start/stop/step'
+                checked << not sweep.usePointsList
+            RadioButton: rb2:
+                text = 'points list'
+                checked := sweep.usePointsList
 
 enamldef SegmentNumWithCalsForm(GroupBox):
     attr sweep
@@ -133,9 +146,22 @@ enamldef SegmentNumWithCalsForm(GroupBox):
         IntField:
             value := sweep.numPoints
         Label:
+            text = 'Points'
+        Field:
+            text << unicode(sweep.points)
+            text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
+        Label:
             text = 'Num Cals'
         IntField:
             value := sweep.numCals
+        Container:
+            constraints = [hbox(rb1, rb2, spacer)]
+            RadioButton: rb1:
+                text = 'start/stop/step'
+                checked << not sweep.usePointsList
+            RadioButton: rb2:
+                text = 'points list'
+                checked := sweep.usePointsList
 
 enamldef AWGChannelForm(GroupBox):
     attr sweep
@@ -197,7 +223,7 @@ enamldef AWGSequenceForm(GroupBox):
         IntField:
             # value << int(sweep.start)
             # value >> sweep.start
-            value := sweep.start 
+            value := sweep.start
         Label:
             text = 'Stop'
         IntField:
@@ -250,7 +276,7 @@ enamldef PowerSweepForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
-        Label: 
+        Label:
             text = 'Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
@@ -291,13 +317,13 @@ enamldef HeterodyneSweepForm(GroupBox):
             text = 'IF frequency (GHz)'
         FloatField:
             value := sweep.diffFreq
-        Label: 
+        Label:
             text = 'RF Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr1) if (possibleInstrs and sweep.instr1) else 0
             index :: sweep.instr1 = possibleInstrs[index]
             items << [item for item in possibleInstrs]
-        Label: 
+        Label:
             text = 'LO Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr2) if (possibleInstrs and sweep.instr2) else 0
@@ -329,7 +355,7 @@ enamldef ThresholdSweepForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
-        Label: 
+        Label:
             text = 'Stream'
         EnumComboBox:
             items = ['(1,1)','(1,2)','(2,1)','(2,2)']
@@ -342,12 +368,12 @@ enamldef EmptySweepForm(Container):
     attr possibleInstrs
 
 #Map sweeps to view
-sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm, 
+sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.SegmentNum:SegmentNumForm,
                     Sweeps.SegmentNumWithCals:SegmentNumWithCalsForm,
                     Sweeps.AWGChannel:AWGChannelForm,
                     Sweeps.AWGSequence:AWGSequenceForm,
-                    Sweeps.Attenuation:AttenuationSweepForm, 
+                    Sweeps.Attenuation:AttenuationSweepForm,
                     Sweeps.Power:PowerSweepForm,
                     Sweeps.Repeat:RepeatForm,
                     Sweeps.DC:PointsSweepForm,
@@ -404,4 +430,3 @@ enamldef SweepManagerWindow(Window): sweepManagerTest:
     title = 'Sweep Manager'
     SweepManager:
         sweepLib := sweepManagerTest.sweepLib
-

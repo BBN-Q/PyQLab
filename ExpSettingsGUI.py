@@ -162,10 +162,12 @@ class ExpSettings(Atom):
             self.sweeps.sweepManager.update_display_list(None)
         else:
             sweep = self.sweeps[sweep_name]
-        # TODO what if we don't have an equal step???
+        # set start/stop/step for viewing purposes
         sweep.start = axis['points'][0]
         sweep.stop = axis['points'][-1]
         sweep.numPoints = len(axis['points'])
+        sweep.points = axis['points']
+        sweep.usePointsList = True
         if num_cals > 0:
             sweep.numCals = num_cals
         if axis['unit']:
