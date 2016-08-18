@@ -4,7 +4,7 @@
 #-------------------------------------------------------------------------------
 #  Imports:
 #-------------------------------------------------------------------------------
-from atom.api import (Bool, List, ContainerList, observe, set_default, Unicode, Enum, Int, Signal, Callable)
+from atom.api import (Bool, List, Tuple, ContainerList, observe, set_default, Unicode, Enum, Int, Signal, Callable)
 
 from enaml.widgets.api import RawWidget
 from enaml.core.declarative import d_
@@ -18,10 +18,8 @@ class QtListStrWidget(RawWidget):
 
     __slots__ = '__weakref__'
 
-    #: The list of str being viewed
-    items = d_(List(Unicode()))
-
-    checked_states = d_(List(Bool()))
+    #: The list of (str, enabled) tuples being viewed
+    items = d_(List(Tuple() ) )
 
     #: The index of the currently selected str
     selected_index = d_(Int(-1))
@@ -50,15 +48,14 @@ class QtListStrWidget(RawWidget):
         """
         # Create the list model and accompanying controls:
         widget = QListWidget(parent)
-        for item, checked in zip(self.items, self.checked_states):
+        for item, checked in self.items:
             self.add_item(widget, item, checked)
 
-
         # set selected_item here so that first change fires an 'update' rather than 'create' event
-        self.selected_item = ''
+        self.selected_item = u''
         if self.items:
             self.selected_index = 0
-            self.selected_item = self.items[0]
+            self.selected_item = self.items[0][0]
             widget.setCurrentRow(0)
 
         widget.itemSelectionChanged.connect(self.on_selection)
@@ -85,7 +82,7 @@ class QtListStrWidget(RawWidget):
         """
         widget = self.get_widget()
         self.selected_index = widget.currentRow()
-        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
+        self.selected_item = self.items[widget.currentRow()][0] if self.selected_index >= 0 else u''
 
     def on_edit(self, item):
         """
@@ -93,27 +90,27 @@ class QtListStrWidget(RawWidget):
         """
         widget = self.get_widget()
         itemRow = widget.indexFromItem(item).row()
-        oldLabel = self.items[itemRow]
+        oldLabel = self.items[itemRow][0]
         newLabel = item.text()
 
         # only signal the enable change when the labels are the same and is in
         # the item list, also only signal a name change when the labels are not
         # the same and the newlabel is not in the item list
-        if newLabel == oldLabel and newLabel in self.items:
-            if itemRow < len(self.checked_states):
-                self.checked_states[itemRow] = True if item.checkState() == Qt.Checked else False
-                self.enable_changed(item.text(), self.checked_states[itemRow])
-        elif oldLabel != newLabel and newLabel not in self.items:
+        item_labels = [_[0] for _ in self.items]
+        if newLabel == oldLabel and newLabel in item_labels:
+            self.items[itemRow] = (newLabel, item.checkState() == Qt.Checked)
+            self.enable_changed(item.text(), self.items[itemRow][1])
+        elif oldLabel != newLabel and newLabel not in item_labels:
             self.item_changed(oldLabel, newLabel)
-            self.selected_item = item.text()
-            self.items[itemRow] = item.text()
+            self.selected_item = newLabel
+            self.items[itemRow] = (newLabel, item.checkState() == Qt.Checked)
             self.apply_validator(item, newLabel)
 
     #--------------------------------------------------------------------------
     # ProxyListStrView API
     #--------------------------------------------------------------------------
 
-    def set_items(self, items, widget = None):
+    def set_items(self, items, widget=None):
         """
         """
         widget = self.get_widget()
@@ -122,12 +119,12 @@ class QtListStrWidget(RawWidget):
         for idx, item in enumerate(items[:count]):
             itemWidget = widget.item(idx)
             # Update checked state before the text so that we can distinguish a checked state change from a label change
-            itemWidget.setCheckState(Qt.Checked if self.checked_states[idx] else Qt.Unchecked)
-            itemWidget.setText(item)
-            self.apply_validator(itemWidget, item)
+            itemWidget.setCheckState(Qt.Checked if self.items[idx][1] else Qt.Unchecked)
+            itemWidget.setText(item[0])
+            self.apply_validator(itemWidget, item[0])
         if nitems > count:
             for item in items[count:]:
-                self.add_item(widget, item)
+                self.add_item(widget, item[0])
         elif nitems < count:
             for idx in reversed(xrange(nitems, count)):
                 widget.takeItem(idx)
@@ -154,32 +151,10 @@ class QtListStrWidget(RawWidget):
         if widget == None:
             return
 
-        if (change["name"] == "items") and (change["type"] == "update"):
-            if len(change["oldvalue"]) > len(change["value"]):
-                # We've lost an item
-                removedKey = set(change["oldvalue"]) - set(change["value"])
-                removedIndex = change["oldvalue"].index(list(removedKey)[0])
-                del self.checked_states[removedIndex]
-            elif len(change["oldvalue"]) < len(change["value"]):
-                self.checked_states.append(True)
-
         self.set_items(self.items)
 
         # update the selected item because the current row has changed
-        self.selected_item = self.items[widget.currentRow()] if self.selected_index >= 0 else u''
-
-    @observe('checked_states')
-    def _update_enabled_check_boxes(self, change):
-
-        #this callback may be called before the widget is initialized
-        widget = self.get_widget()
-        if widget == None:
-            return
-
-        if change["name"] == "checked_states":
-            for ct, enabled in enumerate(change["value"]):
-                item = widget.item(ct)
-                item.setCheckState(Qt.Checked if enabled else Qt.Unchecked)
+        self.selected_item = self.items[widget.currentRow()][0] if self.selected_index >= 0 else u''
 
 # Helper methods
 def _set_item_flag(item, flag, enabled):
