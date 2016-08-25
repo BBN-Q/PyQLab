@@ -1,6 +1,6 @@
 from atom.api import Str, Int, Float, Bool, Enum
 
-from Instrument import Instrument
+from .Instrument import Instrument
 
 class DCSource(Instrument):
 	output = Bool(False).tag(desc='Output enabled')

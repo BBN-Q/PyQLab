@@ -1,7 +1,7 @@
 """
 For now just Alazar cards but should also support Acquiris.
 """
-from Instrument import Instrument
+from .Instrument import Instrument
 
 from atom.api import Atom, Str, Int, Float, Bool, Enum, List, Dict, Coerced
 import itertools, ast

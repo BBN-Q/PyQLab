@@ -6,16 +6,16 @@ from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced,
                       Int, Callable)
 from enaml.qt.qt_application import QtApplication
 
-from Instrument import Instrument
-import MicrowaveSources
-import AWGs
+from .Instrument import Instrument
+from . import MicrowaveSources
+from . import AWGs
 from JSONLibraryUtils import FileWatcher, LibraryCoders
 
 from DictManager import DictManager
 
-import Digitizers, Analysers, DCSources, Attenuators
+from . import Digitizers, Analysers, DCSources, Attenuators
 
-from plugins import find_plugins
+from . plugins import find_plugins
 
 newOtherInstrs = [Digitizers.AlazarATS9870, Digitizers.X6, Analysers.HP71000,
                   Analysers.SpectrumAnalyzer, DCSources.YokoGS200,
@@ -25,7 +25,7 @@ plugins = find_plugins(Digitizers.Digitizer, verbose=False)
 for plugin in plugins:
     newOtherInstrs.append(plugin)
     globals().update({plugin.__name__: plugin})
-    print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
+    print("Registered Digitizer Driver {}".format(plugin.__name__))
 
 
 class AWGDictManager(DictManager):

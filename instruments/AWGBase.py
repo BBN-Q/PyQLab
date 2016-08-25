@@ -4,7 +4,7 @@ AWGs
 
 from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
-from Instrument import Instrument
+from .Instrument import Instrument
 
 import enaml
 from enaml.qt.qt_application import QtApplication

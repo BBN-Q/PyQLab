@@ -85,7 +85,7 @@ class ExpSettings(Atom):
                 print("JSON Files did not validate")
                 raise
         elif not self.validate:
-            print "JSON Files validation disabled"
+            print("JSON Files validation disabled")
         self.channels.write_to_file()
         self.instruments.write_to_file()
         self.measurements.write_to_file()

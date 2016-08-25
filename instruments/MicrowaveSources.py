@@ -3,7 +3,7 @@ from atom.api import Atom, Float, Enum, Bool
 import enaml
 from enaml.qt.qt_application import QtApplication
 
-from Instrument import Instrument
+from .Instrument import Instrument
 
 class MicrowaveSource(Instrument):
     power = Float(0.0).tag(desc="Output power in dBm")
