@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
-import MicrowaveSources
+from . import MicrowaveSources
 
 from widgets.enum_combos import EnumComboBox
 
@@ -16,9 +16,9 @@ enamldef MicrowaveSourceForm(GroupBox):
 	padding = 5
 	Form:
 		padding = 2
-		Label: 
+		Label:
 			text = "Address"
-		Field: 
+		Field:
 			text := uwSource.address
 			tool_tip = uwSource.get_member("address").metadata["desc"]
 		Label:
@@ -45,7 +45,7 @@ enamldef MicrowaveSourceForm(GroupBox):
 			checked := uwSource.alc
 			enabled << not modOn.checked
 			tool_tip = uwSource.get_member("alc").metadata["desc"]
-		Label: 
+		Label:
 			text = "Modulation"
 		CheckBox: modOn:
 			checked := uwSource.mod
@@ -79,4 +79,3 @@ enamldef EmptySourceView(Container):
 	attr uwSource
 
 MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}
-		

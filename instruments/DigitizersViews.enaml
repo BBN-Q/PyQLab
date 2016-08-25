@@ -8,9 +8,8 @@ from widgets import EnumComboBox
 
 from enaml.validator import Validator
 from atom.api import Int
-import ast
 
-import Digitizers
+from . import Digitizers
 
 class RecordLengthValidator(Validator):
 	lengthMult = Int(64)

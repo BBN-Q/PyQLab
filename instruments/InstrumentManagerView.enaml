@@ -2,19 +2,19 @@ from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, Gro
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Include
 
-import MicrowaveSources, AWGs, Digitizers, Analysers, DCSources, Attenuators
+from .import MicrowaveSources, AWGs, Digitizers, Analysers, DCSources, Attenuators
 
-from AWGsViews import AWGViewMap
-from MicrowaveSourcesViews import MicrowaveSourceViewMap
-from DigitizersViews import DigitizerViewMap
-from DCSourcesViews import DCSourcesViewMap
-from AttenuatorsViews import AttenuatorsViewMap
+from .AWGsViews import AWGViewMap
+from .MicrowaveSourcesViews import MicrowaveSourceViewMap
+from .DigitizersViews import DigitizerViewMap
+from .DCSourcesViews import DCSourcesViewMap
+from .AttenuatorsViews import AttenuatorsViewMap
 
 from DictManagerView import DictManagerView
 
 from ExpSettingsVal import is_valid_instrument_name
 
-from plugins import find_view_maps
+from .plugins import find_view_maps
 
 enamldef EmptyInstrView(Container):
 	attr instr

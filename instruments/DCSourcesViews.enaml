@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
-import DCSources
+from . import DCSources
 
 from widgets import EnumComboBox, EnumFloatComboBox
 
@@ -15,9 +15,9 @@ enamldef YokoGS200Form(GroupBox):
 	padding = 5
 	Form:
 		padding = 2
-		Label: 
+		Label:
 			text = 'Address'
-		Field: 
+		Field:
 			text := instr.address
 			tool_tip = instr.get_member('address').metadata['desc']
 		Label:
