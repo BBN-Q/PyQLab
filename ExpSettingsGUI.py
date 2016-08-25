@@ -1,11 +1,15 @@
 #! /usr/bin/env python
-import h5py
-from atom.api import Atom, Typed, Str, Bool, List
+import json
+import os
+import argparse
+import sys
+import shutil
 
+import h5py
+
+from atom.api import Atom, Typed, Str, Bool, List
 import enaml
 from enaml.qt.qt_application import QtApplication
-
-import argparse, sys
 
 from instruments.InstrumentManager import InstrumentLibrary
 from instruments import Digitizers
@@ -13,12 +17,10 @@ import Sweeps
 import MeasFilters
 import QGL.ChannelLibrary
 import QGL.Channels
-import json
-import os
 import config
 import ExpSettingsVal
 from DictManager import DictManager
-import shutil
+
 
 class ExpSettings(Atom):
 
@@ -41,19 +43,17 @@ class ExpSettings(Atom):
         # setup on change AWG
         self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
         # link adding AWG to auto-populating channels
-        self.instruments.AWGs.populate_physical_channels = lambda awg : self.populate_physical_channels(awg)
+        self.instruments.AWGs.populate_physical_channels = lambda awg: self.populate_physical_channels(awg)
 
         self.logicalChannelManager = DictManager(
-            itemDict = self.channels.channelDict,
-            displayFilter = lambda x : isinstance(x, QGL.Channels.LogicalChannel),
-            possibleItems = QGL.Channels.NewLogicalChannelList
-        )
+            itemDict=self.channels.channelDict,
+            displayFilter=lambda x: isinstance(x, QGL.Channels.LogicalChannel),
+            possibleItems=QGL.Channels.NewLogicalChannelList)
         self.physicalChannelManager = DictManager(
-            itemDict = self.channels.channelDict,
-            displayFilter = lambda x : isinstance(x, QGL.Channels.PhysicalChannel),
-            possibleItems = QGL.Channels.NewPhysicalChannelList,
-            otherActions = {"Auto": self.populate_physical_channels}
-        )
+            itemDict=self.channels.channelDict,
+            displayFilter=lambda x: isinstance(x, QGL.Channels.PhysicalChannel),
+            possibleItems=QGL.Channels.NewPhysicalChannelList,
+            otherActions={"Auto": self.populate_physical_channels})
 
     # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
@@ -66,10 +66,15 @@ class ExpSettings(Atom):
     def load_from_file(self, fileName):
         pass
 
-    def write_to_file(self,fileName=None):
+    def write_to_file(self, fileName=None):
         curFileName = fileName if fileName != None else self.curFileName
         with open(curFileName, 'w') as FID:
-            json.dump(self, FID, cls=ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
+            json.dump(self,
+                      FID,
+                      cls=ScripterEncoder,
+                      indent=2,
+                      sort_keys=True,
+                      CWMode=self.CWMode)
 
     def write_libraries(self):
         """ Write all the libraries to their files. """
@@ -86,7 +91,7 @@ class ExpSettings(Atom):
         self.measurements.write_to_file()
         self.sweeps.write_to_file()
 
-    def save_config(self,path):
+    def save_config(self, path):
 
         if self.validate:
             self.errors = ExpSettingsVal.validate_lib()
@@ -97,24 +102,40 @@ class ExpSettings(Atom):
             print("JSON Files validation disabled")
 
         try:
-            self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))
-            self.measurements.write_to_file(fileName=path+ os.sep + os.path.basename(self.measurements.libFile))
-            self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
-            self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
-            self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
+            self.channels.write_to_file(
+                fileName=path + os.sep +
+                os.path.basename(self.channels.libFile))
+            self.measurements.write_to_file(
+                fileName=path + os.sep +
+                os.path.basename(self.measurements.libFile))
+            self.instruments.write_to_file(
+                fileName=path + os.sep +
+                os.path.basename(self.instruments.libFile))
+            self.sweeps.write_to_file(
+                fileName=path + os.sep + os.path.basename(self.sweeps.libFile))
+            self.write_to_file(
+                fileName=path + os.sep + os.path.basename(self.curFileName))
         except Exception as e:
             self.errors.append(e.message)
 
-    def load_config(self,path):
+    def load_config(self, path):
         self.clear_errors()
 
-        print("LOADING FROM:",path)
+        print("LOADING FROM:", path)
         try:
-            shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
-            shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
-            shutil.copy(path+ os.sep + os.path.basename(self.measurements.libFile),self.measurements.libFile)
-            shutil.copy(path+ os.sep + os.path.basename(self.sweeps.libFile),self.sweeps.libFile)
-            shutil.copy(path+ os.sep + os.path.basename(self.curFileName),self.curFileName)
+            shutil.copy(
+                path + os.sep + os.path.basename(self.channels.libFile),
+                self.channels.libFile)
+            shutil.copy(
+                path + os.sep + os.path.basename(self.instruments.libFile),
+                self.instruments.libFile)
+            shutil.copy(
+                path + os.sep + os.path.basename(self.measurements.libFile),
+                self.measurements.libFile)
+            shutil.copy(path + os.sep + os.path.basename(self.sweeps.libFile),
+                        self.sweeps.libFile)
+            shutil.copy(path + os.sep + os.path.basename(self.curFileName),
+                        self.curFileName)
         except Exception as e:
             self.errors.append(e.message)
 
@@ -142,12 +163,14 @@ class ExpSettings(Atom):
 
         # setup up digitizers with number of segments
         for instr in self.instruments.instrDict.values():
-            if isinstance(instr, Digitizers.Digitizer) and hasattr(instr, 'nbrSegments'):
+            if isinstance(instr, Digitizers.Digitizer) and hasattr(
+                    instr, 'nbrSegments'):
                 instr.nbrSegments = meta_info['num_measurements']
 
         # setup a SegmentNum or SegmentNumWithCals sweep
         axis = meta_info['axis_descriptor'][0]
-        cal_axes = [ax for ax in meta_info['axis_descriptor'] if ax['name'] == 'calibration']
+        cal_axes = [ax for ax in meta_info['axis_descriptor']
+                    if ax['name'] == 'calibration']
         if len(cal_axes) > 0:
             sweep_name = 'SegmentNumWithCals'
             sweep_class = Sweeps.SegmentNumWithCals
@@ -178,7 +201,10 @@ class ExpSettings(Atom):
 
     def json_encode(self, matlabCompatible=True):
         #We encode this for an experiment settings file so no channels
-        return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
+        return {'instruments': self.instruments,
+                'sweeps': self.sweeps,
+                'measurements': self.measurements,
+                'CWMode': self.CWMode}
 
     def format_errors(self):
         return '\n'.join(self.errors)
@@ -189,7 +215,8 @@ class ExpSettings(Atom):
     def populate_physical_channels(self, awgs=None):
         import instruments.AWGs
         if awgs == None:
-            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG), self.instruments.instrDict.values())
+            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG),
+                          self.instruments.instrDict.values())
         for awg in awgs:
             channels = awg.get_naming_convention()
             for ch in channels:
@@ -213,6 +240,7 @@ class ScripterEncoder(json.JSONEncoder):
     """
     Helper for QLab to encode all the classes for the matlab experiment script.
     """
+
     def __init__(self, CWMode=False, **kwargs):
         super(ScripterEncoder, self).__init__(**kwargs)
         self.CWMode = CWMode
@@ -237,6 +265,7 @@ class ScripterEncoder(json.JSONEncoder):
         else:
             return super(ScripterEncoder, self).default(obj)
 
+
 if __name__ == '__main__':
     import Libraries
 
@@ -252,8 +281,11 @@ if __name__ == '__main__':
 
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)
-    options =  parser.parse_args(sys.argv[1:])
+    parser.add_argument('--scripterFile',
+                        action='store',
+                        dest='scripterFile',
+                        default=None)
+    options = parser.parse_args(sys.argv[1:])
     if options.scripterFile:
         expSettings.curFileName = options.scripterFile
 

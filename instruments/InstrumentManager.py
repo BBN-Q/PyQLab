@@ -1,5 +1,9 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int, Callable)
-import json, enaml
+import json
+import importlib
+
+import enaml
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced,
+                      Int, Callable)
 from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
@@ -7,26 +11,22 @@ import MicrowaveSources
 import AWGs
 from JSONLibraryUtils import FileWatcher, LibraryCoders
 
-import importlib
-
 from DictManager import DictManager
 
 import Digitizers, Analysers, DCSources, Attenuators
 
 from plugins import find_plugins
 
-newOtherInstrs = [Digitizers.AlazarATS9870,
-    Digitizers.X6,
-    Analysers.HP71000,
-    Analysers.SpectrumAnalyzer,
-    DCSources.YokoGS200,
-    Attenuators.DigitalAttenuator]
+newOtherInstrs = [Digitizers.AlazarATS9870, Digitizers.X6, Analysers.HP71000,
+                  Analysers.SpectrumAnalyzer, DCSources.YokoGS200,
+                  Attenuators.DigitalAttenuator]
 
 plugins = find_plugins(Digitizers.Digitizer, verbose=False)
 for plugin in plugins:
     newOtherInstrs.append(plugin)
     globals().update({plugin.__name__: plugin})
     print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
+
 
 class AWGDictManager(DictManager):
     """
@@ -43,16 +43,22 @@ class AWGDictManager(DictManager):
         """
         with enaml.imports():
             from widgets.dialogs import AddAWGDialog
-        dialogBox = AddAWGDialog(parent, modelNames=[i.__name__ for i in self.possibleItems], objText="AWG")
+        dialogBox = AddAWGDialog(
+            parent,
+            modelNames=[i.__name__ for i in self.possibleItems],
+            objText="AWG")
         dialogBox.exec_()
         if dialogBox.result:
             if dialogBox.newLabel not in self.itemDict.keys():
-                self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
+                self.itemDict[dialogBox.newLabel] = self.possibleItems[
+                    dialogBox.newModelNum](label=dialogBox.newLabel)
                 self.displayList.append(dialogBox.newLabel)
                 if dialogBox.auto_populate_channels and self.populate_physical_channels is not None:
-                    self.populate_physical_channels([self.itemDict[dialogBox.newLabel]])
+                    self.populate_physical_channels(
+                        [self.itemDict[dialogBox.newLabel]])
             else:
-                print("WARNING: Can't use duplicate label %s"%dialogBox.newLabel)
+                print("WARNING: Can't use duplicate label %s" %
+                      dialogBox.newLabel)
 
 
 class InstrumentLibrary(Atom):
@@ -73,25 +79,30 @@ class InstrumentLibrary(Atom):
         super(InstrumentLibrary, self).__init__(**kwargs)
         self.load_from_library()
         if self.libFile:
-            self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
+            self.fileWatcher = FileWatcher.LibraryFileWatcher(
+                self.libFile, self.update_from_file)
 
         #Setup the dictionary managers for the different instrument types
-        self.AWGs = AWGDictManager(itemDict=self.instrDict,
-                                displayFilter=lambda x: isinstance(x, AWGs.AWG),
-                                possibleItems=AWGs.AWGList)
+        self.AWGs = AWGDictManager(
+            itemDict=self.instrDict,
+            displayFilter=lambda x: isinstance(x, AWGs.AWG),
+            possibleItems=AWGs.AWGList)
 
-        self.sources = DictManager(itemDict=self.instrDict,
-                                   displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
-                                   possibleItems=MicrowaveSources.MicrowaveSourceList)
+        self.sources = DictManager(
+            itemDict=self.instrDict,
+            displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
+            possibleItems=MicrowaveSources.MicrowaveSourceList)
 
-        self.others = DictManager(itemDict=self.instrDict,
-                                  displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
-                                  possibleItems=newOtherInstrs)
+        self.others = DictManager(
+            itemDict=self.instrDict,
+            displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
+            possibleItems=newOtherInstrs)
 
         # To enable routing physical marker channels to more generic devices
-        self.markedInstrs = DictManager(itemDict=self.instrDict,
-                                displayFilter=lambda x: not isinstance(x, AWGs.AWG) and hasattr(x, 'takes_marker') and x.takes_marker,
-                                possibleItems=newOtherInstrs)
+        self.markedInstrs = DictManager(
+            itemDict=self.instrDict,
+            displayFilter=lambda x: not isinstance(x, AWGs.AWG) and hasattr(x, 'takes_marker') and x.takes_marker,
+            possibleItems=newOtherInstrs)
 
     #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
@@ -100,7 +111,7 @@ class InstrumentLibrary(Atom):
     def __contains__(self, key):
         return key in self.instrDict
 
-    def write_to_file(self,fileName=None):
+    def write_to_file(self, fileName=None):
         libFileName = fileName if fileName != None else self.libFile
         if self.libFile:
             #Pause the file watcher to stop circular updating insanity
@@ -109,7 +120,11 @@ class InstrumentLibrary(Atom):
 
                 if libFileName:
                     with open(libFileName, 'w') as FID:
-                        json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
+                        json.dump(self,
+                                  FID,
+                                  cls=LibraryCoders.LibraryEncoder,
+                                  indent=2,
+                                  sort_keys=True)
 
             if self.fileWatcher:
                 self.fileWatcher.resume()
@@ -139,16 +154,20 @@ class InstrumentLibrary(Atom):
                 try:
                     allParams = json.load(FID)['instrDict']
                 except ValueError:
-                    print('Failed to update instrument library from file.  Probably just half-written.')
+                    print(
+                        'Failed to update instrument library from file.  Probably just half-written.'
+                    )
                     return
 
                 # update and add new items
                 for instrName, instrParams in allParams.items():
                     # Re-encode the strings as ascii (this should go away in Python 3)
-                    instrParams = {k.encode('ascii'):v for k,v in instrParams.items()}
+                    instrParams = {k.encode('ascii'): v
+                                   for k, v in instrParams.items()}
                     # update
                     if instrName in self.instrDict:
-                        self.instrDict[instrName].update_from_jsondict(instrParams)
+                        self.instrDict[instrName].update_from_jsondict(
+                            instrParams)
                     else:
                         # load class from name and update from json
                         className = instrParams['x__class__']
@@ -156,8 +175,9 @@ class InstrumentLibrary(Atom):
 
                         mod = importlib.import_module(moduleName)
                         cls = getattr(mod, className)
-                        self.instrDict[instrName]  = cls()
-                        self.instrDict[instrName].update_from_jsondict(instrParams)
+                        self.instrDict[instrName] = cls()
+                        self.instrDict[instrName].update_from_jsondict(
+                            instrParams)
 
                 # delete removed items
                 for instrName in self.instrDict.keys():
@@ -167,19 +187,23 @@ class InstrumentLibrary(Atom):
     def json_encode(self, matlabCompatible=False):
         #When serializing for matlab return only enabled instruments, otherwise all
         if matlabCompatible:
-            return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
+            return {label: instr
+                    for label, instr in self.instrDict.items()
+                    if instr.enabled}
         else:
             return {
-                "instrDict": {label:instr for label,instr in self.instrDict.items()},
+                "instrDict": {label: instr
+                              for label, instr in self.instrDict.items()},
                 "version": self.version
             }
 
 
 if __name__ == '__main__':
 
-
     from MicrowaveSources import AgilentN5183A
-    instrLib = InstrumentLibrary(instrDict={'Agilent1':AgilentN5183A(label='Agilent1'), 'Agilent2':AgilentN5183A(label='Agilent2')})
+    instrLib = InstrumentLibrary(
+        instrDict={'Agilent1': AgilentN5183A(label='Agilent1'),
+                   'Agilent2': AgilentN5183A(label='Agilent2')})
     with enaml.imports():
         from InstrumentManagerView import InstrumentManagerWindow
 
