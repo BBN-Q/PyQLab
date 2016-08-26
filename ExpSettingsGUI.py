@@ -78,7 +78,6 @@ class ExpSettings(Atom):
 
     def write_libraries(self):
         """ Write all the libraries to their files. """
-
         if self.validate:
             self.errors = ExpSettingsVal.validate_lib()
             if self.errors != []:
@@ -116,7 +115,7 @@ class ExpSettings(Atom):
             self.write_to_file(
                 fileName=path + os.sep + os.path.basename(self.curFileName))
         except Exception as e:
-            self.errors.append(e.message)
+            self.errors.append(str(e))
 
     def load_config(self, path):
         self.clear_errors()
@@ -137,7 +136,7 @@ class ExpSettings(Atom):
             shutil.copy(path + os.sep + os.path.basename(self.curFileName),
                         self.curFileName)
         except Exception as e:
-            self.errors.append(e.message)
+            self.errors.append(str(e))
 
     def load_meta(self):
         self.clear_errors()
