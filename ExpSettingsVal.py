@@ -22,17 +22,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from builtins import str
+import floatbits
+import itertools
+import re
+
 import h5py
+from atom.api import Str
+
+import Sweeps
 import Libraries
 import QGL.Channels
 import QGL.ChannelLibrary
 
-from atom.api import Str
-
-import re
-import itertools
-import Sweeps
-import floatbits
 
 channels = QGL.ChannelLibrary.channelLib
 instruments = Libraries.instrumentLib.instrDict
@@ -203,7 +205,7 @@ def test_physical_channels():
             # apply device specific channel namming conventions
             # force converions of awgChan to unicode so multimethod dispatch will
             # work with str or unicode
-            errMsg = invalid_awg_name_convention(channels[channel].AWG, unicode(awgChan))
+            errMsg = invalid_awg_name_convention(channels[channel].AWG, str(awgChan))
             if errMsg:
                 errors.append(errMsg)
         else:

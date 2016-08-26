@@ -1,5 +1,6 @@
 import json
 import importlib
+import sys
 
 import enaml
 from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced,
@@ -162,8 +163,9 @@ class InstrumentLibrary(Atom):
                 # update and add new items
                 for instrName, instrParams in allParams.items():
                     # Re-encode the strings as ascii (this should go away in Python 3)
-                    instrParams = {k.encode('ascii'): v
-                                   for k, v in instrParams.items()}
+                    if sys.version_info[0] < 3:
+                        instrParams = {k.encode('ascii'): v
+                                       for k, v in instrParams.items()}
                     # update
                     if instrName in self.instrDict:
                         self.instrDict[instrName].update_from_jsondict(

@@ -58,7 +58,6 @@ class AWG(Instrument, AWGDriver):
         return jsonDict
 
     def update_from_jsondict(self, params):
-
         for ct in range(self.numChannels):
             channelParams = params['channels'][ct]
 
