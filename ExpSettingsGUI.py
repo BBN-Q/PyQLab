@@ -158,6 +158,8 @@ class ExpSettings(Atom):
                 raise KeyError
             self.instruments[instr].seqFile = seqFile
             self.instruments[instr].enabled = True
+            if hasattr(self.instruments[instr], 'parent'):
+                self.instruments[self.instruments[instr].parent].enabled = True
         self.instruments.AWGs.update_display_list(None)
 
         # setup up digitizers with number of segments
