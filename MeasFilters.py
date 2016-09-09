@@ -13,9 +13,6 @@ from JSONLibraryUtils import LibraryCoders
 class MeasFilter(Atom):
     label = Str()
     enabled = Bool(True)
-    plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
-    plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
-    saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
     dataSource = Str().tag(desc="Where the measurement data is pushed from.")
 
     def json_encode(self, matlabCompatible=False):
@@ -35,14 +32,21 @@ class MeasFilter(Atom):
             jsonDict['x__module__'] = self.__class__.__module__
         return jsonDict
 
+class Plotter(MeasFilter):
+    label    = Str()
+    enabled  = Bool(True)
+    plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
+
+class WriteToHDF5(MeasFilter):
+    label       = Str()
+    enabled     = Bool(True)
+    filename    = Str('').tag(desc='Path to file where records will be saved.')
+    compression = Bool(True)
+
 class RawStream(MeasFilter):
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     channel = Str().tag(desc="The channel on the digitizer to pull data from.")
 
 class DigitalDemod(MeasFilter):
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
@@ -77,7 +81,7 @@ class KernelIntegration(MeasFilter):
                     kernel = base64.b64encode(eval(self.kernel))
             except:
                 kernel = []
-            jsonDict['kernel'] = kernel
+            jsonDict['kernel'] = kernel.encode("ascii")
         return jsonDict
 
 class Correlator(MeasFilter):
@@ -102,8 +106,7 @@ class StateComparator(MeasFilter):
 
 class StreamSelector(MeasFilter):
     stream = Str()
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    data_source = Str('')
 
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
@@ -157,7 +160,7 @@ class MeasFilterLibrary(Atom):
             }
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, Plotter, WriteToHDF5]
 
 if __name__ == "__main__":
 

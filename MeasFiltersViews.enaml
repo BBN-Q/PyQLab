@@ -28,25 +28,6 @@ enamldef RawStreamForm(GroupBox):
         Field:
             text := myFilter.channel
             tool_tip = myFilter.get_member('channel').metadata['desc']
-        Label:
-            text = 'Records File'
-        Field:
-            text := myFilter.recordsFilePath
-            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label:
-            text = "Save records"
-        CheckBox:
-            checked := myFilter.saveRecords
-            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
-        Label:
-            text = "Plot scope"
-        CheckBox:
-            checked := myFilter.plotScope
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
 
 enamldef DigitalDemodForm(GroupBox):
     attr myFilter
@@ -96,26 +77,7 @@ enamldef DigitalDemodForm(GroupBox):
             text = "Data source"
         Field:
             text := myFilter.dataSource
-        Label:
-            text = "Plot scope"
-        CheckBox:
-            checked := myFilter.plotScope
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
-        Label:
-            text = 'Records File'
-        Field:
-            text := myFilter.recordsFilePath
-            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label:
-            text = "Save records"
-        CheckBox:
-            checked := myFilter.saveRecords
-            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
-
+        
 enamldef KernelIntegrationForm(GroupBox):
     attr myFilter
     attr filterLib
@@ -167,15 +129,6 @@ enamldef KernelIntegrationForm(GroupBox):
         FloatField:
             value := myFilter.bias
             tool_tip = myFilter.get_member('bias').metadata["desc"]
-        Label:
-            text = "Plot scope"
-        CheckBox:
-            checked := myFilter.plotScope
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
 
 #moved this logic to a separate function to tidy things up a bit
 def filterLooperGetIdndex(filterLib,myFilter,loop_index):
@@ -184,8 +137,39 @@ def filterLooperGetIdndex(filterLib,myFilter,loop_index):
         return filterLib.filterDict.values().index(myFilter.filters[loop_index])
     else:
         return -1
-    
-    
+
+enamldef PlotterView(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode' 
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
+
+enamldef WriteToHDF5View(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
+        Label:
+            text = "Filename"
+        Field:
+            text := myFilter.filename
+        Label:
+            text = "Compression"
+        CheckBox:
+            checked := myFilter.compression
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
 
 enamldef CorrelatorView(GroupBox):
     attr myFilter
@@ -212,17 +196,6 @@ enamldef CorrelatorView(GroupBox):
                     index << filterLooperGetIdndex(filterLib,myFilter,loop_index)
                     index ::
                         myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
-        Label:
-            text = "Plot scope"
-        CheckBox:
-            checked := myFilter.plotScope
-
-
 
 enamldef StateComparatorView(GroupBox):
     attr myFilter
@@ -242,11 +215,6 @@ enamldef StateComparatorView(GroupBox):
         IntField:
             value := myFilter.integrationTime
             tool_tip = myFilter.get_member('integrationTime').metadata['desc']
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
 
 enamldef StreamSelectorView(GroupBox):
     attr myFilter
@@ -256,34 +224,11 @@ enamldef StreamSelectorView(GroupBox):
         Label:
             text = "Data source"
         Field:
-            text := myFilter.dataSource
+            text := myFilter.data_source
         Label:
             text = 'Stream'
         Field:
             text := myFilter.stream
-        Label:
-            text = "Plot scope"
-        CheckBox:
-            checked := myFilter.plotScope
-        Label:
-            text = "Plot mode"
-        EnumComboBox:
-            obj := myFilter
-            enumName = 'plotMode'
-        Label:
-            text = 'Saved'
-        CheckBox:
-            checked := myFilter.saved
-        Label:
-            text = 'Records File'
-        Field:
-            text := myFilter.recordsFilePath
-            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
-        Label:
-            text = "Save records"
-        CheckBox:
-            checked := myFilter.saveRecords
-            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
 
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
@@ -297,7 +242,9 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.KernelIntegration: KernelIntegrationForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
-    MeasFilters.StreamSelector: StreamSelectorView}
+    MeasFilters.StreamSelector: StreamSelectorView,
+    MeasFilters.WriteToHDF5: WriteToHDF5View,
+    MeasFilters.Plotter: PlotterView}
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib
