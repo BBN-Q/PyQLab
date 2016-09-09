@@ -81,7 +81,7 @@ class KernelIntegration(MeasFilter):
                     kernel = base64.b64encode(eval(self.kernel))
             except:
                 kernel = []
-            jsonDict['kernel'] = kernel.encode("ascii")
+            jsonDict['kernel'] = kernel
         return jsonDict
 
 class Correlator(MeasFilter):
