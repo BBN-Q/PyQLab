@@ -79,7 +79,7 @@ class HeterodyneFrequency(PointsSweep):
 
 class SegmentNum(PointsSweep):
     label = Str(default='SegmentNum')
-    points = List(float)
+    points = List()
     usePointsList = Bool(False)
 
     def json_encode(self, matlabCompatible=False):
