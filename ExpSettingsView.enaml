@@ -142,9 +142,9 @@ enamldef ExpSettingsView(MainWindow): main:
 		constraints = [
 			vbox(
 			tabs,
-			hbox(exp_meta_info, spacer, cbValidateForm, settingsApply)
+			hbox(exp_meta_info, spacer, openQuince, cbValidateForm, settingsApply)
 			),
-			align("v_center", exp_meta_info, cbValidateForm, settingsApply )
+			align("v_center", exp_meta_info, openQuince, cbValidateForm, settingsApply )
 		]
 		padding = 5
 		Notebook: tabs:
@@ -197,6 +197,20 @@ enamldef ExpSettingsView(MainWindow): main:
 						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
+		PushButton: openQuince:
+			text = 'Open Quince'
+			clicked ::
+				try:
+					expSettings.open_quince()
+					NotificationPopup(main, window_type='window', displayText="Opening Quince").show()
+				except Exception as e:
+					err_str = expSettings.format_errors()
+					if not err_str:
+						err_str = str(e)
+					ep = ErrorPopup(displayText=err_str)
+					ep.show()
+					ep.center_on_widget(main)
+
 		Form: cbValidateForm:
 			Label:
 				text = "Validate"

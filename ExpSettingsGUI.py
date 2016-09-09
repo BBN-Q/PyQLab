@@ -4,6 +4,7 @@ import os
 import argparse
 import sys
 import shutil
+import subprocess
 
 import h5py
 
@@ -113,7 +114,7 @@ class ExpSettings(Atom):
             self.sweeps.write_to_file(
                 fileName=path + os.sep + os.path.basename(self.sweeps.libFile))
             self.write_to_file(
-                fileName=path + os.sep + os.path.basename(self.curFileName))
+                fileName=path + os.sep + os.path.basename(self.curFileNamecurFileName))
         except Exception as e:
             self.errors.append(str(e))
 
@@ -133,8 +134,17 @@ class ExpSettings(Atom):
                 self.measurements.libFile)
             shutil.copy(path + os.sep + os.path.basename(self.sweeps.libFile),
                         self.sweeps.libFile)
-            shutil.copy(path + os.sep + os.path.basename(self.curFileName),
-                        self.curFileName)
+            shutil.copy(path + os.sep + os.path.basename(self.curFileNamecurFileName),
+                        self.curFileNamecurFileName)
+        except Exception as e:
+            self.errors.append(str(e))
+
+    def open_quince(self):
+        try:
+
+            subprocess.Popen(['run-quince.py', '-i', config.instrumentLibFile,
+                                               '-m', config.measurementLibFile,
+                                               '-s', config.sweepLibFile])
         except Exception as e:
             self.errors.append(str(e))
 
@@ -286,7 +296,7 @@ if __name__ == '__main__':
                         default=None)
     options = parser.parse_args(sys.argv[1:])
     if options.scripterFile:
-        expSettings.curFileName = options.scripterFile
+        expSettings.curFileNamecurFileName = options.scripterFile
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
