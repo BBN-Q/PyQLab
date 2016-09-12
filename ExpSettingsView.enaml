@@ -167,6 +167,7 @@ enamldef ExpSettingsView(MainWindow): main:
 				closable = False
 				MeasFilterManager:
 					filterLib := expSettings.measurements
+					instrumentLib := expSettings.instruments
 			Page:
 				title = "Sweeps"
 				closable = False

@@ -5,7 +5,7 @@ Measurement filters
 from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typed, observe, Instance
 import enaml
 from enaml.qt.qt_application import QtApplication
-
+from instruments.Digitizers import AlazarATS9870, X6
 from DictManager import DictManager
 import json
 from JSONLibraryUtils import LibraryCoders
@@ -43,8 +43,46 @@ class WriteToHDF5(MeasFilter):
     filename    = Str('').tag(desc='Path to file where records will be saved.')
     compression = Bool(True)
 
-class RawStream(MeasFilter):
-    channel = Str().tag(desc="The channel on the digitizer to pull data from.")
+class AlazarStreamSelector(MeasFilter):
+    digitizer = Instance((str, AlazarATS9870))
+    channel   = Str().tag(desc="Which channel to select from the Alazar")
+
+class X6StreamSelector(MeasFilter):
+    digitizer               = Instance((str, X6))
+    label                   = Str()
+    enableDemodStream       = Bool(True).tag(desc='Enable demodulated data stream')
+    enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
+    enableRawResultStream   = Bool(True).tag(desc='Enable raw result data stream')
+    IFfreq                  = Float(10e6).tag(desc='IF Frequency')
+    demodKernel             = Str().tag(desc='Integration kernel vector for demod stream')
+    demodKernelBias         = Str("").tag(desc="Kernel bias for integrated demod stream")
+    rawKernel               = Str().tag(desc='Integration kernel vector for raw stream')
+    rawKernelBias           = Str("").tag(desc="Kernel bias for integrated raw stream")
+    threshold               = Float(0.0).tag(desc='Qubit state decision threshold')
+    thresholdInvert         = Bool(False).tag(desc="Invert thresholder output")
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = self.__getstate__()
+        if matlabCompatible:
+            import numpy as np
+            import base64
+            try:
+                jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
+            except:
+                jsonDict['demodKernel'] = []
+            try:
+                jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
+            except:
+                jsonDict['demodKernelBias'] = []
+            try:
+                jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+            except:
+                jsonDict['rawKernel'] = []
+            try:
+                jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
+            except:
+                jsonDict['rawKernelBias'] = []
+        return jsonDict
 
 class DigitalDemod(MeasFilter):
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
@@ -104,10 +142,6 @@ class StateComparator(MeasFilter):
     threshold = Float(0.0)
     integrationTime = Int(-1).tag(desc='Comparator integration time in decimated samples, use -1 for the entire record')
 
-class StreamSelector(MeasFilter):
-    stream = Str()
-    data_source = Str('')
-
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
@@ -160,7 +194,9 @@ class MeasFilterLibrary(Atom):
             }
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, Plotter, WriteToHDF5]
+measFilterList = [DigitalDemod, KernelIntegration, Correlator, StateComparator,
+                  AlazarStreamSelector, X6StreamSelector,
+                  Plotter, WriteToHDF5]
 
 if __name__ == "__main__":
 

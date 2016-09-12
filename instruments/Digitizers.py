@@ -49,42 +49,6 @@ class AlazarATS9870(Digitizer):
 
 		return jsonDict
 
-class X6VirtualChannel(Atom):
-	label = Str()
-	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
-	enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
-	enableRawResultStream = Bool(True).tag(desc='Enable raw result data stream')
-	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	demodKernel = Str().tag(desc='Integration kernel vector for demod stream')
-	demodKernelBias = Str("").tag(desc="Kernel bias for integrated demod stream")
-	rawKernel = Str().tag(desc='Integration kernel vector for raw stream')
-	rawKernelBias = Str("").tag(desc="Kernel bias for integrated raw stream")
-	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
-	thresholdInvert = Bool(False).tag(desc="Invert thresholder output")
-
-	def json_encode(self, matlabCompatible=False):
-		jsonDict = self.__getstate__()
-		if matlabCompatible:
-			import numpy as np
-			import base64
-			try:
-				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
-			except:
-				jsonDict['demodKernel'] = []
-			try:
-				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
-			except:
-				jsonDict['demodKernelBias'] = []
-			try:
-				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
-			except:
-				jsonDict['rawKernel'] = []
-			try:
-				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
-			except:
-				jsonDict['rawKernelBias'] = []
-		return jsonDict
-
 class X6(Digitizer):
 	recordLength = Int(1024).tag(desc='Number of samples in each record')
 	nbrSegments = Int(1).tag(desc='Number of segments in memory')
@@ -92,17 +56,17 @@ class X6(Digitizer):
 	nbrRoundRobins = Int(1).tag(desc='Number of times entire memory is looped')
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
 	# channels = Dict(None, X6VirtualChannel)
-	channels = Coerced(dict)
+	# channels = Coerced(dict)
 	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	reference = Enum('external', 'internal').tag(desc='Clock source for 10MHz reference to clock generation tree')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
-		if not self.channels:
-			for a, b in itertools.product(range(1,3), range(1,3)):
-				label = str((a,b))
-				key = "s{0}{1}".format(a, b)
-				self.channels[key] = X6VirtualChannel(label=label)
+		# if not self.channels:
+		# 	for a, b in itertools.product(range(1,3), range(1,3)):
+		# 		label = str((a,b))
+		# 		key = "s{0}{1}".format(a, b)
+		# 		self.channels[key] = X6VirtualChannel(label=label)
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
@@ -115,17 +79,17 @@ class X6(Digitizer):
 
 	def update_from_jsondict(self, params):
 
-		for chName, chParams in params['channels'].items():
-			# if this is still a raw dictionary convert to object
-			if isinstance(chParams, dict):
-				chParams.pop('x__class__', None)
-				chParams.pop('x__module__', None)
-				chParams = X6VirtualChannel(**chParams)
+		# for chName, chParams in params['channels'].items():
+		# 	# if this is still a raw dictionary convert to object
+		# 	if isinstance(chParams, dict):
+		# 		chParams.pop('x__class__', None)
+		# 		chParams.pop('x__module__', None)
+		# 		chParams = X6VirtualChannel(**chParams)
 
-			for paramName in chParams.__getstate__().keys():
-				setattr(self.channels[chName], paramName, getattr(chParams, paramName))
+		# 	for paramName in chParams.__getstate__().keys():
+		# 		setattr(self.channels[chName], paramName, getattr(chParams, paramName))
 
-		params.pop('channels')
+		# params.pop('channels')
 		super(X6, self).update_from_jsondict(params)
 
 if __name__ == "__main__":

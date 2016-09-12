@@ -4,6 +4,7 @@ from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
 
+from instruments.Digitizers import AlazarATS9870, X6
 
 from widgets import EnumComboBox
 from DictManagerView import DictManagerView
@@ -12,26 +13,97 @@ import MeasFilters
 
 from numpy import pi
 
-enamldef RawStreamForm(GroupBox):
+enamldef AlazarStreamSelectorView(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     hug_width = 'medium'
     Form:
         Label:
             text = "Data source"
-        Field:
-            text := myFilter.dataSource
-            tool_tip = myFilter.get_member('dataSource').metadata['desc']
+        ComboBox:
+            items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, AlazarATS9870)]
+            index = items.index(myFilter.digitizer) if myFilter.digitizer in items else -1
+            index ::
+                myFilter.digitizer = selected_item
         Label:
             text = "Channel"
         Field:
             text := myFilter.channel
             tool_tip = myFilter.get_member('channel').metadata['desc']
 
+enamldef X6StreamSelectorView(GroupBox):
+  attr myFilter
+  attr filterLib
+  attr instrumentLib
+  title = 'Ch. {}'.format(myFilter.label)
+  hug_width = 'medium'
+  Form:
+      hug_width = 'medium'
+      Label:
+          text = 'Digitizer'
+      ComboBox:
+          items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, X6)]
+          index = items.index(myFilter.digitizer) if myFilter.digitizer in items else -1
+          index ::
+               myFilter.digitizer = selected_item
+      Label:
+          text = 'Demod Stream'
+      CheckBox:
+          checked := myFilter.enableDemodStream
+          tool_tip = myFilter.get_member('enableDemodStream').metadata["desc"]
+      Label:
+          text = 'Result Stream'
+      CheckBox:
+          checked := myFilter.enableDemodResultStream
+          tool_tip = myFilter.get_member('enableDemodResultStream').metadata["desc"]
+      Label:
+          text = 'Raw Result Stream'
+      CheckBox:
+          checked := myFilter.enableRawResultStream
+          tool_tip = myFilter.get_member('enableRawResultStream').metadata["desc"]
+      Label:
+          text = 'IF Frequency (MHz)'
+      FloatField:
+          value << myFilter.IFfreq/1e6
+          value :: myFilter.IFfreq = value*1e6
+          tool_tip = myFilter.get_member('IFfreq').metadata["desc"]
+      Label:
+          text = 'Demod Kernel'
+      Field:
+          text := myFilter.demodKernel
+          tool_tip = myFilter.get_member('demodKernel').metadata["desc"]
+      Label:
+          text = 'Demod Kernel Bias'
+      Field:
+          text := myFilter.demodKernelBias
+          tool_tip = myFilter.get_member('demodKernelBias').metadata["desc"]
+      Label:
+          text = 'Raw Kernel'
+      Field:
+          text := myFilter.rawKernel
+          tool_tip = myFilter.get_member('rawKernel').metadata["desc"]
+      Label:
+          text = 'Raw Kernel Bias'
+      Field:
+          text := myFilter.rawKernelBias
+          tool_tip = myFilter.get_member('rawKernelBias').metadata["desc"]
+      Label:
+          text = 'Threshold'
+      FloatField:
+          value := myFilter.threshold
+          tool_tip = myFilter.get_member('threshold').metadata["desc"]
+      Label:
+          text = 'Invert threshold'
+      CheckBox:
+          checked := myFilter.thresholdInvert
+          tool_tip = myFilter.get_member('thresholdInvert').metadata["desc"]
+
 enamldef DigitalDemodForm(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     hug_width = 'medium'
     Form:
@@ -81,6 +153,7 @@ enamldef DigitalDemodForm(GroupBox):
 enamldef KernelIntegrationForm(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -141,6 +214,7 @@ def filterLooperGetIdndex(filterLib,myFilter,loop_index):
 enamldef PlotterView(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -156,6 +230,7 @@ enamldef PlotterView(GroupBox):
 enamldef WriteToHDF5View(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -174,6 +249,7 @@ enamldef WriteToHDF5View(GroupBox):
 enamldef CorrelatorView(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -200,6 +276,7 @@ enamldef CorrelatorView(GroupBox):
 enamldef StateComparatorView(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -219,6 +296,7 @@ enamldef StateComparatorView(GroupBox):
 enamldef StreamSelectorView(GroupBox):
     attr myFilter
     attr filterLib
+    attr instrumentLib
     title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
     Form:
         Label:
@@ -234,28 +312,33 @@ enamldef StreamSelectorView(GroupBox):
 enamldef EmptyMeasFilterForm(Container):
     attr myFilter
     attr filterLib
+    attr instrumentLib
 
 #Map filters to views
 filterViewMap = {type(None): EmptyMeasFilterForm,
-    MeasFilters.RawStream: RawStreamForm,
     MeasFilters.DigitalDemod: DigitalDemodForm,
     MeasFilters.KernelIntegration: KernelIntegrationForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
-    MeasFilters.StreamSelector: StreamSelectorView,
+    MeasFilters.AlazarStreamSelector: AlazarStreamSelectorView,
+    MeasFilters.X6StreamSelector: X6StreamSelectorView,
     MeasFilters.WriteToHDF5: WriteToHDF5View,
     MeasFilters.Plotter: PlotterView}
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib
+    attr instrumentLib
+    attr instrumentLib
     DictManagerView:
         dictManager = filterLib.filterManager
         modelName = 'myFilter'
         viewMap = filterViewMap
-        viewkwargs = {'filterLib':filterLib}
+        viewkwargs = {'filterLib':filterLib,
+                      'instrumentLib': instrumentLib}
 
 enamldef MeasFilterManagerWindow(Window): measFilterManagerTest:
     attr filterLib
+    attr instrumentLib
     title = 'Filter Manager'
     MeasFilterManager:
         filterLib := measFilterManagerTest.filterLib
