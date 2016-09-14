@@ -55,18 +55,9 @@ class X6(Digitizer):
 	nbrWaveforms = Int(1).tag(desc='Number of times each segment is repeated')
 	nbrRoundRobins = Int(1).tag(desc='Number of times entire memory is looped')
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
-	# channels = Dict(None, X6VirtualChannel)
-	# channels = Coerced(dict)
+
 	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	reference = Enum('external', 'internal').tag(desc='Clock source for 10MHz reference to clock generation tree')
-
-	def __init__(self, **traits):
-		super(X6, self).__init__(**traits)
-		# if not self.channels:
-		# 	for a, b in itertools.product(range(1,3), range(1,3)):
-		# 		label = str((a,b))
-		# 		key = "s{0}{1}".format(a, b)
-		# 		self.channels[key] = X6VirtualChannel(label=label)
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
@@ -76,21 +67,6 @@ class X6(Digitizer):
 			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
 
 		return jsonDict
-
-	def update_from_jsondict(self, params):
-
-		# for chName, chParams in params['channels'].items():
-		# 	# if this is still a raw dictionary convert to object
-		# 	if isinstance(chParams, dict):
-		# 		chParams.pop('x__class__', None)
-		# 		chParams.pop('x__module__', None)
-		# 		chParams = X6VirtualChannel(**chParams)
-
-		# 	for paramName in chParams.__getstate__().keys():
-		# 		setattr(self.channels[chName], paramName, getattr(chParams, paramName))
-
-		# params.pop('channels')
-		super(X6, self).update_from_jsondict(params)
 
 if __name__ == "__main__":
 	from Digitizers import X6

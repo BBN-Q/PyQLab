@@ -10,7 +10,7 @@ from widgets import EnumComboBox
 from DictManagerView import DictManagerView
 
 import MeasFilters
-
+import ipdb
 from numpy import pi
 
 enamldef AlazarStreamSelectorView(GroupBox):
@@ -24,9 +24,9 @@ enamldef AlazarStreamSelectorView(GroupBox):
             text = "Data source"
         ComboBox:
             items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, AlazarATS9870)]
-            index = items.index(myFilter.digitizer) if myFilter.digitizer in items else -1
+            index = items.index(myFilter.dataSource) if myFilter.dataSource in items else -1
             index ::
-                myFilter.digitizer = selected_item
+                myFilter.dataSource = instrumentLib[selected_item]
         Label:
             text = "Channel"
         Field:
@@ -45,9 +45,9 @@ enamldef X6StreamSelectorView(GroupBox):
           text = 'Digitizer'
       ComboBox:
           items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, X6)]
-          index = items.index(myFilter.digitizer) if myFilter.digitizer in items else -1
+          index = items.index(myFilter.dataSource) if myFilter.dataSource in items else -1
           index ::
-               myFilter.digitizer = selected_item
+                myFilter.dataSource = instrumentLib[selected_item]
       Label:
           text = 'Demod Stream'
       CheckBox:

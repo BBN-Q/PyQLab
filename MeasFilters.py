@@ -8,6 +8,7 @@ from enaml.qt.qt_application import QtApplication
 from instruments.Digitizers import AlazarATS9870, X6
 from DictManager import DictManager
 import json
+import sys
 from JSONLibraryUtils import LibraryCoders
 
 class MeasFilter(Atom):
@@ -44,11 +45,31 @@ class WriteToHDF5(MeasFilter):
     compression = Bool(True)
 
 class AlazarStreamSelector(MeasFilter):
-    digitizer = Instance((str, AlazarATS9870))
-    channel   = Str().tag(desc="Which channel to select from the Alazar")
+    dataSource = Instance((str, AlazarATS9870))
+    channel    = Str().tag(desc="Which channel to select from the Alazar")
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = super(AlazarStreamSelector, self).json_encode()
+
+        obj = jsonDict.pop('dataSource')
+        if obj:
+            jsonDict['dataSource'] = obj.label
+        return jsonDict
+
+    def update_from_jsondict(self, jsonDict):
+        jsonDict.pop('x__class__', None)
+        jsonDict.pop('x__module__', None)
+
+        #Convert the strings to ascii for Python 2
+        if sys.version_info[0] < 3:
+            for label,value in jsonDict.items():
+                if isinstance(value, unicode):
+                    setattr(self, label, value.encode('ascii'))
+                else:
+                    setattr(self, label, value)
 
 class X6StreamSelector(MeasFilter):
-    digitizer               = Instance((str, X6))
+    dataSource              = Instance((str, X6))
     label                   = Str()
     enableDemodStream       = Bool(True).tag(desc='Enable demodulated data stream')
     enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
@@ -62,7 +83,12 @@ class X6StreamSelector(MeasFilter):
     thresholdInvert         = Bool(False).tag(desc="Invert thresholder output")
 
     def json_encode(self, matlabCompatible=False):
-        jsonDict = self.__getstate__()
+        jsonDict = super(X6StreamSelector, self).json_encode()
+
+        obj = jsonDict.pop('dataSource')
+        if obj:
+            jsonDict['dataSource'] = obj.label
+
         if matlabCompatible:
             import numpy as np
             import base64
@@ -83,6 +109,18 @@ class X6StreamSelector(MeasFilter):
             except:
                 jsonDict['rawKernelBias'] = []
         return jsonDict
+
+    def update_from_jsondict(self, jsonDict):
+        jsonDict.pop('x__class__', None)
+        jsonDict.pop('x__module__', None)
+        
+        #Convert the strings to ascii for Python 2
+        if sys.version_info[0] < 3:
+            for label,value in jsonDict.items():
+                if isinstance(value, unicode):
+                    setattr(self, label, value.encode('ascii'))
+                else:
+                    setattr(self, label, value)
 
 class DigitalDemod(MeasFilter):
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
