@@ -9,7 +9,7 @@ from instruments.Digitizers import AlazarATS9870, X6
 from DictManager import DictManager
 import json
 import sys
-from JSONLibraryUtils import LibraryCoders
+from JSONLibraryUtils import FileWatcher, LibraryCoders
 
 class MeasFilter(Atom):
     label = Str()
@@ -187,9 +187,14 @@ class MeasFilterLibrary(Atom):
     filterManager = Typed(DictManager)
     version = Int(1)
 
+    fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
+
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
         self.load_from_library()
+        if self.libFile:
+            self.fileWatcher = FileWatcher.LibraryFileWatcher(
+                self.libFile, self.load_from_library)
         self.filterManager = DictManager(itemDict=self.filterDict, possibleItems=measFilterList)
 
     #Overload [] to allow direct pulling of measurement filter info
@@ -200,8 +205,15 @@ class MeasFilterLibrary(Atom):
         libFileName = fileName if fileName != None else self.libFile
 
         if libFileName:
+            #Pause the file watcher to stop circular updating insanity
+            if self.fileWatcher:
+                self.fileWatcher.pause()
+
             with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
+
+            if self.fileWatcher:
+                self.fileWatcher.resume()
 
     def load_from_library(self):
         if self.libFile:
