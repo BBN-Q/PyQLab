@@ -210,7 +210,7 @@ class ExpSettings(Atom):
             sweep.axisLabel = axis['name']
         self.sweeps.sweepOrder = [sweep_name]
 
-    def json_encode(self, matlabCompatible=True):
+    def json_encode(self):
         #We encode this for an experiment settings file so no channels
         return {'instruments': self.instruments,
                 'sweeps': self.sweeps,
@@ -260,7 +260,7 @@ class ScripterEncoder(json.JSONEncoder):
         if isinstance(obj, Atom):
             #Check for a json_encode option
             try:
-                jsonDict = obj.json_encode(matlabCompatible=True)
+                jsonDict = obj.json_encode()
             except AttributeError:
                 jsonDict = obj.__getstate__()
             except:
