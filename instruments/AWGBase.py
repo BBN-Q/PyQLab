@@ -26,39 +26,35 @@ class AWGChannel(Atom):
     enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
 
 class AWG(Instrument, AWGDriver):
-    isMaster = Bool(False).tag(desc='Whether this AWG is master')
-    triggerSource = Enum('Internal', 'External').tag(desc='Source of trigger')
-    triggerInterval = Float(1e-4).tag(desc='Internal trigger interval')
-    samplingRate = Float(1200000000).tag(desc='Sampling rate in Hz')
-    numChannels = Int()
-    channels = List(AWGChannel)
-    seqFile = Str().tag(desc='Path to sequence file.')
-    seqFileExt = Constant('')
-    seqForce = Bool(True).tag(desc='Whether to reload the sequence')
-    delay = Float(0.0).tag(desc='time shift to align multiple AWGs')
-    translator = Constant('')
+    is_master        = Bool(False).tag(desc='Whether this AWG is master')
+    trigger_source   = Enum('Internal', 'External').tag(desc='Source of trigger')
+    trigger_interval = Float(1e-4).tag(desc='Internal trigger interval')
+    sampling_rate    = Float(1200000000).tag(desc='Sampling rate in Hz')
+    num_channels     = Int()
+    channels         = List(AWGChannel)
+    seq_file         = Str().tag(desc='Path to sequence file.')
+    seq_file_ext     = Constant('')
+    seq_force        = Bool(True).tag(desc='Whether to reload the sequence')
+    delay            = Float(0.0).tag(desc='time shift to align multiple AWGs')
+    translator       = Constant('')
 
     def __init__(self, **traits):
         super(AWG, self).__init__(**traits)
         if not self.channels:
-            for ct in range(self.numChannels):
+            for ct in range(self.num_channels):
                 self.channels.append(AWGChannel())
 
-    def json_encode(self, matlabCompatible=False):
-        jsonDict = super(AWG, self).json_encode(matlabCompatible)
+    def json_encode(self):
+        jsonDict = super(AWG, self).json_encode()
 
         # Skip encoding of constants
-        del jsonDict["seqFileExt"]
+        del jsonDict["seq_file_ext"]
         del jsonDict["translator"]
 
-        if matlabCompatible:
-            channels = jsonDict.pop('channels', None)
-            for ct,chan in enumerate(channels):
-                jsonDict['chan_{}'.format(ct+1)] = chan
         return jsonDict
 
     def update_from_jsondict(self, params):
-        for ct in range(self.numChannels):
+        for ct in range(self.num_channels):
             channelParams = params['channels'][ct]
 
             # if this is still a raw dictionary convert to object
@@ -72,5 +68,6 @@ class AWG(Instrument, AWGDriver):
             self.channels[ct].offset = channelParams.offset
             self.channels[ct].enabled = channelParams.enabled
 
-        for p in ['label', 'enabled', 'address', 'isMaster', 'triggerSource', 'triggerInterval', 'samplingRate', 'seqFile', 'seqForce', 'delay']:
+        for p in ['label', 'enabled', 'address', 'is_master', 'trigger_source', 'trigger_interval', 'sampling_rate',
+                 'seq_file', 'seq_force', 'delay']:
             setattr(self, p, params[p])

@@ -45,7 +45,7 @@ enamldef ChannelView(GroupBox):
 def get_seq_file_callback(awg):
     def seq_file_callback(dlg):
         if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
-            awg.seqFile = dlg.path
+            awg.seq_file = dlg.path
     return seq_file_callback
 
 enamldef AWGForm(GroupBox): myAWGForm:
@@ -64,7 +64,7 @@ enamldef AWGForm(GroupBox): myAWGForm:
         Label:
             text = 'Master'
         CheckBox:
-            checked := myAWGForm.awg.isMaster
+            checked := myAWGForm.awg.is_master
         Label:
             text = 'Address'
         Field:
@@ -74,13 +74,13 @@ enamldef AWGForm(GroupBox): myAWGForm:
         FloatField:
             maximum = 15.0
             minimum = 10e-9
-            value := myAWGForm.awg.triggerInterval
-            tool_tip = myAWGForm.awg.get_member('triggerInterval').metadata["desc"]
+            value := myAWGForm.awg.trigger_interval
+            tool_tip = myAWGForm.awg.get_member('trigger_interval').metadata["desc"]
         Label:
             text = "Trigger Source"
         EnumComboBox:
             obj := myAWGForm.awg
-            enumName = 'triggerSource'
+            enumName = 'trigger_source'
 
     Form: formItems2:
         Conditional:
@@ -88,9 +88,9 @@ enamldef AWGForm(GroupBox): myAWGForm:
             Label:
                 text = 'Sequence Reload'
             CheckBox:
-                checked := myAWGForm.awg.seqForce
+                checked := myAWGForm.awg.seq_force
             Field:
-                text := myAWGForm.awg.seqFile
+                text := myAWGForm.awg.seq_file
             PushButton:
                 text = '...'
                 clicked ::
