@@ -18,7 +18,7 @@ from . import Digitizers, Analysers, DCSources, Attenuators
 
 from . plugins import find_plugins
 
-newOtherInstrs = [Digitizers.AlazarATS9870, Digitizers.X6, Analysers.HP71000,
+newOtherInstrs = [Digitizers.ATS9870, Digitizers.X6, Analysers.HP71000,
                   Analysers.SpectrumAnalyzer, DCSources.YokoGS200,
                   Attenuators.DigitalAttenuator]
 
