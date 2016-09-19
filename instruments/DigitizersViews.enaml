@@ -59,98 +59,87 @@ enamldef AlazarView(GroupBox):
 					text = 'Address:'
 				Field:
 					text := instr.address
-			GroupBox:
-				title = 'Horizontal'
-				Form:
-					Label:
-						text = 'Acquisition Mode:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'acquireMode'
-					Label:
-						text = 'Trigger Delay:'
-					FloatField:
-						value := instr.delay
-						tool_tip = instr.get_member('delay').metadata['desc']
-					Label:
-						text = 'Sampling Rate (M):'
-					FloatField:
-						minimum = 0.0
-						maximum = 1200.0
-						validator = SampleRateValidator()
-						value <<  instr.samplingRate/1e6
-						value :: instr.samplingRate = value*1e6
-						tool_tip = instr.get_member('samplingRate').metadata['desc']
-			GroupBox:
-				title = 'Vertical'
-				Form:
-					Label:
-						text = 'Scale:'
-					FloatField:
-						value := instr.verticalScale
-						tool_tip = instr.get_member('verticalScale').metadata['desc']
-					Label:
-						text = 'Offset:'
-					FloatField:
-						value := instr.verticalOffset
-						tool_tip = instr.get_member('verticalOffset').metadata['desc']
-					Label:
-						text = 'Coupling:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'verticalCoupling'
-					Label:
-						text = 'Bandwidth:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'bandwidth'
-			GroupBox:
-				title = 'Averager'
-				Form:
-					Label:
-						text = 'Samples'
-					IntField:
-						validator = RecordLengthValidator(lengthMult=64)
-						value := instr.recordLength
-						tool_tip = instr.get_member('recordLength').metadata['desc']
-					Label:
-						text = 'Segments'
-					IntField:
-						value := instr.nbrSegments
-						tool_tip = instr.get_member('nbrSegments').metadata['desc']
-					Label:
-						text = 'Waveforms'
-					IntField:
-						value := instr.nbrWaveforms
-						tool_tip = instr.get_member('nbrWaveforms').metadata['desc']
-					Label:
-						text = 'Round Robins:'
-					IntField:
-						value := instr.nbrRoundRobins
-						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
-			GroupBox:
-				title = 'Trigger'
-				Form:
-					Label:
-						text = 'Level:'
-					FloatField:
-						value := instr.triggerLevel
-						tool_tip = instr.get_member('triggerLevel').metadata['desc']
-					Label:
-						text = 'Source:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'triggerSource'
-					Label:
-						text = 'Coupling:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'triggerCoupling'
-					Label:
-						text = 'Slope:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'triggerSlope'
+
+				Label:
+					text = 'Acquisition Mode:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'acquire_mode'
+				Label:
+					text = 'Trigger Delay:'
+				FloatField:
+					value := instr.delay
+					tool_tip = instr.get_member('delay').metadata['desc']
+				Label:
+					text = 'Sampling Rate (M):'
+				FloatField:
+					minimum = 0.0
+					maximum = 1200.0
+					validator = SampleRateValidator()
+					value <<  instr.sampling_rate/1e6
+					value :: instr.sampling_rate = value*1e6
+					tool_tip = instr.get_member('sampling_rate').metadata['desc']
+				Label:
+					text = 'Scale:'
+				FloatField:
+					value := instr.vertical_scale
+					tool_tip = instr.get_member('vertical_scale').metadata['desc']
+				Label:
+					text = 'Offset:'
+				FloatField:
+					value := instr.vertical_offset
+					tool_tip = instr.get_member('vertical_offset').metadata['desc']
+				Label:
+					text = 'Coupling:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'vertical_coupling'
+				Label:
+					text = 'Bandwidth:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'bandwidth'
+				Label:
+					text = 'Samples'
+				IntField:
+					validator = RecordLengthValidator(lengthMult=64)
+					value := instr.record_length
+					tool_tip = instr.get_member('record_length').metadata['desc']
+				Label:
+					text = 'Segments'
+				IntField:
+					value := instr.nbr_segments
+					tool_tip = instr.get_member('nbr_segments').metadata['desc']
+				Label:
+					text = 'Waveforms'
+				IntField:
+					value := instr.nbr_waveforms
+					tool_tip = instr.get_member('nbr_waveforms').metadata['desc']
+				Label:
+					text = 'Round Robins:'
+				IntField:
+					value := instr.nbr_round_robins
+					tool_tip = instr.get_member('nbr_round_robins').metadata['desc']
+				Label:
+					text = 'Trigger Level:'
+				FloatField:
+					value := instr.trigger_level
+					tool_tip = instr.get_member('trigger_level').metadata['desc']
+				Label:
+					text = 'Trigger Source:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'trigger_source'
+				Label:
+					text = 'Trigger Coupling:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'trigger_coupling'
+				Label:
+					text = 'Trigger Slope:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'trigger_slope'
 
 enamldef TestAlazarWindow(Window): tester:
 	attr instr
@@ -175,44 +164,32 @@ enamldef X6View(GroupBox):
 				EnumComboBox:
 					obj := instr
 					enumName = 'reference'
-			GroupBox:
-				title = 'Averager'
-				Form:
-					Label:
-						text = 'Acquisition Mode:'
-					EnumComboBox:
-						obj := instr
-						enumName = 'digitizerMode'
-					Label:
-						text = 'Samples'
-					IntField:
-						validator = RecordLengthValidator(lengthMult=128)
-						value := instr.recordLength
-						tool_tip = instr.get_member('recordLength').metadata['desc']
-					Label:
-						text = 'Segments'
-					IntField:
-						value := instr.nbrSegments
-						tool_tip = instr.get_member('nbrSegments').metadata['desc']
-					Label:
-						text = 'Waveforms'
-					IntField:
-						value := instr.nbrWaveforms
-						tool_tip = instr.get_member('nbrWaveforms').metadata['desc']
-					Label:
-						text = 'Round Robins:'
-					IntField:
-						value := instr.nbrRoundRobins
-						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
-			# GroupBox:
-			# 	title = 'Streams'
-			# 	Form:
-			# 		Label:
-			# 			text = 'Enable Raw Streams'
-			# 		CheckBox:
-			# 			checked := instr.enableRawStreams
-			# 	Include:
-			# 		objects = [X6ChannelView(chan=instr.channels[k]) for k in sorted(instr.channels.keys())]
+				Label:
+					text = 'Acquisition Mode:'
+				EnumComboBox:
+					obj := instr
+					enumName = 'digitizer_mode'
+				Label:
+					text = 'Samples'
+				IntField:
+					validator = RecordLengthValidator(lengthMult=128)
+					value := instr.record_length
+					tool_tip = instr.get_member('record_length').metadata['desc']
+				Label:
+					text = 'Segments'
+				IntField:
+					value := instr.nbr_segments
+					tool_tip = instr.get_member('nbr_segments').metadata['desc']
+				Label:
+					text = 'Waveforms'
+				IntField:
+					value := instr.nbr_waveforms
+					tool_tip = instr.get_member('nbr_waveforms').metadata['desc']
+				Label:
+					text = 'Round Robins:'
+				IntField:
+					value := instr.nbr_round_robins
+					tool_tip = instr.get_member('nbr_round_robins').metadata['desc']
 
 enamldef TestX6Window(Window): tester:
 	attr instr
@@ -225,4 +202,4 @@ enamldef TestX6Window(Window): tester:
 			clicked ::
 				import ipdb; ipdb.set_trace()
 
-DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView, Digitizers.X6:X6View}
+DigitizerViewMap = {Digitizers.ATS9870:AlazarView, Digitizers.X6:X6View}
