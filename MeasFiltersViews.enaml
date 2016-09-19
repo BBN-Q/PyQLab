@@ -90,7 +90,7 @@ enamldef X6StreamSelectorView(GroupBox):
           checked := myFilter.threshold_invert
           tool_tip = myFilter.get_member('threshold_invert').metadata["desc"]
 
-enamldef DigitalDemodForm(GroupBox):
+enamldef ChannelizerForm(GroupBox):
     attr myFilter
     attr filterLib
     attr instrumentLib
@@ -140,7 +140,7 @@ enamldef DigitalDemodForm(GroupBox):
         Field:
             text := myFilter.data_source
         
-enamldef KernelIntegrationForm(GroupBox):
+enamldef KernelIntegratorForm(GroupBox):
     attr myFilter
     attr filterLib
     attr instrumentLib
@@ -306,8 +306,8 @@ enamldef EmptyMeasFilterForm(Container):
 
 #Map filters to views
 filterViewMap = {type(None): EmptyMeasFilterForm,
-    MeasFilters.DigitalDemod: DigitalDemodForm,
-    MeasFilters.KernelIntegration: KernelIntegrationForm,
+    MeasFilters.Channelizer: ChannelizerForm,
+    MeasFilters.KernelIntegrator: KernelIntegratorForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.AlazarStreamSelector: AlazarStreamSelectorView,

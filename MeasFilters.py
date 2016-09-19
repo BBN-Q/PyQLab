@@ -91,7 +91,7 @@ class X6StreamSelector(MeasFilter):
                     else:
                         setattr(self, label, value)
 
-class DigitalDemod(MeasFilter):
+class Channelizer(MeasFilter):
     if_freq         = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth      = Float(5e6).tag(desc='Low-pass filter bandwidth')
     sampling_rate  = Float(250e6).tag(desc='The sampling rate of the digitizer.')
@@ -100,7 +100,7 @@ class DigitalDemod(MeasFilter):
     decim_factor_2 = Int(1).tag(desc="Second stage polyphase decimation (before IIR filter).")
     decim_factor_3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
 
-class KernelIntegration(MeasFilter):
+class KernelIntegrator(MeasFilter):
     kernel        = Str('').tag(desc="Integration kernel vector.")
     bias          = Float(0.0).tag(desc="Bias after integration.")
     simple_kernel = Bool(True)
@@ -190,17 +190,17 @@ class MeasFilterLibrary(Atom):
         }
 
 
-measFilterList = [DigitalDemod, KernelIntegration, Correlator, StateComparator,
+measFilterList = [Channelizer, KernelIntegrator, Correlator, StateComparator,
                   AlazarStreamSelector, X6StreamSelector,
                   Plotter, WriteToHDF5]
 
 if __name__ == "__main__":
 
     #Work around annoying problem with multiple class definitions
-    from MeasFilters import DigitalDemod, Correlator, MeasFilterLibrary
+    from MeasFilters import Channelizer, Correlator, MeasFilterLibrary
 
-    testFilter1 = DigitalDemod(label='M1')
-    testFilter2 = DigitalDemod(label='M2')
+    testFilter1 = Channelizer(label='M1')
+    testFilter2 = Channelizer(label='M2')
     testFilter3 = Correlator(label='M3')
     testFilter4 = Correlator(label='M4')
     filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M3':testFilter3,'M4':testFilter4}
