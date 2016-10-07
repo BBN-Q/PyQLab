@@ -62,7 +62,7 @@ enamldef Agilent33220AForm(GroupBox):
 			text = 'Value'
 		FloatField:
 			value = instr.offset
-			tool_tip = instr.get_member('value').metadata['desc']
+			tool_tip = instr.get_member('offset').metadata['desc']
 
 DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form, 
 					DCSources.Agilent33220A:Agilent33220AForm}
