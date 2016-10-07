@@ -15,3 +15,11 @@ class YokoGS200(DCSource):
 		if matlabCompatible:
 			jsonDict['range'] = jsonDict.pop('outputRange')
 		return jsonDict
+        
+class Agilent33220A(Instrument):
+    '''Using the Agilent 33220A waveform generator as a DC voltage source.'''
+    outputFunction = Str('DC')
+    offset = Float(0.0).tag(desc='DC Output voltage (V)')
+    output = Bool(False).tag(desc='Output enabled')
+    
+    
