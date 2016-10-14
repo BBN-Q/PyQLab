@@ -33,6 +33,11 @@ class WriteToHDF5(MeasFilter):
     filename    = Str('').tag(desc='Path to file where records will be saved.')
     compression = Bool(True)
 
+class Averager(MeasFilter):
+    label   = Str()
+    enabled = Bool(True)
+    axis    = Str('').tag(desc='Name of the axis to average along.')
+
 class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, ATS9870))
     channel    = Str().tag(desc="Which channel to select from the Alazar")

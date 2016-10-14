@@ -236,6 +236,21 @@ enamldef WriteToHDF5View(GroupBox):
         Field:
             text := myFilter.data_source
 
+enamldef AveragerView(GroupBox):
+    attr myFilter
+    attr filterLib
+    attr instrumentLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
+        Label:
+            text = "Averaging Axis"
+        Field:
+            text := myFilter.axis
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.data_source
+
 enamldef CorrelatorView(GroupBox):
     attr myFilter
     attr filterLib
@@ -313,6 +328,7 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.AlazarStreamSelector: AlazarStreamSelectorView,
     MeasFilters.X6StreamSelector: X6StreamSelectorView,
     MeasFilters.WriteToHDF5: WriteToHDF5View,
+    MeasFilters.Averager: AveragerView,
     MeasFilters.Plotter: PlotterView}
 
 enamldef MeasFilterManager(Container): measFilterManager:
