@@ -2,10 +2,10 @@ from instruments.AWGBase import AWG, AWGDriver
 from atom.api import Int, Constant, Enum
 
 class APS2(AWG):
-	numChannels = Int(default=2)
-	seqFileExt = Constant('.h5')
+	num_channels = Int(default=2)
+	seq_file_ext = Constant('.h5')
 	translator = Constant('APS2Pattern')
-	triggerSource = Enum('Internal', 'External', 'System').tag(desc='Source of trigger')
+	trigger_source = Enum('Internal', 'External', 'System').tag(desc='Source of trigger')
 
 	naming_convention = ['12', '12m1', '12m2', '12m3', '12m4']
 

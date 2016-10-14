@@ -73,7 +73,7 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
             index ::
                 chan.AWG = selected_item
                 chan.translator = instrumentLib[selected_item].translator
-                chan.samplingRate = instrumentLib[selected_item].samplingRate
+                chan.sampling_rate = instrumentLib[selected_item].sampling_rate
 
 enamldef PhysicalQuadratureChannelView(GroupBox): curView:
     attr chan
@@ -89,7 +89,7 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             index ::
                 chan.AWG = selected_item
                 chan.translator = instrumentLib[selected_item].translator
-                chan.samplingRate = instrumentLib[selected_item].samplingRate
+                chan.sampling_rate = instrumentLib[selected_item].sampling_rate
         Label:
             text = 'Source'
         ComboBox:
@@ -109,7 +109,7 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'Phase Skew (deg.)'
         FloatField:
             value := chan.phaseSkew
-        
+
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
@@ -196,7 +196,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                     index << psList.index(chan.pulseParams[loop_item])
                     index ::
                         chan.pulseParams[loop_item] = psList[index]
-        
+
 
 enamldef EmptyChannelView(Container):
     attr chan
