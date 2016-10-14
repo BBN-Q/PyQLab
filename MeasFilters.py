@@ -86,7 +86,7 @@ class X6StreamSelector(MeasFilter):
     def update_from_jsondict(self, jsonDict):
         jsonDict.pop('x__class__', None)
         jsonDict.pop('x__module__', None)
-        
+
         #Convert the strings to ascii for Python 2
         if sys.version_info[0] < 3:
             for label,value in jsonDict.items():
@@ -195,7 +195,7 @@ class MeasFilterLibrary(Atom):
         }
 
 
-measFilterList = [Channelizer, KernelIntegrator, Correlator, StateComparator,
+measFilterList = [Averager, Channelizer, KernelIntegrator, Correlator, StateComparator,
                   AlazarStreamSelector, X6StreamSelector,
                   Plotter, WriteToHDF5]
 
