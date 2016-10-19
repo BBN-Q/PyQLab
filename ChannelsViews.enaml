@@ -69,9 +69,9 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList + instrumentLib.markedInstrs.displayList
-            index = items.index(chan.AWG) if chan.AWG in items else -1
+            index = items.index(chan.instrument) if chan.instrument in items else -1
             index ::
-                chan.AWG = selected_item
+                chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
                 chan.samplingRate = instrumentLib[selected_item].samplingRate
 
@@ -85,9 +85,9 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList
-            index = items.index(chan.AWG) if chan.AWG in items else -1
+            index = items.index(chan.instrument) if chan.instrument in items else -1
             index ::
-                chan.AWG = selected_item
+                chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
                 chan.samplingRate = instrumentLib[selected_item].samplingRate
         Label:
