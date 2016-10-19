@@ -226,27 +226,37 @@ class ExpSettings(Atom):
     def clear_errors(self):
         del self.errors[:]
 
-    def populate_physical_channels(self, awgs=None):
+    def populate_physical_channels(self, awg=None):
         import instruments.AWGs
-        if awgs == None:
-            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG),
-                          self.instruments.instrDict.values())
-        for awg in awgs:
-            channels = awg.get_naming_convention()
+        if awg == None:
+            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG), self.instruments.instrDict.values())
+            receivers = filter(lambda x: hasattr(x, 'takes_marker'), self.instruments.instrDict.values())
+            instruments = awgs + receivers
+        else:
+            instruments = [awg]
+        for instr in instruments:
+            channels = instr.get_naming_convention()
             for ch in channels:
-                label = awg.label + '-' + ch
+                label = instr.label + '-' + ch
                 if label in self.channels:
                     continue
-                # TODO: less kludgy lookup of appropriate channel type
-                if 'm' in ch.lower():
-                    pc = QGL.Channels.PhysicalMarkerChannel()
+                if instr in awgs:
+                    # TODO: less kludgy lookup of appropriate channel type
+                    if 'm' in ch.lower():
+                        pc = QGL.Channels.PhysicalMarkerChannel()
+                    else:
+                        pc = QGL.Channels.PhysicalQuadratureChannel()
+                    pc.label = label
+                    pc.instrument = instr.label
+                    pc.translator = instr.translator
+                    pc.samplingRate = instr.samplingRate
                 else:
-                    pc = QGL.Channels.PhysicalQuadratureChannel()
-                pc.label = label
-                pc.instrument = awg.label
-                pc.translator = awg.translator
-                pc.samplingRate = awg.samplingRate
+                    pc = QGL.Channels.ReceiverChannel()
+                    pc.label = label
+                    pc.instrument = instr.label
+                    pc.channel = ch
                 self.channels[label] = pc
+
         self.physicalChannelManager.update_display_list(None)
 
 
