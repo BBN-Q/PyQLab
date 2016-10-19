@@ -1,6 +1,6 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, GroupBox, Form, Label, Field, \
                              ComboBox
-from enaml.stdlib.fields import FloatField
+from enaml.stdlib.fields import FloatField, Field
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Conditional
 
@@ -110,6 +110,23 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
         FloatField:
             value := chan.phaseSkew
 
+enamldef ReceiverChannelView(GroupBox): curView:
+    attr chan
+    attr channelLib
+    attr instrumentLib
+    title := '{} (ReceiverChannel)'.format(chan.label)
+    Form:
+        Label:
+            text = 'Receiver'
+        ComboBox:
+            items << instrumentLib.markedInstrs.displayList
+            index = items.index(chan.instrument) if chan.instrument in items else -1
+            index ::
+                chan.instrument = selected_item
+        Label:
+            text = 'Channel'
+        Field:
+            text := chan.channel
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
@@ -210,7 +227,8 @@ ChannelViewMap = {
     QGL.Channels.Edge: LogicalQuadratureView,
     QGL.Channels.LogicalMarkerChannel: LogicalMarkerChannelView,
     QGL.Channels.PhysicalQuadratureChannel: PhysicalQuadratureChannelView,
-    QGL.Channels.PhysicalMarkerChannel: PhysicalMarkerChannelView
+    QGL.Channels.PhysicalMarkerChannel: PhysicalMarkerChannelView,
+    QGL.Channels.ReceiverChannel : ReceiverChannelView
 }
 
 enamldef ChannelLibraryView(Container): channelLibCont:
