@@ -137,6 +137,8 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     logicalMarkerChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalMarkerChannel)]
     attr qubits
     qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
+    attr receivers
+    receivers << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.ReceiverChannel)]
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
@@ -161,6 +163,13 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 index = items.index(chan.trigChan.label)
                 index ::
                     chan.trigChan = channelLib[selected_item]
+            Label:
+                text = 'Receiver Chan.'
+            ComboBox:
+                items << [c.label for c in receivers]
+                index = items.index(chan.receiverChan.label) if chan.receiverChan else -1
+                index ::
+                    chan.receiverChan = channelLib[selected_item]
         Conditional:
             condition = isinstance(chan, QGL.Channels.Edge)
             Label:
