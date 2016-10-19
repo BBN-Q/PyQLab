@@ -10,9 +10,14 @@ import enaml
 from enaml.qt.qt_application import QtApplication
 
 class Digitizer(Instrument):
-	pass
+	takes_marker = True
+	naming_convention = []
+
+	def get_naming_convention(self):
+		return self.naming_convention
 
 class ATS9870(Digitizer):
+	naming_convention = ['1', '2']
 	address           = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquire_mode      = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	clock_type        = Enum('ref')
@@ -32,6 +37,7 @@ class ATS9870(Digitizer):
 	nbr_round_robins  = Int(1).tag(desc='Number of times entire memory is looped')
 
 class X6(Digitizer):
+	naming_convention = ['1', '2']
 	record_length      = Int(1024).tag(desc='Number of samples in each record')
 	nbr_segments       = Int(1).tag(desc='Number of segments in memory')
 	nbr_waveforms      = Int(1).tag(desc='Number of times each segment is repeated')
