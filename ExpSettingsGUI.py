@@ -141,8 +141,11 @@ class ExpSettings(Atom):
 
     def open_quince(self):
         try:
-
-            subprocess.Popen(['run-quince.py', '-i', config.instrumentLibFile,
+            if os.name == 'nt':
+                pname = 'run-quince.bat'
+            else:
+                pname = 'run-quince.py'
+            subprocess.Popen([pname, '-i', config.instrumentLibFile,
                                                '-m', config.measurementLibFile,
                                                '-s', config.sweepLibFile])
         except Exception as e:
