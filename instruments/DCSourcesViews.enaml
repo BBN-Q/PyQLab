@@ -8,7 +8,7 @@ from . import DCSources
 
 from widgets import EnumComboBox, EnumFloatComboBox
 
-enamldef YokoGS200Form(GroupBox):
+enamldef GS200Form(GroupBox):
 	attr instr
 	attr instrumentLib
 	title := "{} ({})".format(instr.label, instr.__class__.__name__)
@@ -29,7 +29,7 @@ enamldef YokoGS200Form(GroupBox):
 			text = 'Range'
 		EnumFloatComboBox:
 			obj := instr
-			floatName = 'outputRange'
+			floatName = 'output_range'
 		Label:
 			text = 'Output'
 		CheckBox:
@@ -41,4 +41,4 @@ enamldef YokoGS200Form(GroupBox):
 			value := instr.value
 			tool_tip = instr.get_member('value').metadata['desc']
 
-DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form}
+DCSourcesViewMap = {DCSources.GS200:GS200Form}

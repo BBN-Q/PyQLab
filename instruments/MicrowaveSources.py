@@ -12,41 +12,41 @@ class MicrowaveSource(Instrument):
     mod = Bool(False).tag(desc="Whether output is modulated")
     alc = Bool(False).tag(desc="Whether automatic level control is on")
     pulse = Bool(False).tag(desc="Whether pulse modulation is on")
-    pulseSource = Enum("Internal", "External").tag(desc="Source of pulse modulation")
+    pulse_source = Enum("Internal", "External").tag(desc="Source of pulse modulation")
 
     #For blanking the source we need to know the maximum rate and the delay
-    gateBuffer = Float(0.0).tag(desc="How much extra time should be added onto the beginning of the gating pulse")
-    gateMinWidth = Float(0.0).tag(desc="The minimum gating pulse width")
-    gateDelay = Float(0.0).tag(desc="How the gating pulse should be shifted")
+    gate_buffer = Float(0.0).tag(desc="How much extra time should be added onto the beginning of the gating pulse")
+    gate_min_width = Float(0.0).tag(desc="The minimum gating pulse width")
+    gate_delay = Float(0.0).tag(desc="How the gating pulse should be shifted")
 
-class AgilentN5183A(MicrowaveSource):
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
+class N5183A(MicrowaveSource):
+    gate_buffer = Float(20e-9)
+    gate_min_width = Float(100e-9)
+    gate_delay = Float(-60e-9)
 
-class HolzworthHS9000(MicrowaveSource):
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
+class HS9000(MicrowaveSource):
+    gate_buffer = Float(20e-9)
+    gate_min_width = Float(100e-9)
+    gate_delay = Float(-60e-9)
 
 class Labbrick(MicrowaveSource):
-    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
+    ref_source = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
 
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
+    gate_buffer = Float(20e-9)
+    gate_min_width = Float(100e-9)
+    gate_delay = Float(-60e-9)
 
-class RhodeSchwarzSMIQ03(MicrowaveSource):
-    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
+class SMIQ03(MicrowaveSource):
+    ref_source = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
+    gate_buffer = Float(20e-9)
+    gate_min_width = Float(100e-9)
+    gate_delay = Float(-60e-9)
 
 class BNC845(MicrowaveSource):
-    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
+    ref_source = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
+    gate_buffer = Float(20e-9)
+    gate_min_width = Float(100e-9)
+    gate_delay = Float(-60e-9)
 
 class HP8673B(MicrowaveSource):
     pass
@@ -55,11 +55,11 @@ class HP8340B(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845]
+MicrowaveSourceList = [N5183A, HS9000, Labbrick, SMIQ03, HP8673B, HP8340B, BNC845]
 
 if __name__ == "__main__":
-    from MicrowaveSources import AgilentN5183A
-    mySource = AgilentN5183A(label="Agilent1")
+    from MicrowaveSources import N5183A
+    mySource = N5183A(label="Agilent1")
     with enaml.imports():
         from MicrowaveSourcesViews import MicrowaveSourceView
 

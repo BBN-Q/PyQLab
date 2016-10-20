@@ -21,17 +21,17 @@ enamldef DigitalAttenuatorForm(GroupBox):
 		Label:
 			text = 'Ch1 Attenuation'
 		FloatField:
-			value := instr.ch1Attenuation
-			tool_tip = instr.get_member('ch1Attenuation').metadata['desc']
+			value := instr.ch1_attenuation
+			tool_tip = instr.get_member('ch1_attenuation').metadata['desc']
 		Label:
 			text = 'Ch2 Attenuation'
 		FloatField:
-			value := instr.ch2Attenuation
-			tool_tip = instr.get_member('ch2Attenuation').metadata['desc']
+			value := instr.ch2_attenuation
+			tool_tip = instr.get_member('ch2_attenuation').metadata['desc']
 		Label:
 			text = 'Ch3 Attenuation'
 		FloatField:
-			value := instr.ch3Attenuation
-			tool_tip = instr.get_member('ch3Attenuation').metadata['desc']
+			value := instr.ch3_attenuation
+			tool_tip = instr.get_member('ch3_attenuation').metadata['desc']
 
 AttenuatorsViewMap = {Attenuators.DigitalAttenuator:DigitalAttenuatorForm}

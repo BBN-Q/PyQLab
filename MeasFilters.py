@@ -40,7 +40,7 @@ class Averager(MeasFilter):
 
 class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, ATS9870))
-    channel    = Str().tag(desc="Which channel to select from the Alazar")
+    channel     = Str('').tag(desc="Which channel to select from the Alazar")
 
     def json_encode(self):
         jsonDict = super(AlazarStreamSelector, self).json_encode()
@@ -62,15 +62,19 @@ class AlazarStreamSelector(MeasFilter):
                         setattr(self, label, value.encode('ascii'))
                     else:
                         setattr(self, label, value)
+        else:
+            for label,value in jsonDict.items():
+                if hasattr(self, label):
+                    setattr(self, label, value)
 
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
-    label                      = Str()
+    label                      = Str("")
     stream_type                = Enum('Raw', 'Demodulated', 'Integrated').tag(desc='Which stream type to select.')
     if_freq                    = Float(10e6).tag(desc='IF Frequency')
-    demod_kernel               = Str().tag(desc='Integration kernel vector for demod stream')
+    demod_kernel               = Str("").tag(desc='Integration kernel vector for demod stream')
     demod_kernel_bias          = Str("").tag(desc="Kernel bias for integrated demod stream")
-    raw_kernel                 = Str().tag(desc='Integration kernel vector for raw stream')
+    raw_kernel                 = Str("").tag(desc='Integration kernel vector for raw stream')
     raw_kernel_bias            = Str("").tag(desc="Kernel bias for integrated raw stream")
     threshold                  = Float(0.0).tag(desc='Qubit state decision threshold')
     threshold_invert           = Bool(False).tag(desc="Invert thresholder output")
@@ -97,7 +101,7 @@ class X6StreamSelector(MeasFilter):
                         setattr(self, label, value)
 
 class Channelizer(MeasFilter):
-    if_freq         = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
+    if_freq        = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth      = Float(5e6).tag(desc='Low-pass filter bandwidth')
     sampling_rate  = Float(250e6).tag(desc='The sampling rate of the digitizer.')
     phase          = Float(0.0).tag(desc='Phase rotation to apply in rad.')

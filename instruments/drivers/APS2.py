@@ -10,14 +10,14 @@ class APS2(AWG):
 	naming_convention = ['12', '12m1', '12m2', '12m3', '12m4']
 
 class APS2TDM(AWG):
-	numChannels = Int(default=0)
-	seqFileExt = Constant('.h5')
+	num_channels = Int(default=0)
+	seq_file_ext = Constant('.h5')
 
-	def json_encode(self, matlabCompatible=False):
-		jsonDict = super(AWG, self).json_encode(matlabCompatible)
+	def json_encode(self):
+		jsonDict = super(AWG, self).json_encode()
 
 		# Delete unused properties
-		unused = ["numChannels", "seqFileExt", "triggerSource", "samplingRate", "seqFile", "seqForce", "delay", "channels"]
+		unused = ["num_channels", "seq_file_ext", "trigger_source", "samplingRate", "seqFile", "seqForce", "delay", "channels"]
 		for param in unused:
 			del jsonDict[param]
 

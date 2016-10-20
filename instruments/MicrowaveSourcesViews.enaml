@@ -59,14 +59,14 @@ enamldef MicrowaveSourceForm(GroupBox):
 			text = "Pulse Source"
 		EnumComboBox:
 			obj := uwSource
-			enumName = "pulseSource"
+			enumName = "pulse_source"
 		Conditional:
 			condition = hasattr(uwSource, "refSource")
 			Label:
 				text = "Ref. Source"
 			EnumComboBox:
 				obj := uwSource
-				enumName = "refSource"
+				enumName = "ref_source"
 
 enamldef MicrowaveSourceView(Window): sourceWindow:
 	attr uwSource
