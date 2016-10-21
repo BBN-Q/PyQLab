@@ -6,11 +6,11 @@ import numpy as np
 from atom.api import Atom, atomlist
 
 import Libraries
-from MeasFilters import RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector
-from instruments.Digitizers import AlazarATS9870, X6
+from MeasFilters import AlazarStreamSelector, Channelizer, KernelIntegrator, Correlator, StateComparator
+from instruments.Digitizers import ATS9870, X6
 from instruments.drivers.APS import APS
 from instruments.drivers.APS2 import APS2
-from instruments.MicrowaveSources import HolzworthHS9000, Labbrick
+from instruments.MicrowaveSources import HS9000, Labbrick
 from Sweeps import *
 import ExpSettingsVal
 
@@ -108,9 +108,9 @@ class TestInstrumentJSON(unittest.TestCase, JSONTestHelper):
 
 	def setUp(self):
 		self.instruments = {}
-		self.instruments['HZ-1'] = HolzworthHS9000(label='HZ-1')
+		self.instruments['HZ-1'] = HS9000(label='HZ-1')
 		self.instruments['LB1'] = Labbrick(label='LB1')
-		self.instruments['Alazar1'] = AlazarATS9870(label='Alazar1')
+		self.instruments['Alazar1'] = ATS9870(label='Alazar1')
 		self.instruments['X6-1'] = X6(label='X6-1')
 		self.instruments['APS1'] = APS(label='APS1')
 		self.instruments['APS2'] = APS2(label='APS2')
@@ -142,12 +142,11 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 	def setUp(self):
 
 		self.measurements = {}
-		self.measurements['R1'] = RawStream(label='R1', saveRecords = True,recordsFilePath = '/tmp/records', channel='1')
-		self.measurements['M1'] = DigitalDemod(label='M1',  saveRecords = True,recordsFilePath = '/tmp/records', IFfreq=10e6, samplingRate=250e6)
+		self.measurements['R1'] = AlazarStreamSelector(label='R1', channel='1')
+		self.measurements['M1'] = Channelizer(label='M1',  if_freq=10e6, sampling_rate=250e6)
 		#self.measurements['M12'] = Correlator(label='M12')
-		self.measurements['KI1'] = KernelIntegration(label='KI1', boxCarStart=100, boxCarStop=500, IFfreq=10e6, samplingRate=250e6)
-		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integrationTime = 100)
-		self.measurements['SS1'] = StreamSelector(label='SS1', stream = 'test', saveRecords = True, recordsFilePath = '/tmp/records')
+		self.measurements['KI1'] = KernelIntegrator(label='KI1', box_car_start=100, box_car_stop=500, if_freq=10e6, sampling_rate=250e6)
+		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integration_time = 100)
 
 	def test_measurements_library(self):
 		ExpSettingsVal.measurements = self.measurements
