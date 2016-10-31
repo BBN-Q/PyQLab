@@ -68,19 +68,19 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel)).decode('ascii')
 			except:
 				jsonDict['demodKernel'] = []
 			try:
-				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
+				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['demodKernelBias'] = []
 			try:
-				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel)).decode('ascii')
 			except:
 				jsonDict['rawKernel'] = []
 			try:
-				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
+				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['rawKernelBias'] = []
 		return jsonDict
