@@ -20,7 +20,7 @@ enamldef LogicalMarkerChannelView(GroupBox): curView:
     attr channelLib
     attr instrumentLib
     attr physicalChannels
-    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalMarkerChannel), channelLib.values())
+    physicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.PhysicalMarkerChannel), channelLib.values()))
     title := '{} (LogicalMarker)'.format(chan.label)
     Form:
         Label:
@@ -109,17 +109,17 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'Phase Skew (deg.)'
         FloatField:
             value := chan.phaseSkew
-        
+
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
     attr channelLib
     attr physicalChannels
-    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalQuadratureChannel), channelLib.values())
+    physicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.PhysicalQuadratureChannel), channelLib.values()))
     attr logicalChannels
-    logicalChannels << filter(lambda x: isinstance(x, QGL.Channels.LogicalChannel), channelLib.values())
+    logicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.LogicalChannel), channelLib.values()))
     attr qubits
-    qubits << filter(lambda x: isinstance(x, QGL.Channels.Qubit), channelLib.values())
+    qubits << list(filter(lambda x: isinstance(x, QGL.Channels.Qubit), channelLib.values()))
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
@@ -196,7 +196,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                     index << psList.index(chan.pulseParams[loop_item])
                     index ::
                         chan.pulseParams[loop_item] = psList[index]
-        
+
 
 enamldef EmptyChannelView(Container):
     attr chan
