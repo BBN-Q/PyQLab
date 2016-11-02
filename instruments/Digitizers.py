@@ -108,8 +108,7 @@ class X6(Digitizer):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
 		if matlabCompatible:
 			# For the Matlab experiment manager we nest averager settings
-			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
-			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+			jsonDict['averager'] = {k:jsonDict.pop(k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
 
 		return jsonDict
 
