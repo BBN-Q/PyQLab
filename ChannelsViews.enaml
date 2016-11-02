@@ -179,7 +179,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             items << [''] + [c.label for c in logicalChannels]
             index = items.index(chan.gateChan.label) if chan.gateChan else 0
             index ::
-                chan.gateChan = channelLib[selected_item]
+                chan.gateChan = channelLib[selected_item] if selected_item else ""
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
