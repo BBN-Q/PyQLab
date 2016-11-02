@@ -116,8 +116,8 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     attr channelLib
     attr physicalChannels
     physicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.PhysicalQuadratureChannel)]
-    attr logicalChannels
-    logicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalChannel)]
+    attr logicalMarkerChannels
+    logicalMarkerChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalMarkerChannel)]
     attr qubits
     qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
@@ -140,7 +140,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             Label:
                 text = 'Trigger Chan.'
             ComboBox:
-                items << [''] + [c.label for c in logicalChannels]
+                items << [''] + [c.label for c in logicalMarkerChannels]
                 index = items.index(chan.trigChan.label)
                 index ::
                     chan.trigChan = channelLib[selected_item]
@@ -176,7 +176,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
         Label:
             text = 'Gate Chan.'
         ComboBox:
-            items << [''] + [c.label for c in logicalChannels]
+            items << [''] + [c.label for c in logicalMarkerChannels]
             index = items.index(chan.gateChan.label) if chan.gateChan else 0
             index ::
                 chan.gateChan = channelLib[selected_item] if selected_item else ""
