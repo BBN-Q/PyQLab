@@ -20,7 +20,7 @@ enamldef LogicalMarkerChannelView(GroupBox): curView:
     attr channelLib
     attr instrumentLib
     attr physicalChannels
-    physicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.PhysicalMarkerChannel), channelLib.values()))
+    physicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.PhysicalMarkerChannel)]
     title := '{} (LogicalMarker)'.format(chan.label)
     Form:
         Label:
@@ -115,11 +115,11 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
     attr channelLib
     attr physicalChannels
-    physicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.PhysicalQuadratureChannel), channelLib.values()))
+    physicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.PhysicalQuadratureChannel)]
     attr logicalChannels
-    logicalChannels << list(filter(lambda x: isinstance(x, QGL.Channels.LogicalChannel), channelLib.values()))
+    logicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalChannel)]
     attr qubits
-    qubits << list(filter(lambda x: isinstance(x, QGL.Channels.Qubit), channelLib.values()))
+    qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
