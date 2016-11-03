@@ -1,7 +1,7 @@
 """
 For now just Alazar cards but should also support Acquiris.
 """
-from Instrument import Instrument
+from .Instrument import Instrument
 
 from atom.api import Atom, Str, Int, Float, Bool, Enum, List, Dict, Coerced
 import itertools, ast
@@ -68,19 +68,19 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel)).decode('ascii')
 			except:
 				jsonDict['demodKernel'] = []
 			try:
-				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
+				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['demodKernelBias'] = []
 			try:
-				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel)).decode('ascii')
 			except:
 				jsonDict['rawKernel'] = []
 			try:
-				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
+				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['rawKernelBias'] = []
 		return jsonDict
@@ -108,8 +108,7 @@ class X6(Digitizer):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
 		if matlabCompatible:
 			# For the Matlab experiment manager we nest averager settings
-			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
-			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+			jsonDict['averager'] = {k:jsonDict.pop(k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
 
 		return jsonDict
 

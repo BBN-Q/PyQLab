@@ -6,10 +6,10 @@ from enaml.core.api import Looper, Include, Conditional
 
 from widgets import EnumComboBox
 
-import AWGs
+from . import AWGs
 import config
 
-enamldef ChannelView(GroupBox): 
+enamldef ChannelView(GroupBox):
     attr chan
     attr number
     share_layout=True
@@ -19,7 +19,7 @@ enamldef ChannelView(GroupBox):
         hug_width='medium'
         padding = 2
         share_layout=True
-        Label: 
+        Label:
             text = 'Amp.'
         FloatField:
             constraints = [width == 50]
@@ -27,7 +27,7 @@ enamldef ChannelView(GroupBox):
             minimum = 0.0
             value := chan.amplitude
             tool_tip = chan.get_member('amplitude').metadata["desc"]
-        Label: 
+        Label:
             text = 'Offset'
         FloatField:
             constraints = [width == 50]
@@ -65,9 +65,9 @@ enamldef AWGForm(GroupBox): myAWGForm:
             text = 'Master'
         CheckBox:
             checked := myAWGForm.awg.isMaster
-        Label: 
+        Label:
             text = 'Address'
-        Field: 
+        Field:
             text := myAWGForm.awg.address
         Label:
             text = 'Trigger Interval'
@@ -95,7 +95,7 @@ enamldef AWGForm(GroupBox): myAWGForm:
                 text = '...'
                 clicked ::
                     dlg = FileDialog(root_object(), title='Choose a sequence file..', mode='open_file',
-                     callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'], 
+                     callback=get_seq_file_callback(awg), filters=['Seq. Files (*.awg *.h5)', 'All Files (*.*)'],
                      path=config.AWGDir)
                     dlg.open()
             Conditional:

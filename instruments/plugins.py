@@ -39,10 +39,10 @@ def find_plugins(baseClass, verbose=True):
             if isStrictSubclass(clsObj, baseClass):
                 plugins.append(clsObj)
                 if verbose:
-                    print 'Registered Driver {0}'.format(name)
+                    print("Registered Driver {}".format(name))
     return plugins
-                
-                
+
+
 def register_plugins(baseClass, pluginList):
     plugins = find_plugins(baseClass, verbose=False)
     for plugin in plugins:
@@ -50,5 +50,5 @@ def register_plugins(baseClass, pluginList):
             pluginList.append(plugin)
         if plugin.__name__ not in globals().keys():
             globals().update({plugin.__name__: plugin})
-            print 'Registered Plugin {0}'.format(plugin.__name__)
+            print("Registered Plugin {}".format(plugin.__name__))
     return pluginList

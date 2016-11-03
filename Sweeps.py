@@ -50,7 +50,7 @@ class PointsSweep(Sweep):
         # int() will give floor() casted to an Int
         try:
             self.numPoints = int((self.stop - self.start)/floatbits.prevfloat(step)) + 1
-        except ValueError, e:
+        except ValueError as e:
             print("ERROR: Sweep named %s issue computing Num. Points: %s" % (self.label,e))
 
     def _get_step(self):
@@ -193,7 +193,7 @@ class SweepLibrary(Atom):
                 with open(self.libFile, 'r') as FID:
                     try:
                          tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
-                    except ValueError, e:
+                    except ValueError as e:
                          print ("WARNING: JSON object issue: %s in %s" % (e,self.libFile))
                          return
 
@@ -231,7 +231,7 @@ def find_sweeps_plugins():
             newSweepClasses.append(plugin)
         if plugin.__name__ not in globals().keys():
             globals().update({plugin.__name__: plugin})
-            print 'Registered Plugin {0}'.format(plugin.__name__)
+            print("Registered Plugin {}".format(plugin.__name__))
 
 if __name__ == "__main__":
 

@@ -24,12 +24,6 @@ class MeasFilter(Atom):
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
             jsonDict.pop('label', None)
-            import numpy as np
-            import base64
-            try:
-                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
-            except:
-                jsonDict['kernel'] = []
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
@@ -72,9 +66,9 @@ class KernelIntegration(MeasFilter):
                 if self.simpleKernel:
                     kernel = np.hstack((np.zeros(self.boxCarStart, dtype=np.complex), np.ones(self.boxCarStop-self.boxCarStart)))
                     kernel *= np.exp(1j*2*np.pi*self.IFfreq*np.arange(self.boxCarStop)/self.samplingRate)
-                    kernel = base64.b64encode(kernel)
+                    kernel = base64.b64encode(kernel).decode('ascii')
                 else:
-                    kernel = base64.b64encode(eval(self.kernel))
+                    kernel = base64.b64encode(eval(self.kernel)).decode('ascii')
             except:
                 kernel = []
             jsonDict['kernel'] = kernel

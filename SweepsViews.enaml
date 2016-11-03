@@ -12,6 +12,8 @@ import Sweeps
 from instruments.AWGs import AWG
 from instruments.plugins import find_view_maps
 
+from builtins import str
+
 enamldef PointsSweepForm(GroupBox):
     attr sweep
     attr possibleInstrs
@@ -109,7 +111,7 @@ enamldef SegmentNumForm(GroupBox):
         Label:
             text = 'Points'
         Field:
-            text << unicode(sweep.points)
+            text << str(sweep.points)
             text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
         Container:
             constraints = [hbox(rb1, rb2, spacer)]
@@ -148,7 +150,7 @@ enamldef SegmentNumWithCalsForm(GroupBox):
         Label:
             text = 'Points'
         Field:
-            text << unicode(sweep.points)
+            text << str(sweep.points)
             text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
         Label:
             text = 'Num Cals'

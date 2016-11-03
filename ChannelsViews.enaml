@@ -20,7 +20,7 @@ enamldef LogicalMarkerChannelView(GroupBox): curView:
     attr channelLib
     attr instrumentLib
     attr physicalChannels
-    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalMarkerChannel), channelLib.values())
+    physicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.PhysicalMarkerChannel)]
     title := '{} (LogicalMarker)'.format(chan.label)
     Form:
         Label:
@@ -109,17 +109,17 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'Phase Skew (deg.)'
         FloatField:
             value := chan.phaseSkew
-        
+
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
     attr channelLib
     attr physicalChannels
-    physicalChannels << filter(lambda x: isinstance(x, QGL.Channels.PhysicalQuadratureChannel), channelLib.values())
-    attr logicalChannels
-    logicalChannels << filter(lambda x: isinstance(x, QGL.Channels.LogicalChannel), channelLib.values())
+    physicalChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.PhysicalQuadratureChannel)]
+    attr logicalMarkerChannels
+    logicalMarkerChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalMarkerChannel)]
     attr qubits
-    qubits << filter(lambda x: isinstance(x, QGL.Channels.Qubit), channelLib.values())
+    qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
@@ -140,7 +140,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             Label:
                 text = 'Trigger Chan.'
             ComboBox:
-                items << [''] + [c.label for c in logicalChannels]
+                items << [''] + [c.label for c in logicalMarkerChannels]
                 index = items.index(chan.trigChan.label)
                 index ::
                     chan.trigChan = channelLib[selected_item]
@@ -176,10 +176,10 @@ enamldef LogicalQuadratureView(GroupBox): curView:
         Label:
             text = 'Gate Chan.'
         ComboBox:
-            items << [''] + [c.label for c in logicalChannels]
+            items << [''] + [c.label for c in logicalMarkerChannels]
             index = items.index(chan.gateChan.label) if chan.gateChan else 0
             index ::
-                chan.gateChan = channelLib[selected_item]
+                chan.gateChan = channelLib[selected_item] if selected_item else ""
         Looper:
             iterable << sorted(chan.pulseParams.keys())
             Label:
@@ -196,7 +196,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                     index << psList.index(chan.pulseParams[loop_item])
                     index ::
                         chan.pulseParams[loop_item] = psList[index]
-        
+
 
 enamldef EmptyChannelView(Container):
     attr chan

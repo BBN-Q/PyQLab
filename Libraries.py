@@ -10,7 +10,7 @@ from JSONLibraryUtils import JSONMigrators
 
 migrationMsg = JSONMigrators.migrate_all(config)
 for msg in migrationMsg:
-    print msg
+    print(msg)
 
 instrumentLib = InstrumentLibrary(libFile=config.instrumentLibFile)
 sweepLib = SweepLibrary(libFile=config.sweepLibFile)

@@ -4,7 +4,7 @@ AWGs
 
 from atom.api import Atom, List, Int, Float, Range, Enum, Bool, Constant, Str
 
-from Instrument import Instrument
+from .Instrument import Instrument
 
 
 import enaml
@@ -12,7 +12,7 @@ from enaml.qt.qt_application import QtApplication
 
 from instruments.AWGBase import AWGChannel, AWG, AWGDriver
 
-from plugins import find_plugins
+from .plugins import find_plugins
 
 AWGList = []
 
@@ -23,7 +23,7 @@ for plugin in plugins:
         AWGList.append(plugin)
         if plugin.__name__ not in globals().keys():
             globals().update({plugin.__name__: plugin})
-            print 'Registered Plugin {0}'.format(plugin.__name__)
+            print("Registered Plugin {}".format(plugin.__name__))
 
 if __name__ == "__main__":
     with enaml.imports():

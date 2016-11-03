@@ -76,7 +76,7 @@ enamldef ExpSettingsView(MainWindow): main:
 				triggered ::
 					path = FileDialogEx.get_existing_directory(main,show_dirs_only=False)
 					if not os.path.isdir(path) and path !='':
-						print('% s Does not Exist: Creating %s'%(path,path))
+						print("{} does not exist so creating it".format(path))
 						os.mkdir(path)
 
 					try:
@@ -85,7 +85,7 @@ enamldef ExpSettingsView(MainWindow): main:
 					except Exception as e:
 						err_str = expSettings.format_errors()
 						if not err_str:
-							err_str = e.message
+							err_str = str(e)
 						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
@@ -109,7 +109,7 @@ enamldef ExpSettingsView(MainWindow): main:
 					except Exception as e:
 						err_str = expSettings.format_errors()
 						if not err_str:
-							err_str = e.message
+							err_str = str(e)
 						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
@@ -193,7 +193,7 @@ enamldef ExpSettingsView(MainWindow): main:
 					except Exception as e:
 						err_str = expSettings.format_errors()
 						if not err_str:
-							err_str = e.message
+							err_str = str(e)
 						ep = ErrorPopup(displayText=err_str)
 						ep.show()
 						ep.center_on_widget(main)
@@ -212,7 +212,7 @@ enamldef ExpSettingsView(MainWindow): main:
 				except Exception as e:
 					err_str = expSettings.format_errors()
 					if not err_str:
-						err_str = e.message
+						err_str = str(e)
 					ep = ErrorPopup(displayText=err_str)
 					ep.show()
 					ep.center_on_widget(main)

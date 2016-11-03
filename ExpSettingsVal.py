@@ -22,17 +22,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 
+from builtins import str
+import floatbits
+import itertools
+import re
+
 import h5py
+from atom.api import Str
+
+import Sweeps
 import Libraries
 import QGL.Channels
 import QGL.ChannelLibrary
 
-from atom.api import Str
-
-import re
-import itertools
-import Sweeps
-import floatbits
 
 channels = QGL.ChannelLibrary.channelLib
 instruments = Libraries.instrumentLib.instrDict
@@ -203,7 +205,7 @@ def test_physical_channels():
             # apply device specific channel namming conventions
             # force converions of awgChan to unicode so multimethod dispatch will
             # work with str or unicode
-            errMsg = invalid_awg_name_convention(channels[channel].AWG, unicode(awgChan))
+            errMsg = invalid_awg_name_convention(channels[channel].AWG, str(awgChan))
             if errMsg:
                 errors.append(errMsg)
         else:
@@ -263,7 +265,7 @@ def validate_sweepLib():
         if isinstance(sweeps[key],Sweeps.PointsSweep):
             try:
                 numPoints = int((sweeps[key].stop - sweeps[key].start)/floatbits.prevfloat(sweeps[key].step)) + 1
-            except ValueError, e:
+            except ValueError as e:
                 errors.append("Sweep named %s issue computing Num. Points: %s" % (sweeps[key].label,e))
 
     return errors
@@ -328,14 +330,14 @@ def default_repr(items, item):
                             items[item].__class__.__name__)
 
 def default_list_repr(items, name):
-    print 'Listing available {0}:'.format(name)
+    print("Listing available {}:".format(name))
     for item in items.keys():
-        print default_repr(items,item)
+        print(default_repr(items,item))
 
 def list_channels():
-    print 'Listing available channels:'
+    print("Listing available channels:")
     for channel in channels.keys():
-        print '\t', repr(channels[channel])
+        print("\t", repr(channels[channel]))
 
 def list_instruments():
     default_list_repr(instruments, 'instruments')
@@ -360,15 +362,14 @@ def draw_wiring_digram():
 
     topLevelChannels = [channelName for channelName in channels.keys() if requires_physical_channel(channelName)]
 
-    print "digraph Exp {"
+    print("digraph Exp {")
 
     for channel in topLevelChannels:
-        print '"{0}"'.format(channel),
+        print('"{}"'.format(channel))
         if channels[channel].physChan is not None:
-            print ' -> "{0}"'.format(channels[channel].physChan.label),
+            print(' -> "{}"'.format(channels[channel].physChan.label))
             if channels[channel].physChan.AWG is not None:
-                print ' -> "{0}"'.format(channels[channel].physChan.AWG.label),
-        print
+                print(' -> "{}"'.format(channels[channel].physChan.AWG.label))
 
     typeMap = (
         (is_logicalmarker_channel,"lightblue"),
@@ -377,17 +378,16 @@ def draw_wiring_digram():
         (is_qubit_channel,"yellow"),
         )
 
-    for type in typeMap:
-        lookup, color = type
+    for lookup, color in typeMap:
         names = [channelName for channelName in channels.keys() if lookup(channelName)]
         for channel in names:
-            print '"{0}" [color={1},style=filled];'.format(channel, color)
+            print("{0} [color={1},style=filled];".format(channel, color))
 
     instrumentNames = [channelName for channelName in instruments.keys()]
     for channel in instrumentNames:
-        print '"{0}" [color=green,style=filled];'.format(channel)
+        print("{} [color=green,style=filled];".format(channel))
 
-    print "}"
+    print("}")
 
 
 if __name__ == '__main__':
