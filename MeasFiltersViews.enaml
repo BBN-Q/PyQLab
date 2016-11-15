@@ -10,7 +10,6 @@ from widgets import EnumComboBox
 from DictManagerView import DictManagerView
 
 import MeasFilters
-import ipdb
 from numpy import pi
 
 enamldef AlazarStreamSelectorView(GroupBox):
@@ -52,7 +51,7 @@ enamldef X6StreamSelectorView(GroupBox):
           text = 'Stream Type'
       EnumComboBox:
           obj := myFilter
-          enumName = 'stream_type' 
+          enumName = 'stream_type'
       Label:
           text = 'IF Frequency (MHz)'
       FloatField:
@@ -139,7 +138,7 @@ enamldef ChannelizerForm(GroupBox):
             text = "Data source"
         Field:
             text := myFilter.data_source
-        
+
 enamldef KernelIntegratorForm(GroupBox):
     attr myFilter
     attr filterLib
@@ -211,7 +210,7 @@ enamldef PlotterView(GroupBox):
             text = "Plot mode"
         EnumComboBox:
             obj := myFilter
-            enumName = 'plot_mode' 
+            enumName = 'plot_mode'
         Label:
             text = "Data source"
         Field:
