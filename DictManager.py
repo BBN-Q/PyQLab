@@ -39,9 +39,9 @@ class DictManager(Atom):
         if itemLabel in self.itemDict.keys():
             self.itemDict.pop(itemLabel)
             #TODO: once ContainerDicts land see if we still need this
-            self.displayList.pop(self.displayList.index(itemLabel))
+            self.displayList.remove(itemLabel)
         elif itemLabel != '':
-            self.displayList.pop(self.displayList.index(itemLabel))
+            self.displayList.remove(itemLabel)
 
     def name_changed(self, oldLabel, newLabel):
         # Add copy of changing item
@@ -72,4 +72,6 @@ class DictManager(Atom):
         Eventualy itemDict will be a ContainerDict and this will fire on all events.
         Will have to be more careful about whether it is a "create" event or "update"
         """
+        # clear the displayList first to ensure the update event fires
+        self.displayList.clear()
         self.displayList = sorted([v.label for v in self.itemDict.values() if self.displayFilter(v)])

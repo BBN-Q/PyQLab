@@ -166,6 +166,8 @@ class MeasFilterLibrary(Atom):
                         self.version = tmpLib.version
             except IOError:
                 print("No measurement library found.")
+        if self.filterManager:
+            self.filterManager.update_display_list(None)
 
     def json_encode(self):
         return {
