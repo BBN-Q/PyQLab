@@ -146,8 +146,8 @@ class ExpSettings(Atom):
             else:
                 pname = 'run-quince.py'
             subprocess.Popen([pname, '-i', config.instrumentLibFile,
-                                               '-m', config.measurementLibFile,
-                                               '-s', config.sweepLibFile])
+                                     '-m', config.measurementLibFile,
+                                     '-s', config.sweepLibFile])
         except Exception as e:
             self.errors.append(str(e))
 

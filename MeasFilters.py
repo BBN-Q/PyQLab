@@ -20,7 +20,28 @@ class MeasFilter(Atom):
         jsonDict = self.__getstate__()
         jsonDict['x__class__'] = self.__class__.__name__
         jsonDict['x__module__'] = self.__class__.__module__
+
+        obj = jsonDict.get('data_source', None)
+        if obj and hasattr(obj, 'label'):
+            jsonDict['data_source'] = obj.label
         return jsonDict
+
+    def update_from_jsondict(self, jsonDict):
+        jsonDict.pop('x__class__', None)
+        jsonDict.pop('x__module__', None)
+
+        #Convert the strings to ascii for Python 2
+        if sys.version_info[0] < 3:
+            for label,value in jsonDict.items():
+                if hasattr(self, label):
+                    if isinstance(value, unicode):
+                        setattr(self, label, value.encode('ascii'))
+                    else:
+                        setattr(self, label, value)
+        else:
+            for label,value in jsonDict.items():
+                if hasattr(self, label):
+                    setattr(self, label, value)
 
 class Plotter(MeasFilter):
     label    = Str()
@@ -42,31 +63,6 @@ class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, ATS9870))
     channel     = Str('').tag(desc="Which channel to select from the Alazar")
 
-    def json_encode(self):
-        jsonDict = super(AlazarStreamSelector, self).json_encode()
-
-        obj = jsonDict.pop('data_source')
-        if obj:
-            jsonDict['data_source'] = obj.label
-        return jsonDict
-
-    def update_from_jsondict(self, jsonDict):
-        jsonDict.pop('x__class__', None)
-        jsonDict.pop('x__module__', None)
-
-        #Convert the strings to ascii for Python 2
-        if sys.version_info[0] < 3:
-            for label,value in jsonDict.items():
-                if hasattr(self, label):
-                    if isinstance(value, unicode):
-                        setattr(self, label, value.encode('ascii'))
-                    else:
-                        setattr(self, label, value)
-        else:
-            for label,value in jsonDict.items():
-                if hasattr(self, label):
-                    setattr(self, label, value)
-
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
     label                      = Str("")
@@ -78,27 +74,6 @@ class X6StreamSelector(MeasFilter):
     raw_kernel_bias            = Str("").tag(desc="Kernel bias for integrated raw stream")
     threshold                  = Float(0.0).tag(desc='Qubit state decision threshold')
     threshold_invert           = Bool(False).tag(desc="Invert thresholder output")
-
-    def json_encode(self):
-        jsonDict = super(X6StreamSelector, self).json_encode()
-
-        obj = jsonDict.pop('data_source')
-        if obj:
-            jsonDict['data_source'] = obj.label
-        return jsonDict
-
-    def update_from_jsondict(self, jsonDict):
-        jsonDict.pop('x__class__', None)
-        jsonDict.pop('x__module__', None)
-
-        #Convert the strings to ascii for Python 2
-        if sys.version_info[0] < 3:
-            for label,value in jsonDict.items():
-                if hasattr(self, label):
-                    if isinstance(value, unicode):
-                        setattr(self, label, value.encode('ascii'))
-                    else:
-                        setattr(self, label, value)
 
 class Channelizer(MeasFilter):
     if_freq        = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
