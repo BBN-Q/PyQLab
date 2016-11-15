@@ -114,7 +114,7 @@ class ExpSettings(Atom):
             self.sweeps.write_to_file(
                 fileName=path + os.sep + os.path.basename(self.sweeps.libFile))
             self.write_to_file(
-                fileName=path + os.sep + os.path.basename(self.curFileNamecurFileName))
+                fileName=path + os.sep + os.path.basename(self.curFileName))
         except Exception as e:
             self.errors.append(str(e))
 
@@ -134,8 +134,8 @@ class ExpSettings(Atom):
                 self.measurements.libFile)
             shutil.copy(path + os.sep + os.path.basename(self.sweeps.libFile),
                         self.sweeps.libFile)
-            shutil.copy(path + os.sep + os.path.basename(self.curFileNamecurFileName),
-                        self.curFileNamecurFileName)
+            shutil.copy(path + os.sep + os.path.basename(self.curFileName),
+                        self.curFileName)
         except Exception as e:
             self.errors.append(str(e))
 
@@ -301,7 +301,7 @@ if __name__ == '__main__':
                         default=None)
     options = parser.parse_args(sys.argv[1:])
     if options.scripterFile:
-        expSettings.curFileNamecurFileName = options.scripterFile
+        expSettings.curFileName = options.scripterFile
 
     with enaml.imports():
         from ExpSettingsView import ExpSettingsView
