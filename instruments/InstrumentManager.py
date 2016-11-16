@@ -182,7 +182,7 @@ class InstrumentLibrary(Atom):
                             instrParams)
 
                 # delete removed items
-                for instrName in self.instrDict.keys():
+                for instrName in list(self.instrDict.keys()):
                     if instrName not in allParams:
                         del self.instrDict[instrName]
 

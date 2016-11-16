@@ -73,5 +73,4 @@ class DictManager(Atom):
         Will have to be more careful about whether it is a "create" event or "update"
         """
         # clear the displayList first to ensure the update event fires
-        self.displayList.clear()
         self.displayList = sorted([v.label for v in self.itemDict.values() if self.displayFilter(v)])

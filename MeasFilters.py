@@ -162,6 +162,12 @@ class MeasFilterLibrary(Atom):
                                     filterList.append(tmpLib.filterDict[f])
                                 filt.filters = filterList
                         self.filterDict.update(tmpLib.filterDict)
+
+                        # delete removed items
+                        for filtName in list(self.filterDict.keys()):
+                            if filtName not in tmpLib.filterDict:
+                                del self.filterDict[filtName]
+
                         # grab library version
                         self.version = tmpLib.version
             except IOError:
