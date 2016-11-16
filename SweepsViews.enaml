@@ -252,6 +252,10 @@ enamldef RepeatForm(GroupBox):
             text = 'Num. Reps.'
         IntField:
             value := sweep.numRepeats
+        Label:
+            text = 'Delay (s)'
+        FloatField:
+            value := sweep.delay
 
 enamldef PowerSweepForm(GroupBox):
     attr sweep

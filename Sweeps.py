@@ -118,6 +118,7 @@ class SegmentNumWithCals(SegmentNum):
 class Repeat(Sweep):
     label = Str(default='Repeat')
     numRepeats = Int(1).tag(desc='How many times to loop.')
+    delay = Float(1.0).tag(desc='delay between repeats in seconds')
 
 class AWGChannel(PointsSweep):
     label = Str(default='AWGChannel')
