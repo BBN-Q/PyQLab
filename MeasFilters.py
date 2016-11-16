@@ -62,6 +62,7 @@ class Averager(MeasFilter):
 class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, ATS9870))
     channel     = Str('').tag(desc="Which channel to select from the Alazar")
+    receiver    = True
 
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
@@ -74,6 +75,7 @@ class X6StreamSelector(MeasFilter):
     raw_kernel_bias            = Str("").tag(desc="Kernel bias for integrated raw stream")
     threshold                  = Float(0.0).tag(desc='Qubit state decision threshold')
     threshold_invert           = Bool(False).tag(desc="Invert thresholder output")
+    receiver                   = True
 
 class Channelizer(MeasFilter):
     if_freq        = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
@@ -118,6 +120,7 @@ class MeasFilterLibrary(Atom):
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
+    receivers = Typed(DictManager)
     version = Int(2)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
@@ -128,7 +131,12 @@ class MeasFilterLibrary(Atom):
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(
                 self.libFile, self.load_from_library)
-        self.filterManager = DictManager(itemDict=self.filterDict, possibleItems=measFilterList)
+        self.filterManager = DictManager(
+            itemDict=self.filterDict,
+            possibleItems=measFilterList)
+        self.receivers = DictManager(
+            itemDict=self.filterDict,
+            displayFilter=lambda x: hasattr(x, 'receiver'))
 
     #Overload [] to allow direct pulling of measurement filter info
     def __getitem__(self, filterName):

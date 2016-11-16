@@ -224,6 +224,8 @@ def invalid_awg_name_convention_common(label, channelName, conventionList):
 
 def invalid_awg_name_convention(awgLabel, channelName):
     instr = instruments[awgLabel]
+    if not hasattr(instr, 'get_naming_convention'):
+        return None
     convention = instr.get_naming_convention()
     return invalid_awg_name_convention_common(awgLabel, channelName,convention)
 

@@ -157,6 +157,7 @@ enamldef ExpSettingsView(MainWindow): main:
 					logicalChannelManager := expSettings.logicalChannelManager
 					physicalChannelManager := expSettings.physicalChannelManager
 					instrumentLib := expSettings.instruments
+					measurementLib := expSettings.measurements
 			Page:
 				title = 'Instruments'
 				closable = False
