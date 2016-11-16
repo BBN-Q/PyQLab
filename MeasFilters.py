@@ -149,31 +149,36 @@ class MeasFilterLibrary(Atom):
                 self.fileWatcher.resume()
 
     def load_from_library(self):
-        if self.libFile:
-            try:
-                with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
-                    if isinstance(tmpLib, MeasFilterLibrary):
-                        #Update correlator filter lists to filter objects
-                        for filt in tmpLib.filterDict.values():
-                            if isinstance(filt, Correlator):
-                                filterList = []
-                                for f in filt.filters:
-                                    filterList.append(tmpLib.filterDict[f])
-                                filt.filters = filterList
-                        self.filterDict.update(tmpLib.filterDict)
+        if not self.libFile:
+            return
+        try:
+            with open(self.libFile, 'r') as FID:
+                tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
+            if not isinstance(tmpLib, MeasFilterLibrary):
+                raise ValueError("Failed to load measurement library.")
+            # Update correlator filter lists to filter objects
+            for filt in tmpLib.filterDict.values():
+                if isinstance(filt, Correlator):
+                    filterList = []
+                    for f in filt.filters:
+                        filterList.append(tmpLib.filterDict[f])
+                    filt.filters = filterList
+            self.filterDict.update(tmpLib.filterDict)
 
-                        # delete removed items
-                        for filtName in list(self.filterDict.keys()):
-                            if filtName not in tmpLib.filterDict:
-                                del self.filterDict[filtName]
+            # delete removed items
+            for filtName in list(self.filterDict.keys()):
+                if filtName not in tmpLib.filterDict:
+                    del self.filterDict[filtName]
 
-                        # grab library version
-                        self.version = tmpLib.version
-            except IOError:
-                print("No measurement library found.")
-        if self.filterManager:
-            self.filterManager.update_display_list(None)
+            # grab library version
+            self.version = tmpLib.version
+
+            if self.filterManager:
+                self.filterManager.update_display_list(None)
+        except IOError:
+            print("No measurement library found.")
+        except ValueError:
+            print("Failed to load measurement library.")
 
     def json_encode(self):
         return {

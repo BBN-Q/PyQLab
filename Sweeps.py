@@ -187,27 +187,27 @@ class SweepLibrary(Atom):
                 json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
-        if self.libFile:
-            try:
-                with open(self.libFile, 'r') as FID:
-                    try:
-                         tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
-                    except ValueError as e:
-                         print ("WARNING: JSON object issue: %s in %s" % (e,self.libFile))
-                         return
+        if not self.libFile:
+            return
+        try:
+            with open(self.libFile, 'r') as FID:
+                tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
+            if not isinstance(tmpLib, SweepLibrary):
+                raise ValueError('Failed to load sweep library.')
 
-                    if isinstance(tmpLib, SweepLibrary):
-                        self.sweepDict.update(tmpLib.sweepDict)
-                        del self.possibleInstrs[:]
-                        for instr in tmpLib.possibleInstrs:
-                            self.possibleInstrs.append(instr)
-                        del self.sweepOrder[:]
-                        for sweepStr in tmpLib.sweepOrder:
-                            self.sweepOrder.append(sweepStr)
-                        # grab library version
-                        self.version = tmpLib.version
-            except IOError:
-                print('No sweep library found.')
+            self.sweepDict.update(tmpLib.sweepDict)
+            del self.possibleInstrs[:]
+            for instr in tmpLib.possibleInstrs:
+                self.possibleInstrs.append(instr)
+            del self.sweepOrder[:]
+            for sweepStr in tmpLib.sweepOrder:
+                self.sweepOrder.append(sweepStr)
+            # grab library version
+            self.version = tmpLib.version
+        except IOError:
+            print('No sweep library found.')
+        except ValueError:
+            print('Failed to load sweep library.')
 
     def json_encode(self, matlabCompatible=False):
             if matlabCompatible:

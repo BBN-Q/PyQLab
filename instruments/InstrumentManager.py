@@ -131,18 +131,19 @@ class InstrumentLibrary(Atom):
                 self.fileWatcher.resume()
 
     def load_from_library(self):
-        if self.libFile:
-            try:
-                with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
-                    if isinstance(tmpLib, InstrumentLibrary):
-                        self.instrDict.update(tmpLib.instrDict)
-                        # grab library version
-                        self.version = tmpLib.version
-            except IOError:
-                print('No instrument library found')
-            except ValueError:
-                print('Failed to load instrument library')
+        if not self.libFile:
+            return
+        try:
+            with open(self.libFile, 'r') as FID:
+                tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
+            if isinstance(tmpLib, InstrumentLibrary):
+                self.instrDict.update(tmpLib.instrDict)
+                # grab library version
+                self.version = tmpLib.version
+        except IOError:
+            print('No instrument library found')
+        except ValueError:
+            print('Failed to load instrument library')
 
     def update_from_file(self):
         """
@@ -150,41 +151,41 @@ class InstrumentLibrary(Atom):
         Helps avoid stale references by replacing whole channel objects as in load_from_library
         and the overhead of recreating everything.
         """
-        if self.libFile:
+        if not self.libFile:
+            return
+        try:
             with open(self.libFile, 'r') as FID:
-                try:
-                    allParams = json.load(FID)['instrDict']
-                except ValueError:
-                    print(
-                        'Failed to update instrument library from file.  Probably just half-written.'
-                    )
-                    return
+                allParams = json.load(FID)['instrDict']
 
-                # update and add new items
-                for instrName, instrParams in allParams.items():
-                    # Re-encode the strings as ascii (this should go away in Python 3)
-                    if sys.version_info[0] < 3:
-                        instrParams = {k.encode('ascii'): v
-                                       for k, v in instrParams.items()}
-                    # update
-                    if instrName in self.instrDict:
-                        self.instrDict[instrName].update_from_jsondict(
-                            instrParams)
-                    else:
-                        # load class from name and update from json
-                        className = instrParams['x__class__']
-                        moduleName = instrParams['x__module__']
+            # update and add new items
+            for instrName, instrParams in allParams.items():
+                # Re-encode the strings as ascii (this should go away in Python 3)
+                if sys.version_info[0] < 3:
+                    instrParams = {k.encode('ascii'): v
+                                   for k, v in instrParams.items()}
+                # update
+                if instrName in self.instrDict:
+                    self.instrDict[instrName].update_from_jsondict(
+                        instrParams)
+                else:
+                    # load class from name and update from json
+                    className = instrParams['x__class__']
+                    moduleName = instrParams['x__module__']
 
-                        mod = importlib.import_module(moduleName)
-                        cls = getattr(mod, className)
-                        self.instrDict[instrName] = cls()
-                        self.instrDict[instrName].update_from_jsondict(
-                            instrParams)
+                    mod = importlib.import_module(moduleName)
+                    cls = getattr(mod, className)
+                    self.instrDict[instrName] = cls()
+                    self.instrDict[instrName].update_from_jsondict(
+                        instrParams)
 
-                # delete removed items
-                for instrName in list(self.instrDict.keys()):
-                    if instrName not in allParams:
-                        del self.instrDict[instrName]
+            # delete removed items
+            for instrName in list(self.instrDict.keys()):
+                if instrName not in allParams:
+                    del self.instrDict[instrName]
+        except IOError:
+            print('No instrument library found.')
+        except:
+            print('Failed to update instrument library from file. Probably just half-written.')
 
     def json_encode(self, matlabCompatible=False):
         #When serializing for matlab return only enabled instruments, otherwise all
