@@ -66,7 +66,7 @@ class AlazarStreamSelector(MeasFilter):
 
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
-    label                      = Str("")
+    channel                    = Str("").tag(desc="Which physical channel to select from the X6")
     stream_type                = Enum('Raw', 'Demodulated', 'Integrated').tag(desc='Which stream type to select.')
     if_freq                    = Float(10e6).tag(desc='IF Frequency')
     demod_kernel               = Str("").tag(desc='Integration kernel vector for demod stream')
