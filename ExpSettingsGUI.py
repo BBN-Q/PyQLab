@@ -252,13 +252,14 @@ class ExpSettings(Atom):
                 pc.samplingRate = instr.samplingRate
                 self.channels[label] = pc
         for receiver in receivers:
-            if receiver.label in self.channels:
+            label = receiver.data_source + "-" + receiver.label
+            if label in self.channels:
                 continue
             rc = QGL.Channels.ReceiverChannel()
-            rc.label = receiver.label
+            rc.label = label
             rc.instrument = receiver.data_source
             rc.channel = receiver.label
-            self.channels[receiver.label] = rc
+            self.channels[label] = rc
 
         self.physicalChannelManager.update_display_list(None)
 
