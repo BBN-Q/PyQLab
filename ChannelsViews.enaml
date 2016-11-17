@@ -123,9 +123,15 @@ enamldef ReceiverChannelView(GroupBox): curView:
             text = 'Receiver'
         ComboBox:
             items << measurementLib.receivers.displayList
-            index = items.index(chan.instrument) if chan.instrument in items else -1
+            index = items.index(chan.channel) if chan.channel in items else -1
             index ::
-                chan.instrument = selected_item
+                chan.channel = selected_item
+                chan.instrument = measurementLib.filterDict[selected_item].data_source
+        Label:
+            text = 'Instrument'
+        Field:
+            text := chan.instrument
+            read_only = True
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
