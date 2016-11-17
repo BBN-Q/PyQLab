@@ -229,33 +229,36 @@ class ExpSettings(Atom):
     def populate_physical_channels(self, awg=None):
         import instruments.AWGs
         if awg == None:
-            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG), self.instruments.instrDict.values())
-            receivers = filter(lambda x: hasattr(x, 'takes_marker'), self.instruments.instrDict.values())
-            instruments = awgs + receivers
+            awgs = [self.instruments[a] for a in self.instruments.AWGs.displayList]
+            awgs += [self.instruments[a] for a in self.instruments.markedInstrs.displayList]
+            receivers = [self.measurements[r] for r in self.measurements.receivers.displayList]
         else:
-            instruments = [awg]
-        for instr in instruments:
+            awgs = [awg]
+            receivers = []
+        for instr in awgs:
             channels = instr.get_naming_convention()
             for ch in channels:
                 label = instr.label + '-' + ch
                 if label in self.channels:
                     continue
-                if instr in awgs:
-                    # TODO: less kludgy lookup of appropriate channel type
-                    if 'm' in ch.lower():
-                        pc = QGL.Channels.PhysicalMarkerChannel()
-                    else:
-                        pc = QGL.Channels.PhysicalQuadratureChannel()
-                    pc.label = label
-                    pc.instrument = instr.label
-                    pc.translator = instr.translator
-                    pc.samplingRate = instr.samplingRate
+                # TODO: less kludgy lookup of appropriate channel type
+                if 'm' in ch.lower():
+                    pc = QGL.Channels.PhysicalMarkerChannel()
                 else:
-                    pc = QGL.Channels.ReceiverChannel()
-                    pc.label = label
-                    pc.instrument = instr.label
-                    pc.channel = ch
+                    pc = QGL.Channels.PhysicalQuadratureChannel()
+                pc.label = label
+                pc.instrument = instr.label
+                pc.translator = instr.translator
+                pc.samplingRate = instr.samplingRate
                 self.channels[label] = pc
+        for receiver in receivers:
+            if receiver.label in self.channels:
+                continue
+            rc = QGL.Channels.ReceiverChannel()
+            rc.label = receiver.label
+            rc.instrument = receiver.data_source
+            rc.channel = receiver.label
+            self.channels[receiver.label] = rc
 
         self.physicalChannelManager.update_display_list(None)
 
