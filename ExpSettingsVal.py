@@ -41,33 +41,35 @@ instruments = Libraries.instrumentLib.instrDict
 measurements = Libraries.measLib.filterDict
 sweeps = Libraries.sweepLib.sweepDict
 
-# The following naming conventions are currently enforced
-# See: https://github.com/BBN-Q/PyQLab/wiki
-#
-# Two LogicalMarkerChannels are required:
-#   1 digitizerTrig
-#   2 slaveTrig
-#
-# Logical Channels:
-#   1 PhysicalChannel but be in library
-#    2 LogicalMarkerChannel must map to PhysicalMarkerChannel
-#   3 Not LogicalMarkerChannel not map to PhysicalMarkerChannel
-#
-# Physical Channels:
-#   1 PhysicalChannel must have an AWG assigned
-#     2 The assigned AWG must exist in the library
-#    3 The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
-#   4 Device specific naming conventions
-#     APS: 12, 34, 1m1, 2m1, 3m1, 4m1
-#     APS2: 12, 12m1, 12m2, 12m3, 12m4
-#     Tek5014: 12, 34, 1m1, 1m2, 2m1, 2m2, 3m1, 3m2, 4m1, 4m2
-#
-# Instruments Names:
-#   1 Instrument names must be valid Matlab Identifiers
+"""
+The following naming conventions are currently enforced
+See: https://github.com/BBN-Q/PyQLab/wiki
 
-# Conventions to be added
-#
-#
+Two LogicalMarkerChannels are required:
+  1 digitizerTrig
+  2 slaveTrig
+
+Logical Channels:
+  1 PhysicalChannel but be in library
+  2 LogicalMarkerChannel must map to PhysicalMarkerChannel
+  3 Not LogicalMarkerChannel not map to PhysicalMarkerChannel
+
+Physical Channels:
+  1 PhysicalChannel must have an instrument assigned
+  2 The assigned instrument must exist in the library
+  3 The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
+  4 Device specific naming conventions
+      APS: 12, 34, 1m1, 2m1, 3m1, 4m1
+      APS2: 12, 12m1, 12m2, 12m3, 12m4
+      Tek5014: 12, 34, 1m1, 1m2, 2m1, 2m2, 3m1, 3m2, 4m1, 4m2
+
+Instruments Names:
+  1 Instrument names must be valid Matlab Identifiers
+
+Conventions to be added
+
+
+"""
 
 #####################################################################################
 ## Program Constants
