@@ -337,7 +337,6 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib
     attr instrumentLib
-    attr instrumentLib
     DictManagerView:
         dictManager = filterLib.filterManager
         modelName = 'myFilter'
