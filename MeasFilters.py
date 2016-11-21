@@ -204,13 +204,19 @@ if __name__ == "__main__":
     #Work around annoying problem with multiple class definitions
     from MeasFilters import Channelizer, Correlator, MeasFilterLibrary
 
-    testFilter1 = Channelizer(label='M1')
-    testFilter2 = Channelizer(label='M2')
-    testFilter3 = Correlator(label='M3')
-    testFilter4 = Correlator(label='M4')
-    filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M3':testFilter3,'M4':testFilter4}
+    M1 = Channelizer(label='M1')
+    M2 = Channelizer(label='M2')
+    M3 = Channelizer(label='M3')
+    M12 = Correlator(label='M12', filters=[M1, M2])
+    M123 = Correlator(label='M123', filters=[M1, M2, M3])
+    filters = {'M1': M1,
+               'M2': M2,
+               'M3': M3,
+               'M12': M12,
+               'M123': M123}
 
-    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json', filterDict=filterDict)
+    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json',
+                                filterDict=filters)
 
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow

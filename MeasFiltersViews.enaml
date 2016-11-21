@@ -197,14 +197,6 @@ enamldef KernelIntegratorForm(GroupBox):
             value := myFilter.bias
             tool_tip = myFilter.get_member('bias').metadata["desc"]
 
-#moved this logic to a separate function to tidy things up a bit
-def filterLooperGetIndex(filterLib,myFilter,loop_index):
-    if loop_index < len(myFilter.filters)  and \
-        myFilter.filters[loop_index] in filterLib.filterDict.values():
-        return filterLib.filterDict.values().index(myFilter.filters[loop_index])
-    else:
-        return -1
-
 enamldef PlotterView(GroupBox):
     attr myFilter
     attr filterLib
@@ -255,6 +247,13 @@ enamldef AveragerView(GroupBox):
         Field:
             text := myFilter.data_source
 
+def filterLooperGetIndex(items, myFilter, loop_index):
+    if loop_index < len(myFilter.filters) and \
+        myFilter.filters[loop_index].label in items:
+        return items.index(myFilter.filters[loop_index].label)
+    else:
+        return -1
+
 enamldef CorrelatorView(GroupBox):
     attr myFilter
     attr filterLib
@@ -277,8 +276,8 @@ enamldef CorrelatorView(GroupBox):
                 Label:
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
-                    items << filterLib.filterDict.keys()
-                    index << filterLooperGetIndex(filterLib,myFilter,loop_index)
+                    items << list(filterLib.filterDict.keys())
+                    index << filterLooperGetIndex(items, myFilter, loop_index)
                     index ::
                         myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
 
