@@ -7,9 +7,8 @@ class DCSource(Instrument):
 	mode = Enum('voltage', 'current').tag(desc='Output mode (current or voltage source)')
 	value = Float(0.0).tag(desc='Output value (current or voltage)')
 
-class GS200(DCSource):
+class YokogawaGS200(DCSource):
 	output_range = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1, 10, 30).tag(desc='Output range')
 
 	def json_encode(self):
-		return super(GS200, self).json_encode()
-
+		return super(YokogawaGS200, self).json_encode()

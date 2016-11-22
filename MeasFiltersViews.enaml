@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
 
-from instruments.Digitizers import ATS9870, X6
+from instruments.Digitizers import AlazarATS9870, X6
 
 from widgets import EnumComboBox
 from DictManagerView import DictManagerView
@@ -22,7 +22,7 @@ enamldef AlazarStreamSelectorView(GroupBox):
         Label:
             text = "Digitizer"
         ComboBox:
-            items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, ATS9870)]
+            items << [k for k, v in instrumentLib.instrDict.items() if isinstance(v, AlazarATS9870)]
             index = items.index(myFilter.data_source) if myFilter.data_source in items else -1
             index ::
                 myFilter.data_source = instrumentLib[selected_item]
