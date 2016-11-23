@@ -230,7 +230,7 @@ class ExpSettings(Atom):
                 else:
                     pc = QGL.Channels.PhysicalQuadratureChannel()
                 pc.label = label
-                pc.AWG = awg.label
+                pc.instrument = awg.label
                 pc.translator = awg.translator
                 pc.samplingRate = awg.samplingRate
                 self.channels[label] = pc

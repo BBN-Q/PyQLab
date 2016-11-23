@@ -1,6 +1,6 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, GroupBox, Form, Label, Field, \
                              ComboBox
-from enaml.stdlib.fields import FloatField
+from enaml.stdlib.fields import FloatField, Field
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Conditional
 
@@ -69,9 +69,9 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList + instrumentLib.markedInstrs.displayList
-            index = items.index(chan.AWG) if chan.AWG in items else -1
+            index = items.index(chan.instrument) if chan.instrument in items else -1
             index ::
-                chan.AWG = selected_item
+                chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
                 chan.samplingRate = instrumentLib[selected_item].samplingRate
 
@@ -85,9 +85,9 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             text = 'AWG'
         ComboBox:
             items << instrumentLib.AWGs.displayList
-            index = items.index(chan.AWG) if chan.AWG in items else -1
+            index = items.index(chan.instrument) if chan.instrument in items else -1
             index ::
-                chan.AWG = selected_item
+                chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
                 chan.samplingRate = instrumentLib[selected_item].samplingRate
         Label:
@@ -110,6 +110,23 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
         FloatField:
             value := chan.phaseSkew
 
+enamldef ReceiverChannelView(GroupBox): curView:
+    attr chan
+    attr channelLib
+    attr instrumentLib
+    title := '{} (ReceiverChannel)'.format(chan.label)
+    Form:
+        Label:
+            text = 'Receiver'
+        ComboBox:
+            items << instrumentLib.markedInstrs.displayList
+            index = items.index(chan.instrument) if chan.instrument in items else -1
+            index ::
+                chan.instrument = selected_item
+        Label:
+            text = 'Channel'
+        Field:
+            text := chan.channel
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
@@ -120,6 +137,8 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     logicalMarkerChannels << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.LogicalMarkerChannel)]
     attr qubits
     qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
+    attr receivers
+    receivers << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.ReceiverChannel)]
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
@@ -144,6 +163,13 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 index = items.index(chan.trigChan.label)
                 index ::
                     chan.trigChan = channelLib[selected_item]
+            Label:
+                text = 'Receiver Chan.'
+            ComboBox:
+                items << [c.label for c in receivers]
+                index = items.index(chan.receiverChan.label) if chan.receiverChan else -1
+                index ::
+                    chan.receiverChan = channelLib[selected_item]
         Conditional:
             condition = isinstance(chan, QGL.Channels.Edge)
             Label:
@@ -210,7 +236,8 @@ ChannelViewMap = {
     QGL.Channels.Edge: LogicalQuadratureView,
     QGL.Channels.LogicalMarkerChannel: LogicalMarkerChannelView,
     QGL.Channels.PhysicalQuadratureChannel: PhysicalQuadratureChannelView,
-    QGL.Channels.PhysicalMarkerChannel: PhysicalMarkerChannelView
+    QGL.Channels.PhysicalMarkerChannel: PhysicalMarkerChannelView,
+    QGL.Channels.ReceiverChannel : ReceiverChannelView
 }
 
 enamldef ChannelLibraryView(Container): channelLibCont:
