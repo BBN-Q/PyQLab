@@ -171,8 +171,8 @@ def test_physical_channels():
         Enforces rules applied against physical channels
 
         Rules:
-        PhysicalChannel must have an AWG assigned
-        The assigned AWG must exist in the library
+        PhysicalChannel must have an instrument (AWG or digitizer) assigned
+        The assigned instrument must exist in the library
         The name of the PhysicalChannel channel must be of the form AWGName-AWGChannel
         Device channels have model specific naming conventions
     """
@@ -182,30 +182,30 @@ def test_physical_channels():
     physicalChannels = [channelName for channelName in channels.keys() if is_physical_channel(channelName)]
 
     for channel in physicalChannels:
-        awg = channels[channel].AWG
-        if awg == '':
-            errMsg = 'Physical Channel "{0}" requires an AWG assignment'.format(channel)
+        instrument = channels[channel].instrument
+        if instrument == '':
+            errMsg = 'Physical Channel "{0}" requires an instrument assignment'.format(channel)
             errors.append(errMsg)
-        elif awg not in instruments.keys():
-            errMsg =  'Physical Channel "{0}" AWG {1} not found'.format(channel, awg)
+        elif instrument not in instruments.keys():
+            errMsg =  'Physical Channel "{0}" instrument {1} not found'.format(channel, awg)
             errors.append(errMsg)
 
         # test AWG name to channel format
         validName = True
         validName &= '-' in channel
         if validName:
-            awgName, awgChan = channel.rsplit('-',1)
-            if awgName not in instruments.keys():
+            instrName, instrChan = channel.rsplit('-',1)
+            if instrName not in instruments.keys():
                 errMsg =  'Physical Channel "{0}" Label format is invalid. It should be Name-Channel'.format(channel)
                 errors.append(errMsg)
-            if awgName != awg:
-                errMsg =  'Physical Channel "{0}" Label AWGName {1} != AWG.label {2}'.format(channel, awgName, awg)
+            if instrName != instrument:
+                errMsg =  'Physical Channel "{0}" Label instrName {1} != instrument.label {2}'.format(channel, instrName, instrument)
                 errors.append(errMsg)
 
             # apply device specific channel namming conventions
             # force converions of awgChan to unicode so multimethod dispatch will
             # work with str or unicode
-            errMsg = invalid_awg_name_convention(channels[channel].AWG, str(awgChan))
+            errMsg = invalid_awg_name_convention(channels[channel].instrument, str(instrChan))
             if errMsg:
                 errors.append(errMsg)
         else:
@@ -217,14 +217,14 @@ def test_physical_channels():
 #####################################################################################
 ## AWG Model Type naming conventions
 def invalid_awg_name_convention_common(label, channelName, conventionList):
-    errorStr =  'AWG {0} channel name {1} not in convention list {2}'
+    errorStr =  'instrument {0} channel name {1} not in convention list {2}'
     if channelName not in conventionList:
         return errorStr.format(label, channelName, conventionList)
     return None
 
 def invalid_awg_name_convention(awgLabel, channelName):
-    AWG = instruments[awgLabel]
-    convention = AWG.get_naming_convention()
+    instr = instruments[awgLabel]
+    convention = instr.get_naming_convention()
     return invalid_awg_name_convention_common(awgLabel, channelName,convention)
 
 # GUI validator

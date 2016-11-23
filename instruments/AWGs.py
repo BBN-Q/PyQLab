@@ -10,7 +10,7 @@ from .Instrument import Instrument
 import enaml
 from enaml.qt.qt_application import QtApplication
 
-from instruments.AWGBase import AWGChannel, AWG, AWGDriver
+from instruments.AWGBase import AWGChannel, AWG
 
 from .plugins import find_plugins
 
