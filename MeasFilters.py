@@ -62,10 +62,11 @@ class Averager(MeasFilter):
 class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, AlazarATS9870))
     channel     = Str('').tag(desc="Which channel to select from the Alazar")
+    receiver    = True
 
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
-    label                      = Str("")
+    channel                    = Str("").tag(desc="Which physical channel to select from the X6")
     stream_type                = Enum('Raw', 'Demodulated', 'Integrated').tag(desc='Which stream type to select.')
     if_freq                    = Float(10e6).tag(desc='IF Frequency')
     demod_kernel               = Str("").tag(desc='Integration kernel vector for demod stream')
@@ -74,6 +75,7 @@ class X6StreamSelector(MeasFilter):
     raw_kernel_bias            = Str("").tag(desc="Kernel bias for integrated raw stream")
     threshold                  = Float(0.0).tag(desc='Qubit state decision threshold')
     threshold_invert           = Bool(False).tag(desc="Invert thresholder output")
+    receiver                   = True
 
 class Channelizer(MeasFilter):
     if_freq        = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
@@ -118,6 +120,7 @@ class MeasFilterLibrary(Atom):
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
+    receivers = Typed(DictManager)
     version = Int(2)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
@@ -128,7 +131,12 @@ class MeasFilterLibrary(Atom):
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(
                 self.libFile, self.load_from_library)
-        self.filterManager = DictManager(itemDict=self.filterDict, possibleItems=measFilterList)
+        self.filterManager = DictManager(
+            itemDict=self.filterDict,
+            possibleItems=measFilterList)
+        self.receivers = DictManager(
+            itemDict=self.filterDict,
+            displayFilter=lambda x: hasattr(x, 'receiver'))
 
     #Overload [] to allow direct pulling of measurement filter info
     def __getitem__(self, filterName):
@@ -196,13 +204,19 @@ if __name__ == "__main__":
     #Work around annoying problem with multiple class definitions
     from MeasFilters import Channelizer, Correlator, MeasFilterLibrary
 
-    testFilter1 = Channelizer(label='M1')
-    testFilter2 = Channelizer(label='M2')
-    testFilter3 = Correlator(label='M3')
-    testFilter4 = Correlator(label='M4')
-    filterDict = {'M1':testFilter1, 'M2':testFilter2, 'M3':testFilter3,'M4':testFilter4}
+    M1 = Channelizer(label='M1')
+    M2 = Channelizer(label='M2')
+    M3 = Channelizer(label='M3')
+    M12 = Correlator(label='M12', filters=[M1, M2])
+    M123 = Correlator(label='M123', filters=[M1, M2, M3])
+    filters = {'M1': M1,
+               'M2': M2,
+               'M3': M3,
+               'M12': M12,
+               'M123': M123}
 
-    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json', filterDict=filterDict)
+    testLib = MeasFilterLibrary(libFile='MeasFilterLibrary.json',
+                                filterDict=filters)
 
     with enaml.imports():
         from MeasFiltersViews import MeasFilterManagerWindow

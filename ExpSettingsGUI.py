@@ -226,15 +226,19 @@ class ExpSettings(Atom):
     def clear_errors(self):
         del self.errors[:]
 
-    def populate_physical_channels(self, awgs=None):
+    def populate_physical_channels(self, awg=None):
         import instruments.AWGs
-        if awgs == None:
-            awgs = filter(lambda x: isinstance(x, instruments.AWGs.AWG),
-                          self.instruments.instrDict.values())
-        for awg in awgs:
-            channels = awg.get_naming_convention()
+        if awg == None:
+            awgs = [self.instruments[a] for a in self.instruments.AWGs.displayList]
+            awgs += [self.instruments[a] for a in self.instruments.markedInstrs.displayList]
+            receivers = [self.measurements[r] for r in self.measurements.receivers.displayList]
+        else:
+            awgs = [awg]
+            receivers = []
+        for instr in awgs:
+            channels = instr.get_naming_convention()
             for ch in channels:
-                label = awg.label + '-' + ch
+                label = instr.label + '-' + ch
                 if label in self.channels:
                     continue
                 # TODO: less kludgy lookup of appropriate channel type
@@ -243,10 +247,20 @@ class ExpSettings(Atom):
                 else:
                     pc = QGL.Channels.PhysicalQuadratureChannel()
                 pc.label = label
-                pc.instrument = awg.label
-                pc.translator = awg.translator
-                pc.samplingRate = awg.samplingRate
+                pc.instrument = instr.label
+                pc.translator = instr.translator
+                pc.samplingRate = instr.samplingRate
                 self.channels[label] = pc
+        for receiver in receivers:
+            label = receiver.data_source + "-" + receiver.label
+            if label in self.channels:
+                continue
+            rc = QGL.Channels.ReceiverChannel()
+            rc.label = label
+            rc.instrument = receiver.data_source
+            rc.channel = receiver.label
+            self.channels[label] = rc
+
         self.physicalChannelManager.update_display_list(None)
 
 

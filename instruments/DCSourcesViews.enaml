@@ -41,4 +41,4 @@ enamldef GS200Form(GroupBox):
 			value := instr.value
 			tool_tip = instr.get_member('value').metadata['desc']
 
-DCSourcesViewMap = {DCSources.GS200:GS200Form}
+DCSourcesViewMap = {DCSources.YokogawaGS200:GS200Form}

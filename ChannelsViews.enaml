@@ -51,6 +51,7 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
     attr chan
     attr channelLib
     attr instrumentLib
+    attr measurementLib
     title := '{} (PhysicalMarker)'.format(chan.label)
     Form:
         Label:
@@ -79,6 +80,7 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
     attr chan
     attr channelLib
     attr instrumentLib
+    attr measurementLib
     title := '{} (PhysicalQuadrature)'.format(chan.label)
     Form:
         Label:
@@ -114,19 +116,22 @@ enamldef ReceiverChannelView(GroupBox): curView:
     attr chan
     attr channelLib
     attr instrumentLib
+    attr measurementLib
     title := '{} (ReceiverChannel)'.format(chan.label)
     Form:
         Label:
             text = 'Receiver'
         ComboBox:
-            items << instrumentLib.markedInstrs.displayList
-            index = items.index(chan.instrument) if chan.instrument in items else -1
+            items << measurementLib.receivers.displayList
+            index = items.index(chan.channel) if chan.channel in items else -1
             index ::
-                chan.instrument = selected_item
+                chan.channel = selected_item
+                chan.instrument = measurementLib.filterDict[selected_item].data_source
         Label:
-            text = 'Channel'
+            text = 'Instrument'
         Field:
-            text := chan.channel
+            text := chan.instrument
+            read_only = True
 
 enamldef LogicalQuadratureView(GroupBox): curView:
     attr chan
@@ -228,6 +233,7 @@ enamldef EmptyChannelView(Container):
     attr chan
     attr channelLib
     attr instrumentLib
+    attr measurementLib
 
 ChannelViewMap = {
     type(None): EmptyChannelView,
@@ -245,6 +251,7 @@ enamldef ChannelLibraryView(Container): channelLibCont:
     attr logicalChannelManager
     attr physicalChannelManager
     attr instrumentLib
+    attr measurementLib
     Notebook:
         tab_style = 'preferences'
         Page:
@@ -263,14 +270,17 @@ enamldef ChannelLibraryView(Container): channelLibCont:
                 modelName = 'chan'
                 viewMap = ChannelViewMap
                 viewkwargs = {'instrumentLib': instrumentLib,
-                                'channelLib': channelLib}
+                              'channelLib': channelLib,
+                              'measurementLib': measurementLib}
                 labelValidator = is_valid_awg_channel_name
 
 enamldef ChannelLibraryWindow(Window): channelLibWin:
     attr channelLib
     attr instrumentLib
+    attr measurementLib
     title = 'Channel Library'
     Container:
         ChannelLibraryView:
             channelLib = channelLibWin.channelLib
             instrumentLib = channelLibWin.instrumentLib
+            measurementLib = channelLibWin.measurementLib
