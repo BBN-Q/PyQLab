@@ -5,7 +5,7 @@ Measurement filters
 from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typed, observe, Instance
 import enaml
 from enaml.qt.qt_application import QtApplication
-from instruments.Digitizers import ATS9870, X6
+from instruments.Digitizers import AlazarATS9870, X6
 from DictManager import DictManager
 import json
 import sys
@@ -60,7 +60,7 @@ class Averager(MeasFilter):
     axis    = Str('').tag(desc='Name of the axis to average along.')
 
 class AlazarStreamSelector(MeasFilter):
-    data_source = Instance((str, ATS9870))
+    data_source = Instance((str, AlazarATS9870))
     channel     = Str('').tag(desc="Which channel to select from the Alazar")
 
 class X6StreamSelector(MeasFilter):

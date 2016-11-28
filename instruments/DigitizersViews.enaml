@@ -202,4 +202,4 @@ enamldef TestX6Window(Window): tester:
 			clicked ::
 				import ipdb; ipdb.set_trace()
 
-DigitizerViewMap = {Digitizers.ATS9870:AlazarView, Digitizers.X6:X6View}
+DigitizerViewMap = {Digitizers.AlazarATS9870:AlazarView, Digitizers.X6:X6View}

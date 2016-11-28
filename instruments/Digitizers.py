@@ -12,7 +12,7 @@ from enaml.qt.qt_application import QtApplication
 class Digitizer(Instrument):
 	pass
 
-class ATS9870(Digitizer):
+class AlazarATS9870(Digitizer):
 	address           = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquire_mode      = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	clock_type        = Enum('ref')
