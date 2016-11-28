@@ -189,7 +189,7 @@ def test_physical_channels():
             errMsg = 'Physical Channel "{0}" requires an instrument assignment'.format(channel)
             errors.append(errMsg)
         elif instrument not in instruments.keys():
-            errMsg =  'Physical Channel "{0}" instrument {1} not found'.format(channel, awg)
+            errMsg =  'Physical Channel "{0}" instrument {1} not found'.format(channel, instrument)
             errors.append(errMsg)
 
         # test AWG name to channel format
