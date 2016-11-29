@@ -32,6 +32,7 @@ from atom.api import Str
 
 import Sweeps
 import Libraries
+import MeasFilters
 import QGL.Channels
 import QGL.ChannelLibrary
 
@@ -304,6 +305,18 @@ def validate_channelLib():
     errors = list(itertools.chain(*errors))
     return errors
 
+#####################################################################################
+
+def validate_measurementLib():
+    errors = []
+
+    for name, meas in measurements.items():
+        if isinstance(meas, MeasFilters.AlazarStreamSelector) or isinstance(meas, MeasFilters.X6StreamSelector):
+            if meas.channel == "" or meas.channel is None:
+                errors.append("Stream selector %s has null channel: %s" % (name,meas.channel))
+
+    return errors
+
 def validate_dynamic_lib(channelsLib, instrumentLib):
     global channels
     global instruments
@@ -325,6 +338,10 @@ def validate_lib():
     sweep_errors = validate_sweepLib()
     if sweep_errors != []:
        errors.append(sweep_errors)
+
+    measurement_errors = validate_measurementLib()
+    if measurement_errors != []:
+       errors.append(measurement_errors)
 
     errors = list(itertools.chain(*errors))
     return errors
