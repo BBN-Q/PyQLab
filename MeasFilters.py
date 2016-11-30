@@ -61,12 +61,12 @@ class Averager(MeasFilter):
 
 class AlazarStreamSelector(MeasFilter):
     data_source = Instance((str, AlazarATS9870))
-    channel     = Str('').tag(desc="Which channel to select from the Alazar")
+    channel     = Int(1).tag(desc="Which channel to select from the Alazar")
     receiver    = True
 
 class X6StreamSelector(MeasFilter):
     data_source                = Instance((str, X6))
-    channel                    = Str("").tag(desc="Which physical channel to select from the X6")
+    channel                    = Int(1).tag(desc="Which physical channel to select from the X6")
     stream_type                = Enum('Raw', 'Demodulated', 'Integrated').tag(desc='Which stream type to select.')
     if_freq                    = Float(10e6).tag(desc='IF Frequency')
     demod_kernel               = Str("").tag(desc='Integration kernel vector for demod stream')

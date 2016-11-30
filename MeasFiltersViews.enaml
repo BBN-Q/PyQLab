@@ -28,8 +28,8 @@ enamldef AlazarStreamSelectorView(GroupBox):
                 myFilter.data_source = instrumentLib[selected_item]
         Label:
             text = "Channel"
-        Field:
-            text := myFilter.channel
+        IntField:
+            value := myFilter.channel
             tool_tip = myFilter.get_member('channel').metadata['desc']
 
 enamldef X6StreamSelectorView(GroupBox):
@@ -49,8 +49,8 @@ enamldef X6StreamSelectorView(GroupBox):
                 myFilter.data_source = instrumentLib[selected_item]
         Label:
             text = "Channel"
-        Field:
-            text := myFilter.channel
+        IntField:
+            value := myFilter.channel
             tool_tip = myFilter.get_member('channel').metadata['desc']
         Label:
             text = 'Stream Type'
