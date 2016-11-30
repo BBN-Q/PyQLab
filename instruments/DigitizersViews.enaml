@@ -168,7 +168,7 @@ enamldef X6View(GroupBox):
 					text = 'Acquisition Mode:'
 				EnumComboBox:
 					obj := instr
-					enumName = 'digitizer_mode'
+					enumName = 'acquire_mode'
 				Label:
 					text = 'Samples'
 				IntField:

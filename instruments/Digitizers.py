@@ -38,7 +38,7 @@ class X6(Digitizer):
 	nbr_round_robins   = Int(1).tag(desc='Number of times entire memory is looped')
 	enable_raw_streams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
 
-	digitizer_mode     = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
+	acquire_mode       = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	reference          = Enum('external', 'internal').tag(desc='Clock source for 10MHz reference to clock generation tree')
 
 if __name__ == "__main__":
