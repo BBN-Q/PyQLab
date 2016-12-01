@@ -19,12 +19,12 @@ class MicrowaveSource(Instrument):
     gate_min_width = Float(0.0).tag(desc="The minimum gating pulse width")
     gate_delay = Float(0.0).tag(desc="How the gating pulse should be shifted")
 
-class N5183A(MicrowaveSource):
+class AgilentN5183A(MicrowaveSource):
     gate_buffer = Float(20e-9)
     gate_min_width = Float(100e-9)
     gate_delay = Float(-60e-9)
 
-class HS9000(MicrowaveSource):
+class HolzworthHS9000(MicrowaveSource):
     gate_buffer = Float(20e-9)
     gate_min_width = Float(100e-9)
     gate_delay = Float(-60e-9)
@@ -55,11 +55,11 @@ class HP8340B(MicrowaveSource):
     pass
 
 #List of possible sources for other views
-MicrowaveSourceList = [N5183A, HS9000, Labbrick, SMIQ03, HP8673B, HP8340B, BNC845]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, SMIQ03, HP8673B, HP8340B, BNC845]
 
 if __name__ == "__main__":
-    from MicrowaveSources import N5183A
-    mySource = N5183A(label="Agilent1")
+    from MicrowaveSources import AgilentN5183A
+    mySource = AgilentN5183A(label="Agilent1")
     with enaml.imports():
         from MicrowaveSourcesViews import MicrowaveSourceView
 
