@@ -69,10 +69,8 @@ class X6StreamSelector(MeasFilter):
     channel                    = Int(1).tag(desc="Which physical channel to select from the X6")
     stream_type                = Enum('Raw', 'Demodulated', 'Integrated').tag(desc='Which stream type to select.')
     if_freq                    = Float(10e6).tag(desc='IF Frequency')
-    demod_kernel               = Str("").tag(desc='Integration kernel vector for demod stream')
-    demod_kernel_bias          = Str("").tag(desc="Kernel bias for integrated demod stream")
-    raw_kernel                 = Str("").tag(desc='Integration kernel vector for raw stream')
-    raw_kernel_bias            = Str("").tag(desc="Kernel bias for integrated raw stream")
+    kernel                     = Str("").tag(desc='Integration kernel vector')
+    kernel_bias                = Str("").tag(desc="Kernel bias")
     threshold                  = Float(0.0).tag(desc='Qubit state decision threshold')
     threshold_invert           = Bool(False).tag(desc="Invert thresholder output")
     receiver                   = True
