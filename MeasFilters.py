@@ -119,7 +119,7 @@ class MeasFilterLibrary(Atom):
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
     receivers = Typed(DictManager)
-    version = Int(2)
+    version = Int(3)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
