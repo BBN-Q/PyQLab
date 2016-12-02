@@ -7,10 +7,10 @@ from atom.api import Atom, atomlist
 
 import Libraries
 from MeasFilters import AlazarStreamSelector, Channelizer, KernelIntegrator, Correlator, StateComparator
-from instruments.Digitizers import ATS9870, X6
+from instruments.Digitizers import AlazarATS9870, X6
 from instruments.drivers.APS import APS
 from instruments.drivers.APS2 import APS2
-from instruments.MicrowaveSources import HS9000, Labbrick
+from instruments.MicrowaveSources import HolzworthHS9000, Labbrick
 from Sweeps import *
 import ExpSettingsVal
 
@@ -108,9 +108,9 @@ class TestInstrumentJSON(unittest.TestCase, JSONTestHelper):
 
 	def setUp(self):
 		self.instruments = {}
-		self.instruments['HZ-1'] = HS9000(label='HZ-1')
+		self.instruments['HZ-1'] = HolzworthHS9000(label='HZ-1')
 		self.instruments['LB1'] = Labbrick(label='LB1')
-		self.instruments['Alazar1'] = ATS9870(label='Alazar1')
+		self.instruments['Alazar1'] = AlazarATS9870(label='Alazar1')
 		self.instruments['X6-1'] = X6(label='X6-1')
 		self.instruments['APS1'] = APS(label='APS1')
 		self.instruments['APS2'] = APS2(label='APS2')
