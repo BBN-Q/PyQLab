@@ -49,10 +49,17 @@ enamldef X6StreamSelectorView(GroupBox):
             index ::
                 myFilter.data_source = instrumentLib[selected_item]
         Label:
-            text = "Channel"
+            text = "Phys Channel"
         IntField:
-            value := myFilter.channel
-            tool_tip = myFilter.get_member('channel').metadata['desc']
+            value := myFilter.phys_channel
+            tool_tip = myFilter.get_member('phys_channel').metadata['desc']
+        Conditional:
+            condition << (myFilter.stream_type != 'Raw')
+            Label:
+                text = "DSP Channel"
+            IntField:
+                value := myFilter.dsp_channel
+                tool_tip = myFilter.get_member('dsp_channel').metadata['desc']
         Label:
             text = 'Stream Type'
         EnumComboBox:
@@ -225,7 +232,7 @@ enamldef WriteToHDF5View(GroupBox):
         Field:
             text := myFilter.filename
         Label:
-            text = "Browse"    
+            text = "Browse"
         PushButton:
             text = '...'
             clicked ::

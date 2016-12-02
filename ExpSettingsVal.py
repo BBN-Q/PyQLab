@@ -311,9 +311,11 @@ def validate_measurementLib():
     errors = []
 
     for name, meas in measurements.items():
-        if isinstance(meas, MeasFilters.AlazarStreamSelector) or isinstance(meas, MeasFilters.X6StreamSelector):
+        if isinstance(meas, MeasFilters.AlazarStreamSelector):
             if meas.channel == "" or meas.channel is None:
                 errors.append("Stream selector %s has null channel: %s" % (name,meas.channel))
+        elif isinstance(meas, MeasFilters.X6StreamSelector):
+            pass
         elif isinstance(meas, MeasFilters.WriteToHDF5):
             if meas.filename == "" or meas.filename is None:
                 errors.append("Filter writer %s has null file name." % (name))
