@@ -44,19 +44,14 @@ class MeasFilter(Atom):
                     setattr(self, label, value)
 
 class Plotter(MeasFilter):
-    label    = Str()
-    enabled  = Bool(True)
     plot_mode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
 
 class WriteToHDF5(MeasFilter):
-    label       = Str()
-    enabled     = Bool(True)
     filename    = Str('').tag(desc='Path to file where records will be saved.')
-    compression = Bool(True)
+    groupname   = Str('').tag(desc='Name of the root hdf5 group.')
+    compression = Bool(True).tag(desc='Use gzip compression on the file.')
 
 class Averager(MeasFilter):
-    label   = Str()
-    enabled = Bool(True)
     axis    = Str('').tag(desc='Name of the axis to average along.')
 
 class AlazarStreamSelector(MeasFilter):

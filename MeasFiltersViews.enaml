@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    CheckBox, PushButton, SpinBox, RadioButton
+    CheckBox, PushButton, SpinBox, RadioButton, FileDialog
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer
@@ -9,6 +9,7 @@ from instruments.Digitizers import AlazarATS9870, X6
 from widgets import EnumComboBox
 from DictManagerView import DictManagerView
 
+import config
 import MeasFilters
 from numpy import pi
 
@@ -213,6 +214,12 @@ enamldef PlotterView(GroupBox):
         Field:
             text := myFilter.data_source
 
+def get_h5_filename_callback(filt):
+    def h5_filename_callback(dlg):
+        if dlg.result == 'accepted': #if the pressed "open" otherwise we get 'rejected'
+            filt.filename = dlg.path
+    return h5_filename_callback
+
 enamldef WriteToHDF5View(GroupBox):
     attr myFilter
     attr filterLib
@@ -223,6 +230,19 @@ enamldef WriteToHDF5View(GroupBox):
             text = "Filename"
         Field:
             text := myFilter.filename
+        Label:
+            text = "Browse"    
+        PushButton:
+            text = '...'
+            clicked ::
+                dlg = FileDialog(root_object(), title='Choose a file name..', mode='save_file',
+                 callback=get_h5_filename_callback(myFilter), filters=['Data. Files (*.h5)', 'All Files (*.*)'],
+                 path=config.AWGDir)
+                dlg.open()
+        Label:
+            text = "Group Name"
+        Field:
+            text := myFilter.groupname
         Label:
             text = "Compression"
         CheckBox:
