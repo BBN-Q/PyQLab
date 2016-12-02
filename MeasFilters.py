@@ -44,7 +44,7 @@ class MeasFilter(Atom):
                     setattr(self, label, value)
 
 class Plotter(MeasFilter):
-    plot_mode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
+    plot_mode = Enum('real', 'imag', 'amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
 
 class WriteToHDF5(MeasFilter):
     filename    = Str('').tag(desc='Path to file where records will be saved.')
