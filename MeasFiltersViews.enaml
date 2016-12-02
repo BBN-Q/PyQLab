@@ -58,42 +58,36 @@ enamldef X6StreamSelectorView(GroupBox):
         EnumComboBox:
             obj := myFilter
             enumName = 'stream_type'
-        Label:
-            text = 'IF Frequency (MHz)'
-        FloatField:
-            value << myFilter.if_freq/1e6
-            value :: myFilter.if_freq = value*1e6
-            tool_tip = myFilter.get_member('if_freq').metadata["desc"]
-        Label:
-            text = 'Demod Kernel'
-        Field:
-            text := myFilter.demod_kernel
-            tool_tip = myFilter.get_member('demod_kernel').metadata["desc"]
-        Label:
-            text = 'Demod Kernel Bias'
-        Field:
-            text := myFilter.demod_kernel_bias
-            tool_tip = myFilter.get_member('demod_kernel_bias').metadata["desc"]
-        Label:
-            text = 'Raw Kernel'
-        Field:
-            text := myFilter.raw_kernel
-            tool_tip = myFilter.get_member('raw_kernel').metadata["desc"]
-        Label:
-            text = 'Raw Kernel Bias'
-        Field:
-            text := myFilter.raw_kernel_bias
-            tool_tip = myFilter.get_member('raw_kernel_bias').metadata["desc"]
-        Label:
-            text = 'Threshold'
-        FloatField:
-            value := myFilter.threshold
-            tool_tip = myFilter.get_member('threshold').metadata["desc"]
-        Label:
-            text = 'Invert threshold'
-        CheckBox:
-            checked := myFilter.threshold_invert
-            tool_tip = myFilter.get_member('threshold_invert').metadata["desc"]
+        Conditional:
+            condition << (myFilter.stream_type == 'Demodulated')
+            Label:
+                text = 'IF Frequency (MHz)'
+            FloatField:
+                value << myFilter.if_freq/1e6
+                value :: myFilter.if_freq = value*1e6
+                tool_tip = myFilter.get_member('if_freq').metadata["desc"]
+        Conditional:
+            condition << (myFilter.stream_type == 'Integrated')
+            Label:
+                text = 'Kernel'
+            Field:
+                text := myFilter.kernel
+                tool_tip = myFilter.get_member('kernel').metadata["desc"]
+            Label:
+                text = 'Kernel Bias'
+            Field:
+                text := myFilter.kernel_bias
+                tool_tip = myFilter.get_member('kernel_bias').metadata["desc"]
+            Label:
+                text = 'Threshold'
+            FloatField:
+                value := myFilter.threshold
+                tool_tip = myFilter.get_member('threshold').metadata["desc"]
+            Label:
+                text = 'Invert threshold'
+            CheckBox:
+                checked := myFilter.threshold_invert
+                tool_tip = myFilter.get_member('threshold_invert').metadata["desc"]
 
 enamldef ChannelizerForm(GroupBox):
     attr myFilter

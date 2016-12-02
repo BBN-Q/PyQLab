@@ -72,7 +72,7 @@ class InstrumentLibrary(Atom):
     markedInstrs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
-    version = Int(3)
+    version = Int(4)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
