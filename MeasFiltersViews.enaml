@@ -177,15 +177,12 @@ enamldef KernelIntegrationForm(GroupBox):
             obj := myFilter
             enumName = 'plotMode'
 
-#moved this logic to a separate function to tidy things up a bit
-def filterLooperGetIdndex(filterLib,myFilter,loop_index):
-    if loop_index < len(myFilter.filters)  and \
-        myFilter.filters[loop_index] in filterLib.filterDict.values():
-        return filterLib.filterDict.values().index(myFilter.filters[loop_index])
+def filterLooperGetIndex(items, myFilter, loop_index):
+    if loop_index < len(myFilter.filters) and \
+        myFilter.filters[loop_index].label in items:
+        return items.index(myFilter.filters[loop_index].label)
     else:
         return -1
-    
-    
 
 enamldef CorrelatorView(GroupBox):
     attr myFilter
@@ -208,8 +205,8 @@ enamldef CorrelatorView(GroupBox):
                 Label:
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
-                    items << filterLib.filterDict.keys()
-                    index << filterLooperGetIdndex(filterLib,myFilter,loop_index)
+                    items << list(filterLib.filterDict.keys())
+                    index << filterLooperGetIndex(items, myFilter, loop_index)
                     index ::
                         myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
         Label:
