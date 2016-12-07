@@ -72,22 +72,17 @@ class X6StreamSelector(MeasFilter):
     receiver                   = True
 
 class Channelizer(MeasFilter):
-    if_freq        = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
-    bandwidth      = Float(5e6).tag(desc='Low-pass filter bandwidth')
-    sampling_rate  = Float(250e6).tag(desc='The sampling rate of the digitizer.')
-    phase          = Float(0.0).tag(desc='Phase rotation to apply in rad.')
-    decim_factor_1 = Int(1).tag(desc="First stage polyphase decimation (before multiplication with reference).")
-    decim_factor_2 = Int(1).tag(desc="Second stage polyphase decimation (before IIR filter).")
-    decim_factor_3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
+    decimation_factor = Int(1).tag(desc="Decimation factor")
+    frequency         = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
+    bandwidth         = Float(5e6).tag(desc='Low-pass filter bandwidth')
 
 class KernelIntegrator(MeasFilter):
     kernel        = Str('').tag(desc="Integration kernel vector.")
     bias          = Float(0.0).tag(desc="Bias after integration.")
     simple_kernel = Bool(True)
-    box_car_start = Int(1)
-    box_car_stop  = Int(1)
-    if_freq       = Float(10e6)
-    sampling_rate = Float(250e6)
+    box_car_start = Float(1.0)
+    box_car_stop  = Float(1.0)
+    frequency     = Float(10e6)
 
 class Correlator(MeasFilter):
     filters = List()
@@ -115,7 +110,7 @@ class MeasFilterLibrary(Atom):
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
     receivers = Typed(DictManager)
-    version = Int(3)
+    version = Int(4)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
