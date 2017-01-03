@@ -143,9 +143,9 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 		self.measurements = {}
 		self.measurements['R1'] = AlazarStreamSelector(label='R1', channel=1)
-		self.measurements['M1'] = Channelizer(label='M1',  if_freq=10e6, sampling_rate=250e6)
+		self.measurements['M1'] = Channelizer(label='M1',  frequency=10e6, bandwidth=2e6)
 		#self.measurements['M12'] = Correlator(label='M12')
-		self.measurements['KI1'] = KernelIntegrator(label='KI1', box_car_start=100, box_car_stop=500, if_freq=10e6, sampling_rate=250e6)
+		self.measurements['KI1'] = KernelIntegrator(label='KI1', box_car_start=100, box_car_stop=500, frequency=10e6)
 		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integration_time = 100)
 
 	def test_measurements_library(self):
