@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, ComboBox, \
-    PushButton, SpinBox, RadioButton
+    PushButton, SpinBox, RadioButton, FileDialog
 from enaml.stdlib.fields import FloatField, IntField
 from enaml.core.api import Conditional, Looper
 from enaml.layout.api import hbox, vbox, spacer, align
@@ -8,8 +8,8 @@ from widgets import EnumComboBox, EnumIntComboBox
 from DictManagerView import DictManagerView
 
 import Sweeps
+import config
 
-from instruments.AWGs import AWG
 from instruments.plugins import find_view_maps
 
 from builtins import str
@@ -83,87 +83,45 @@ enamldef AttenuationSweepForm(GroupBox):
             obj := sweep
             intName = 'channel'
 
+def meta_file_callback(sweep):
+    def callback(dlg):
+        if dlg.result == 'accepted':
+            sweep.meta_file = dlg.path
+    return callback
+
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
     title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
     Form:
         Label:
-            text = 'Axis Label'
-        Field:
-            text := sweep.axisLabel
-        Label:
-            text = 'Start'
-        FloatField:
-            value := sweep.start
-        Label:
-            text = 'Stop'
-        FloatField:
-            value := sweep.stop
-        Label:
-            text = 'Step'
-        FloatField:
-            value := sweep.step
-        Label:
-            text = 'Num. Points'
-        IntField:
-            value := sweep.numPoints
+            text = 'Meta Info File'
+        Container:
+            constraints = [hbox(mf1, pb1)]
+            Field: mf1:
+                text := sweep.meta_file
+            PushButton: pb1:
+                text = '...'
+                clicked ::
+                    dlg = FileDialog(
+                        root_object(),
+                        title='Choose a meta info file...',
+                        mode='open_file',
+                        callback=meta_file_callback(sweep),
+                        filters=['JSON Files (*.json)', 'All Files (*.*)'],
+                        path=config.AWGDir
+                    )
+                    dlg.open()
         Label:
             text = 'Points'
         Field:
             text << str(sweep.points)
-            text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
-        Container:
-            constraints = [hbox(rb1, rb2, spacer)]
-            RadioButton: rb1:
-                text = 'start/stop/step'
-                checked << not sweep.usePointsList
-            RadioButton: rb2:
-                text = 'points list'
-                checked := sweep.usePointsList
-
-enamldef SegmentNumWithCalsForm(GroupBox):
-    attr sweep
-    attr possibleInstrs
-    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
-    Form:
+            read_only = True
         Label:
-            text = 'Axis Label'
-        Field:
-            text := sweep.axisLabel
-        Label:
-            text = 'Start'
-        FloatField:
-            value := sweep.start
-        Label:
-            text = 'Stop'
-        FloatField:
-            value := sweep.stop
-        Label:
-            text = 'Step'
-        FloatField:
-            value := sweep.step
-        Label:
-            text = 'Num. Points'
+            text = 'Num. Sequences'
         IntField:
-            value := sweep.numPoints
-        Label:
-            text = 'Points'
-        Field:
-            text << str(sweep.points)
-            text :: sweep.points = [float(x) for x in text.strip('[]').split(',')]
-        Label:
-            text = 'Num Cals'
-        IntField:
-            value := sweep.numCals
-        Container:
-            constraints = [hbox(rb1, rb2, spacer)]
-            RadioButton: rb1:
-                text = 'start/stop/step'
-                checked << not sweep.usePointsList
-            RadioButton: rb2:
-                text = 'points list'
-                checked := sweep.usePointsList
+            value << sweep.num_sequences
+            read_only = True
 
 enamldef AWGChannelForm(GroupBox):
     attr sweep
@@ -376,7 +334,6 @@ enamldef EmptySweepForm(Container):
 #Map sweeps to view
 sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.SegmentNum:SegmentNumForm,
-                    Sweeps.SegmentNumWithCals:SegmentNumWithCalsForm,
                     Sweeps.AWGChannel:AWGChannelForm,
                     Sweeps.AWGSequence:AWGSequenceForm,
                     Sweeps.Attenuation:AttenuationSweepForm,

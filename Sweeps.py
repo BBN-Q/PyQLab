@@ -16,6 +16,7 @@ from DictManager import DictManager
 import numpy as np
 import json
 import floatbits
+import os
 from JSONLibraryUtils import LibraryCoders
 
 class Sweep(Atom):
@@ -77,42 +78,39 @@ class HeterodyneFrequency(PointsSweep):
     instr2 = Str()
     diffFreq = Float(10.0e-3).tag(desc="IF frequency (GHz)")
 
-class SegmentNum(PointsSweep):
+class SegmentNum(Sweep):
     label = Str(default='SegmentNum')
+    meta_file = Str()
+    meta_info = Dict()
     points = List()
-    usePointsList = Bool(False)
+    num_sequences = Int(1)
+
+    @observe('meta_file')
+    def update_num_sequences(self, change):
+        if len(self.meta_file) == 0:
+            return
+        elif not os.path.isfile(self.meta_file):
+            print("ERROR: meta info file '%s' not found for %s" % (self.meta_file, self.label))
+            return
+        try:
+            with open(self.meta_file, 'r') as fid:
+                self.meta_info = json.load(fid)
+        except:
+            print("ERROR: Could not parse meta info file in %s" % self.label)
+        try:
+            # display info from first axis
+            axis = self.meta_info['axis_descriptor'][0]
+            self.points = axis['points']
+            self.num_sequences = self.meta_info['num_sequences']
+            self.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
+        except:
+            print("ERROR: Badly formed meta info structure in %s" % self.label)
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(SegmentNum, self).json_encode(matlabCompatible)
-        if not matlabCompatible:
-            return jsonDict
-        usePointsList = jsonDict.pop('usePointsList')
-        if usePointsList:
-            del jsonDict['start']
-            del jsonDict['stop']
-            del jsonDict['step']
-            del jsonDict['numPoints']
-        else:
-            del jsonDict['points']
-        return jsonDict
-
-class SegmentNumWithCals(SegmentNum):
-    label = Str(default='SegmentNumWithCals')
-    numCals = Int(0)
-
-    def json_encode(self, matlabCompatible=False):
-        jsonDict = super(SegmentNumWithCals, self).json_encode(matlabCompatible)
-        if matlabCompatible:
-            # pose as a normal SegmentNum sweep with a few extra points
-            jsonDict['type'] = 'SegmentNum'
-            if self.usePointsList:
-                # approximate a step from end points
-                step = (self.points[-1] - self.points[0]) / max(1, len(self.points)-1)
-                extra_points = self.points[-1] + np.arange(1, self.numCals+1) * step
-                jsonDict['points'] = self.points + list(extra_points)
-            else:
-                jsonDict['stop'] = self.stop + self.step * self.numCals
-                jsonDict['numPoints'] = self.numPoints + self.numCals
+        # delete view-only properties
+        del jsonDict['points']
+        del jsonDict['num_sequences']
         return jsonDict
 
 class Repeat(Sweep):
@@ -147,14 +145,25 @@ class Threshold(PointsSweep):
     instr = Str()
     stream = Enum('(1,1)','(1,2)','(2,1)','(2,2)').tag(desc='which stream to set threshold')
 
-newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat, Threshold]
+newSweepClasses = [
+    Power,
+    Frequency,
+    HeterodyneFrequency,
+    Attenuation,
+    SegmentNum,
+    AWGChannel,
+    AWGSequence,
+    DC,
+    Repeat,
+    Threshold
+]
 
 class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
-    version = Int(1)
+    version = Int(2)
 
     sweepManager = Typed(DictManager)
 
