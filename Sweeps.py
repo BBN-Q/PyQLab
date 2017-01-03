@@ -86,17 +86,17 @@ class SegmentNum(Sweep):
 
     @observe('meta_file')
     def update_num_sequences(self, change):
-        if change['type'] != 'update':
-            return
         try:
             with open(self.meta_file, 'r') as fid:
                 self.meta_info = json.load(fid)
         except:
             print("ERROR: Could not parse meta info file in Sweep %s" % self.label)
         try:
-            first_axis = self.meta_info['axis_descriptor'][0]
-            self.points = first_axis['points']
+            # display info from first axis
+            axis = self.meta_info['axis_descriptor'][0]
+            self.points = axis['points']
             self.num_sequences = self.meta_info['num_sequences']
+            self.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
         except:
             print("ERROR: Badly formed meta info structure in Sweep %s" % self.label)
 
