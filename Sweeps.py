@@ -157,7 +157,7 @@ class SweepLibrary(Atom):
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
-    version = Int(1)
+    version = Int(2)
 
     sweepManager = Typed(DictManager)
 
