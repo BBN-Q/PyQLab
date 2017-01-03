@@ -249,7 +249,7 @@ class ExpSettings(Atom):
                 pc.label = label
                 pc.instrument = instr.label
                 pc.translator = instr.translator
-                pc.samplingRate = instr.samplingRate
+                pc.samplingRate = instr.sampling_rate
                 self.channels[label] = pc
         for receiver in receivers:
             label = receiver.data_source + "-" + receiver.label
