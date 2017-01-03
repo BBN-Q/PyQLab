@@ -181,37 +181,11 @@ class ExpSettings(Atom):
                     instr, 'nbrSegments'):
                 instr.nbrSegments = meta_info['num_measurements']
 
-        # setup a SegmentNum or SegmentNumWithCals sweep
-        axis = meta_info['axis_descriptor'][0]
-        cal_axes = [ax for ax in meta_info['axis_descriptor']
-                    if ax['name'] == 'calibration']
-        if len(cal_axes) > 0:
-            sweep_name = 'SegmentNumWithCals'
-            sweep_class = Sweeps.SegmentNumWithCals
-            num_cals = sum(len(ax['points']) for ax in cal_axes)
-        else:
-            sweep_name = 'SegmentNum'
-            sweep_class = Sweeps.SegmentNum
-            num_cals = 0
-        if sweep_name not in self.sweeps:
-            sweep = sweep_class()
-            self.sweeps.sweepDict[sweep_name] = sweep
-            self.sweeps.sweepManager.update_display_list(None)
-        else:
-            sweep = self.sweeps[sweep_name]
-        # set start/stop/step for viewing purposes
-        sweep.start = axis['points'][0]
-        sweep.stop = axis['points'][-1]
-        sweep.numPoints = len(axis['points'])
-        sweep.points = axis['points']
-        sweep.usePointsList = True
-        if num_cals > 0:
-            sweep.numCals = num_cals
-        if axis['unit']:
-            sweep.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
-        else:
-            sweep.axisLabel = axis['name']
-        self.sweeps.sweepOrder = [sweep_name]
+        # setup a SegmentNum sweep
+        sweep = Sweeps.SegmentNum(meta_file=meta_file)
+        self.sweeps.sweepDict['SegmentNum'] = sweep
+        self.sweeps.sweepManager.update_display_list(None)
+        self.sweeps.sweepOrder = ['SegmentNum']
 
     def json_encode(self):
         #We encode this for an experiment settings file so no channels
