@@ -74,7 +74,7 @@ enamldef PhysicalMarkerChannelView(GroupBox): curView:
             index ::
                 chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
-                chan.sampling_rate = instrumentLib[selected_item].sampling_rate
+                chan.samplingRate = instrumentLib[selected_item].sampling_rate
 
 enamldef PhysicalQuadratureChannelView(GroupBox): curView:
     attr chan
@@ -91,7 +91,7 @@ enamldef PhysicalQuadratureChannelView(GroupBox): curView:
             index ::
                 chan.instrument = selected_item
                 chan.translator = instrumentLib[selected_item].translator
-                chan.sampling_rate = instrumentLib[selected_item].sampling_rate
+                chan.samplingRate = instrumentLib[selected_item].sampling_rate
         Label:
             text = 'Source'
         ComboBox:

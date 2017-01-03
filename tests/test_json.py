@@ -31,12 +31,12 @@ class JSONTestHelper(object):
 		if testsRunning != 1:
 			return
 		for fileName in cls.testFileNames:
-			print "Testing for file {0}".format(fileName)
+			print("Testing for file {0}".format(fileName))
 			if os.path.exists(fileName):
-				print "Backing up file {0}".format(fileName)
+				print("Backing up file {0}".format(fileName))
 				if os.path.exists(fileName + '.org'):
 					os.remove(fileName + '.org')
-		 		os.rename(fileName, fileName + '.org')
+				os.rename(fileName, fileName + '.org')
 
 	@classmethod
 	def restoreFiles(cls):
@@ -45,21 +45,21 @@ class JSONTestHelper(object):
 		if testsRunning > 0:
 			return
 		for fileName in cls.testFileNames:
-			print "Testing for file {0}".format(fileName)
+			print("Testing for file {0}".format(fileName))
 			if os.path.exists(fileName):
 				os.remove(fileName)
 			if os.path.exists(fileName+ '.org'):
-				print "Restoring file {0}".format(fileName)
-	 			os.rename(fileName + '.org', fileName)
+				print("Restoring file {0}".format(fileName))
+				os.rename(fileName + '.org', fileName)
 
 	def validate_json_dictionary(self, testDict, validDict):
 
 		# top level
 		for key in validDict.keys():
-			print key
+			print(key)
 			assertIn(key, testDict)
 			if isinstance(testDict[key], dict):
-				print testDict[key]
+				print(testDict[key])
 
 	def validate_atomlist(self, test, truth):
 		for i in range(len(truth)):
@@ -93,7 +93,7 @@ class JSONTestHelper(object):
 			if isinstance(truth[element], Atom):
 				self.validate_atom(test[element], truth[element])
 			else:
-				print "Did not test: ", element
+				print("Did not test: ", element)
 
 
 class TestInstrumentJSON(unittest.TestCase, JSONTestHelper):
@@ -143,9 +143,9 @@ class TestMeasJSON(unittest.TestCase, JSONTestHelper):
 
 		self.measurements = {}
 		self.measurements['R1'] = AlazarStreamSelector(label='R1', channel=1)
-		self.measurements['M1'] = Channelizer(label='M1',  if_freq=10e6, sampling_rate=250e6)
+		self.measurements['M1'] = Channelizer(label='M1',  frequency=10e6, bandwidth=2e6)
 		#self.measurements['M12'] = Correlator(label='M12')
-		self.measurements['KI1'] = KernelIntegrator(label='KI1', box_car_start=100, box_car_stop=500, if_freq=10e6, sampling_rate=250e6)
+		self.measurements['KI1'] = KernelIntegrator(label='KI1', box_car_start=100, box_car_stop=500, frequency=10e6)
 		self.measurements['SC1'] = StateComparator(label='SC1', threshold = 0.5, integration_time = 100)
 
 	def test_measurements_library(self):
