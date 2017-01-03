@@ -81,7 +81,7 @@ class SegmentNum(Sweep):
     label = Str(default='SegmentNum')
     meta_file = Str()
     meta_info = Dict()
-    points = List(float)
+    points = List()
     num_sequences = Int(1)
 
     @observe('meta_file')

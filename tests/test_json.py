@@ -170,7 +170,7 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 	@classmethod
 	def tearDownClass(cls):
 		cls.restoreFiles()
-
+		os.remove('test_meta.json')
 
 	def setUp(self):
 
@@ -186,9 +186,18 @@ class TestSweepJSON(unittest.TestCase, JSONTestHelper):
 		self.sweeps['HF'] = HeterodyneFrequency(label='HF', instr1 = 'CSSRC1', instr2 = 'CSSRC2',
 									   start = 1.0 , stop = 10.0, numPoints = 10)
 
-		self.sweeps['SN'] = SegmentNum(label='SN', start = 1.0 , stop = 10.0, numPoints = 10)
+		meta_info = {
+			"axis_descriptor": [{
+				"name": "time",
+				"unit": "us",
+				"points": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+			}],
+			"num_sequences": 11
+		}
+		with open('test_meta.json', 'w') as fid:
+			json.dump(meta_info, fid)
 
-		self.sweeps['SNWC1'] = SegmentNumWithCals(label='SNWC', numCals = 2, start = 1.0 , stop = 10.0, numPoints = 10)
+		self.sweeps['SN'] = SegmentNum(label='SN', meta_file='test_meta.json')
 
 		self.sweeps['R'] = Repeat(label='R', numRepeats = 2)
 
