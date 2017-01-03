@@ -16,6 +16,7 @@ from DictManager import DictManager
 import numpy as np
 import json
 import floatbits
+import os
 from JSONLibraryUtils import LibraryCoders
 
 class Sweep(Atom):
@@ -86,11 +87,16 @@ class SegmentNum(Sweep):
 
     @observe('meta_file')
     def update_num_sequences(self, change):
+        if len(self.meta_file) == 0:
+            return
+        elif not os.path.isfile(self.meta_file):
+            print("ERROR: meta info file '%s' not found for %s" % (self.meta_file, self.label))
+            return
         try:
             with open(self.meta_file, 'r') as fid:
                 self.meta_info = json.load(fid)
         except:
-            print("ERROR: Could not parse meta info file in Sweep %s" % self.label)
+            print("ERROR: Could not parse meta info file in %s" % self.label)
         try:
             # display info from first axis
             axis = self.meta_info['axis_descriptor'][0]
@@ -98,7 +104,7 @@ class SegmentNum(Sweep):
             self.num_sequences = self.meta_info['num_sequences']
             self.axisLabel = "{} ({})".format(axis['name'], axis['unit'])
         except:
-            print("ERROR: Badly formed meta info structure in Sweep %s" % self.label)
+            print("ERROR: Badly formed meta info structure in %s" % self.label)
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = super(SegmentNum, self).json_encode(matlabCompatible)
