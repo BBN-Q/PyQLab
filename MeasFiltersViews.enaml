@@ -226,6 +226,10 @@ enamldef WriteToHDF5View(GroupBox):
             text = "Data source"
         Field:
             text := myFilter.data_source
+        Label:
+            text = "Date directory"
+        CheckBox:
+            checked := myFilter.add_date
 
 enamldef AveragerView(GroupBox):
     attr myFilter
