@@ -135,9 +135,9 @@ class QtListStrWidget(RawWidget):
 
     def apply_validator(self, item, label):
         if self.validator and  not self.validator(label):
-            item.setTextColor(QColor(255,0,0))
+            item.setForeground(QColor(255,0,0))
         else:
-            item.setTextColor(QColor(0,0,0))
+            item.setForeground(QColor(0,0,0))
 
     #--------------------------------------------------------------------------
     # Observers
