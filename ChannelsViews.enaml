@@ -165,7 +165,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 text = 'Trigger Chan.'
             ComboBox:
                 items << [''] + [c.label for c in logicalMarkerChannels]
-                index = items.index(chan.trigChan.label)
+                index = items.index(chan.trigChan.label) if chan.trigChan else 0
                 index ::
                     chan.trigChan = channelLib[selected_item]
             Label:
