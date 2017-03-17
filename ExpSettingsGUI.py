@@ -177,9 +177,8 @@ class ExpSettings(Atom):
 
         # setup up digitizers with number of segments
         for instr in self.instruments.instrDict.values():
-            if isinstance(instr, Digitizers.Digitizer) and hasattr(
-                    instr, 'nbrSegments'):
-                instr.nbrSegments = meta_info['num_measurements']
+            if isinstance(instr, Digitizers.Digitizer) and hasattr(instr, 'nbr_segments'):
+                instr.nbr_segments = meta_info['num_measurements']
 
         # setup a SegmentNum sweep
         sweep = Sweeps.SegmentNum(meta_file=meta_file)
