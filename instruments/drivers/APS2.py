@@ -17,16 +17,12 @@ class APS2TDM(AWG):
 		jsonDict = super(AWG, self).json_encode()
 
 		# Delete unused properties
-		unused = ["num_channels", "seq_file_ext", "trigger_source", "samplingRate", "seqFile", "seqForce", "delay", "channels"]
+		unused = ["num_channels", "seq_file_ext", "trigger_source", "sampling_rate", "seq_file", "seq_force", "delay", "channels"]
 		for param in unused:
 			del jsonDict[param]
-
-		# pretend to be a normal APS2 for MATLAB
-		if matlabCompatible:
-			jsonDict['deviceName'] = 'APS2'
 
 		return jsonDict
 
 	def update_from_jsondict(self, params):
-		for p in ['label', 'enabled', 'address', 'isMaster', 'triggerInterval']:
+		for p in ['label', 'enabled', 'address', 'is_master', 'trigger_interval']:
 			setattr(self, p, params[p])
