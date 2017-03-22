@@ -165,7 +165,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
                 text = 'Trigger Chan.'
             ComboBox:
                 items << [''] + [c.label for c in logicalMarkerChannels]
-                index = items.index(chan.trigChan.label) if chan.trigChan else 0
+                index = items.index(chan.trigChan.label) if (chan.trigChan and chan.trigChan.label in items) else 0
                 index ::
                     chan.trigChan = channelLib[selected_item]
             Label:
@@ -208,7 +208,7 @@ enamldef LogicalQuadratureView(GroupBox): curView:
             text = 'Gate Chan.'
         ComboBox:
             items << [''] + [c.label for c in logicalMarkerChannels]
-            index = items.index(chan.gateChan.label) if chan.gateChan else 0
+            index = items.index(chan.gateChan.label) if (chan.gateChan and chan.gateChan.label in items) else 0
             index ::
                 chan.gateChan = channelLib[selected_item] if selected_item else ""
         Looper:
