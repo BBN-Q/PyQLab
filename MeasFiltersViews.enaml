@@ -145,11 +145,11 @@ enamldef KernelIntegratorForm(GroupBox):
         GroupBox:
             Form:
                 Label:
-                    text = 'Box car start'
+                    text = 'Box car start (s)'
                 FloatField:
                     value := myFilter.box_car_start
                 Label:
-                    text = 'Box car stop'
+                    text = 'Box car stop (s)'
                 FloatField:
                     value := myFilter.box_car_stop
                 Label:
