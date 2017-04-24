@@ -230,6 +230,10 @@ enamldef WriteToHDF5View(GroupBox):
             text = "Date directory"
         CheckBox:
             checked := myFilter.add_date
+        Label:
+            text = "Save config."
+        CheckBox:
+            checked := myFilter.save_settings
 
 enamldef AveragerView(GroupBox):
     attr myFilter

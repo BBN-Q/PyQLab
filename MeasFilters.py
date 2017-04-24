@@ -51,6 +51,7 @@ class WriteToHDF5(MeasFilter):
     groupname   = Str('').tag(desc='Name of the root hdf5 group.')
     compression = Bool(True).tag(desc='Use gzip compression on the file.')
     add_date    = Bool(False).tag(desc='Save in folder with current date.')
+    save_settings = Bool(True).tag(desc='Save config files.')
 
 class Averager(MeasFilter):
     axis    = Str('').tag(desc='Name of the axis to average along.')
