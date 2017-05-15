@@ -11,7 +11,7 @@ from DictManagerView import DictManagerView
 
 import config
 import MeasFilters
-from numpy import pi
+from instruments.plugins import find_view_maps
 
 enamldef AlazarStreamSelectorView(GroupBox):
     attr myFilter
@@ -336,6 +336,9 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.WriteToHDF5: WriteToHDF5View,
     MeasFilters.Averager: AveragerView,
     MeasFilters.Plotter: PlotterView}
+
+# add plugins maps
+find_view_maps(MeasFilters.MeasFilter, filterViewMap)
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib

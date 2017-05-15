@@ -6,6 +6,7 @@ from atom.api import Atom, Int, Float, List, Str, Dict, Bool, Enum, Coerced, Typ
 import enaml
 from enaml.qt.qt_application import QtApplication
 from instruments.Digitizers import AlazarATS9870, X6
+from instruments.plugins import find_plugins
 from DictManager import DictManager
 import json
 import sys
@@ -118,6 +119,7 @@ class MeasFilterLibrary(Atom):
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
+        find_measfilter_plugins()
         self.load_from_library()
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(
@@ -189,6 +191,16 @@ class MeasFilterLibrary(Atom):
 measFilterList = [Averager, Channelizer, KernelIntegrator, Correlator, StateComparator,
                   AlazarStreamSelector, X6StreamSelector,
                   Plotter, WriteToHDF5]
+
+# local plugin registration to enable access by Sweeps.plugin
+def find_measfilter_plugins():
+    plugins = find_plugins(MeasFilter, verbose=False)
+    for plugin in plugins:
+        if plugin not in measFilterList:
+            measFilterList.append(plugin)
+        if plugin.__name__ not in globals().keys():
+            globals().update({plugin.__name__: plugin})
+            print("Registered Plugin {}".format(plugin.__name__))
 
 if __name__ == "__main__":
 
