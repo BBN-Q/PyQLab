@@ -165,11 +165,11 @@ class ExpSettings(Atom):
         # load sequence files into AWGs
         for awg in self.instruments.AWGs.displayList:
             self.instruments[awg].enabled = False
-        for instr, seqFile in meta_info['instruments'].items():
+        for instr, seq_file in meta_info['instruments'].items():
             if instr not in self.instruments:
                 self.errors.append("{} not found".format(instr))
                 raise KeyError
-            self.instruments[instr].seqFile = seqFile
+            self.instruments[instr].seq_file = seq_file
             self.instruments[instr].enabled = True
             if hasattr(self.instruments[instr], 'parent'):
                 self.instruments[self.instruments[instr].parent].enabled = True
