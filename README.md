@@ -25,14 +25,14 @@ pip install git+https://github.com/BBN-Q/QGL.git
 
 ### Python 3
 
-PyQLab requires pyqt4 where as pyqt5 is the default on Anaconda Python 3. You
-may wan to run PyQlab from its own environment to keep the Qt versions separate.
+PyQLab depends on enaml/atom which have only recently become Python 3 compatible
+via a fork. You may wan to run PyQlab from its own environment to segregate its
+dependencies from your standard environment.
 
 ```shell
-conda create --name pyqlab python=3.5
-activate pyqlab
-conda install -c ecpy enaml
-conda install bokeh h5py scipy networkx watchdog
+conda create --name pyqlab python=3.6 scipy networkx h5py bokeh
+source activate pyqlab
+conda install -c ecpy enaml watchdog
 pip install git+https://github.com/BBN-Q/QGL.git
 ```
 

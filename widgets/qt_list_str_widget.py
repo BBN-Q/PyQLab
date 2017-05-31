@@ -8,7 +8,8 @@ from atom.api import (Bool, List, Tuple, ContainerList, observe, set_default, Un
 
 from enaml.widgets.api import RawWidget
 from enaml.core.declarative import d_
-from enaml.qt.QtGui import QListWidget, QListWidgetItem, QAbstractItemView, QColor
+from enaml.qt.QtWidgets import QListWidget, QListWidgetItem, QAbstractItemView
+from enaml.qt.QtGui import QColor, QBrush
 from enaml.qt.QtCore import Qt
 
 class QtListStrWidget(RawWidget):
@@ -135,9 +136,9 @@ class QtListStrWidget(RawWidget):
 
     def apply_validator(self, item, label):
         if self.validator and  not self.validator(label):
-            item.setTextColor(QColor(255,0,0))
+            item.setForeground(QBrush(QColor(255,0,0)))
         else:
-            item.setTextColor(QColor(0,0,0))
+            item.setForeground(QBrush(QColor(0,0,0)))
 
     #--------------------------------------------------------------------------
     # Observers
